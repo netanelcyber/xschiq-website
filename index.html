@@ -5,16 +5,15 @@
   <title>Xschiq – AI Precision Psychiatry</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: sans-serif; background: #f0f2f5; color: #333; }
+    body { font-family: sans-serif; background: #f0f2f5; margin: 0; }
     nav { background: #212529; color: white; padding: 1rem; display: flex; justify-content: space-between; }
-    nav a { color: white; margin-left: 1rem; text-decoration: none; cursor: pointer; }
+    nav a { color: white; margin-left: 1rem; cursor: pointer; text-decoration: none; }
     .container { max-width: 800px; margin: 2rem auto; padding: 1rem; }
-    footer { text-align: center; margin-top: 2rem; font-size: 0.9rem; color: #888; }
-    input, button { padding: 0.6rem; width: 100%; margin-bottom: 1rem; }
-    textarea { width: 100%; height: 80px; margin-bottom: 1rem; }
-    .jira-ticket { background: #fff; margin: 0.5rem 0; padding: 1rem; border-left: 4px solid #0d6efd; }
-    .hidden { display: none; }
+    input, textarea, button { width: 100%; margin-bottom: 1rem; padding: 0.7rem; font-size: 1rem; }
+    textarea { resize: vertical; }
+    .jira-ticket { background: #fff; padding: 1rem; margin: 1rem 0; border-left: 4px solid #0d6efd; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .ticket-actions { display: flex; justify-content: space-between; align-items: center; }
+    footer { text-align: center; font-size: 0.9rem; color: #888; padding: 1rem; }
   </style>
 </head>
 <body ng-controller="MainController">
@@ -59,16 +58,23 @@
       <button ng-click="doLogin()">Login</button>
 
       <div ng-if="loggedIn">
-        <h3>Encrypted JIRA-Like Issues</h3>
+        <h3>Create JIRA-Style Ticket</h3>
         <form ng-submit="addTicket()">
           <input type="text" ng-model="newTicket.title" placeholder="Issue title" required>
           <textarea ng-model="newTicket.description" placeholder="Issue description" required></textarea>
           <button type="submit">Add Ticket</button>
         </form>
+
         <div class="jira-ticket" ng-repeat="t in tickets">
-          <strong>{{t.title}}</strong><br>
-          <small>{{t.description}}</small>
+          <div class="ticket-actions">
+            <div>
+              <strong>{{t.title}}</strong><br>
+              <small>{{t.description}}</small>
+            </div>
+            <button ng-click="downloadTicket(t)">Save JSON</button>
+          </div>
         </div>
+
         <button ng-click="logout()">Logout</button>
       </div>
     </section>
@@ -90,59 +96,42 @@
 
         const STORAGE_KEY = "xschiq_tickets";
 
-        async function getKey() {
-          const raw = new TextEncoder().encode("12345678901234567890123456789012");
-          return await crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["encrypt", "decrypt"]);
-        }
-
-        async function encryptData(data) {
-          const key = await getKey();
-          const iv = crypto.getRandomValues(new Uint8Array(12));
-          const encoded = new TextEncoder().encode(JSON.stringify(data));
-          const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoded);
-          return JSON.stringify({ iv: Array.from(iv), data: Array.from(new Uint8Array(encrypted)) });
-        }
-
-        async function decryptData(json) {
-          const key = await getKey();
-          const obj = JSON.parse(json);
-          const iv = new Uint8Array(obj.iv);
-          const data = new Uint8Array(obj.data);
-          const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, data);
-          return JSON.parse(new TextDecoder().decode(decrypted));
-        }
-
-        async function loadTickets() {
-          const stored = localStorage.getItem(STORAGE_KEY);
-          if (!stored) return;
-          try {
-            $scope.tickets = await decryptData(stored);
-            $scope.$apply();
-          } catch (e) {
-            alert("Error decrypting saved tickets.");
-          }
-        }
-
-        $scope.doLogin = async function () {
+        $scope.doLogin = function () {
           if ($scope.login.username === 'admin' && $scope.login.password === 'xschiq') {
             $scope.loggedIn = true;
-            await loadTickets();
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) $scope.tickets = JSON.parse(saved);
           } else {
             alert("Invalid credentials.");
           }
         };
 
-        $scope.logout = () => {
+        $scope.logout = function () {
           $scope.loggedIn = false;
           $scope.login = {};
           $scope.tickets = [];
         };
 
-        $scope.addTicket = async function () {
-          $scope.tickets.push({ title: $scope.newTicket.title, description: $scope.newTicket.description });
-          const encrypted = await encryptData($scope.tickets);
-          localStorage.setItem(STORAGE_KEY, encrypted);
+        $scope.addTicket = function () {
+          const ticket = {
+            id: 'XSQ-' + Math.floor(100 + Math.random() * 900),
+            title: $scope.newTicket.title,
+            description: $scope.newTicket.description,
+            created: new Date().toISOString()
+          };
+          $scope.tickets.push(ticket);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify($scope.tickets));
           $scope.newTicket = {};
+        };
+
+        $scope.downloadTicket = function (ticket) {
+          const blob = new Blob([JSON.stringify(ticket, null, 2)], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${ticket.id || 'ticket'}.json`;
+          a.click();
+          URL.revokeObjectURL(url);
         };
       }]);
   </script>
