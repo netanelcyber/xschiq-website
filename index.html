@@ -2,7 +2,7 @@
 <html lang="en" ng-app="xschiqApp">
 <head>
   <meta charset="UTF-8">
-  <title>Xschiq – Precision Psychiatry Platform</title>
+  <title>Xschiq – Register Clients + Ticketing</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { font-family: sans-serif; background: #f5f7fa; margin: 0; color: #333; }
@@ -10,8 +10,8 @@
     nav a { color: white; margin-left: 1rem; text-decoration: none; cursor: pointer; }
     .container { max-width: 900px; margin: 2rem auto; padding: 1rem; background: white; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
     input, textarea, button { width: 100%; margin-bottom: 1rem; padding: 0.7rem; font-size: 1rem; }
-    .ticket { background: #eef2f7; border-left: 4px solid #0d6efd; padding: 1rem; margin-bottom: 1rem; }
-    .ticket-header { display: flex; justify-content: space-between; align-items: center; }
+    .ticket, .client { background: #eef2f7; padding: 1rem; margin-bottom: 1rem; border-left: 4px solid #0d6efd; }
+    .ticket-header, .client-header { display: flex; justify-content: space-between; align-items: center; }
     footer { text-align: center; padding: 1rem; color: #777; font-size: 0.9rem; }
     .chart-bar { background: #0d6efd; height: 20px; color: white; text-align: right; padding-right: 5px; margin-bottom: 6px; }
   </style>
@@ -25,55 +25,54 @@
       <a ng-click="setView('mission')">Mission</a>
       <a ng-click="setView('market')">Market</a>
       <a ng-click="setView('tickets')">Tickets</a>
+      <a ng-click="setView('register')">Register</a>
       <a ng-click="setView('contact')">Contact</a>
     </div>
   </nav>
 
   <div class="container">
-    <!-- Home -->
+    <!-- Views -->
     <section ng-show="view === 'home'">
       <h2>Welcome to Xschiq</h2>
-      <p><strong>AI-Powered Precision Psychiatry</strong> — Predict individual responses to psychiatric drugs using EEG, genomics, and digital biomarkers.</p>
+      <p><strong>AI-Powered Precision Psychiatry</strong> — Predict patient responses to psychiatric treatments using EEG, genomics, and behavioral data.</p>
     </section>
 
-    <!-- Mission -->
     <section ng-show="view === 'mission'">
       <h2>Mission</h2>
-      <p>We're building the intelligence layer for mental health diagnostics. Xschiq helps researchers and clinicians personalize treatment using AI + multimodal data.</p>
+      <p>Xschiq enables precision psychiatry using multimodal machine learning for treatment response prediction in mental health.</p>
     </section>
 
-    <!-- Market Monitor -->
     <section ng-show="view === 'market'">
-      <h2>Market Growth: AI in Mental Health</h2>
+      <h2>Market Monitoring</h2>
       <div ng-repeat="point in marketGrowth">
         <div>{{point.year}}: ${{point.value}}B</div>
         <div class="chart-bar" style="width:{{point.value*5}}%">{{point.value}}B</div>
       </div>
-      <p><strong>2024:</strong> $1.3B → <strong>2033:</strong> $14B projected</p>
     </section>
 
-    <!-- Ticketing -->
     <section ng-show="view === 'tickets'">
       <h2>JIRA-Style Tickets</h2>
-
       <form ng-submit="addTicket()">
         <input type="text" ng-model="newTicket.title" placeholder="Issue title" required>
         <textarea ng-model="newTicket.description" placeholder="Describe the issue..." required></textarea>
         <button type="submit">Add Ticket</button>
       </form>
-
-      <div class="ticket" ng-repeat="t in tickets track by $index">
+      <div class="ticket" ng-repeat="t in tickets">
         <div class="ticket-header">
           <div>
-            <strong>{{t.id}}</strong>: {{t.title}}
-            <br><small>{{t.description}}</small>
+            <strong>{{t.id}}</strong>: {{t.title}}<br>
+            <small>{{t.description}}</small>
           </div>
-          <button ng-click="downloadTicket(t)">Save JSON</button>
+          <button ng-click="downloadJSON(t)">Save JSON</button>
         </div>
       </div>
     </section>
 
-    <!-- Contact -->
+    <section ng-show="view === 'register'">
+      <h2>Register New Client</h2>
+      <register-client></register-client>
+    </section>
+
     <section ng-show="view === 'contact'">
       <h2>Contact</h2>
       <p>Netanel Stern – Founder</p>
@@ -84,6 +83,7 @@
 
   <footer>&copy; 2025 Xschiq. All rights reserved.</footer>
 
+  <!-- AngularJS -->
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
   <script>
     angular.module('xschiqApp', [])
@@ -91,7 +91,6 @@
         $scope.view = 'home';
         $scope.setView = view => $scope.view = view;
 
-        // Market growth (AI mental health)
         $scope.marketGrowth = [
           { year: 2024, value: 1.3 },
           { year: 2026, value: 3.5 },
@@ -100,7 +99,6 @@
           { year: 2033, value: 14.0 }
         ];
 
-        // JIRA-style tickets
         $scope.tickets = [];
         $scope.newTicket = {};
 
@@ -116,16 +114,66 @@
           $scope.newTicket = {};
         };
 
-        $scope.downloadTicket = function (ticket) {
-          const blob = new Blob([JSON.stringify(ticket, null, 2)], { type: "application/json" });
+        $scope.downloadJSON = function (data) {
+          const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
-          a.download = ticket.id + ".json";
+          a.download = (data.id || "client") + ".json";
           a.click();
           URL.revokeObjectURL(url);
         };
-      }]);
+      }])
+
+      .directive('registerClient', function() {
+        return {
+          restrict: 'E',
+          template: `
+            <form ng-submit="register()">
+              <input type="text" ng-model="client.name" placeholder="Full Name" required>
+              <input type="email" ng-model="client.email" placeholder="Email" required>
+              <input type="text" ng-model="client.org" placeholder="Organization" required>
+              <label><input type="checkbox" ng-model="encrypt"> Encrypt JSON</label>
+              <button type="submit">Register Client</button>
+            </form>
+            <div class="client" ng-if="clientSaved">
+              <div class="client-header">
+                <div>
+                  <strong>{{client.name}}</strong> ({{client.org}})<br>
+                  <small>{{client.email}}</small>
+                </div>
+                <button ng-click="save()">Download JSON</button>
+              </div>
+            </div>
+          `,
+          controller: ['$scope', function($scope) {
+            $scope.client = {};
+            $scope.encrypt = false;
+            $scope.clientSaved = false;
+
+            $scope.register = function () {
+              $scope.client.id = 'CL-' + Math.floor(Math.random() * 10000);
+              $scope.client.timestamp = new Date().toISOString();
+              $scope.clientSaved = true;
+            };
+
+            $scope.save = function () {
+              let output = angular.copy($scope.client);
+              if ($scope.encrypt) {
+                output = btoa(JSON.stringify(output)); // Simple base64 "encryption"
+              }
+              const blob = new Blob([typeof output === 'string' ? output : JSON.stringify(output, null, 2)],
+                                    { type: "application/json" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = ($scope.client.id || "client") + ".json";
+              a.click();
+              URL.revokeObjectURL(url);
+            };
+          }]
+        };
+      });
   </script>
 </body>
 </html>
