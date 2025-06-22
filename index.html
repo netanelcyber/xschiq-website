@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <title>Xschizq - AI-Powered Precision Psychiatry</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap)" rel="stylesheet">
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Base styles for Inter font and background */
         body { font-family: 'Inter', sans-serif; background: #f5f7fa; color: #333; }
+        /* Style for the chart bar in Market Monitoring section */
         .chart-bar { background: #0d6efd; height: 20px; color: white; text-align: right; padding-right: 5px; margin-bottom: 6px; }
-        /* Custom modal styles for alerts */
+        /* Custom modal styles for alerts (to replace native alert() ) */
         .modal {
             display: none; /* Hidden by default */
             position: fixed; /* Stay in place */
@@ -20,8 +22,8 @@
             height: 100%; /* Full height */
             overflow: auto; /* Enable scroll if needed */
             background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-            justify-content: center;
-            align-items: center;
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
         }
         .modal-content {
             background-color: #fefefe;
@@ -42,51 +44,54 @@
             border-radius: 5px;
             cursor: pointer;
             margin-top: 15px;
+            transition: background-color 0.3s ease;
+        }
+        .modal-content button:hover {
+            background-color: #0b5dd7;
         }
     </style>
 </head>
 <body ng-controller="MainController" class="min-h-screen flex flex-col">
 
-    <!-- Custom Modal for Alerts -->
+    <!-- Custom Alert Modal - replaces browser's alert() -->
     <div id="customAlertModal" class="modal">
         <div class="modal-content">
-            <p id="modalMessage"></p>
+            <p id="modalMessage" class="text-gray-800 text-lg mb-4"></p>
             <button onclick="document.getElementById('customAlertModal').style.display='none'">OK</button>
         </div>
     </div>
 
+    <!-- Navigation Bar -->
     <nav class="bg-gray-900 text-white p-4 flex flex-col sm:flex-row justify-between items-center rounded-b-lg shadow-lg">
         <strong class="text-2xl font-bold mb-2 sm:mb-0">Xschizq</strong>
         <div class="flex flex-wrap justify-center sm:justify-end gap-x-4 gap-y-2 text-lg">
             <a ng-click="setView('home')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">Home</a>
-            <a ng-click="setView('mission')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">Mission</a>
-            <a ng-click="setView('market')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">Market</a>
-            <a ng-click="setView('tickets')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">Tickets</a>
-            <a ng-click="setView('register')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">Register</a>
-            <a ng-click="setView('contact')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">Contact</a>
+            <a ng-click="setView('mission')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">Our Mission</a>
+            <a ng-click="setView('market')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">Market Monitoring</a>
+            <a ng-click="setView('research')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">Research</a>
+            <a ng-click="setView('tickets')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">Contact (Inquiry)</a>
+            <a ng-click="setView('register')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">Register (Contact)</a>
+            <a ng-click="setView('contact')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">Contact Details</a>
         </div>
     </nav>
 
+    <!-- Main Content Container -->
     <div class="container mx-auto p-4 my-8 bg-white rounded-lg shadow-lg flex-grow">
-        <!-- User ID Display (Removed as it's Firebase Auth specific) -->
-        <!-- <div ng-if="userId" class="bg-blue-100 text-blue-800 p-3 mb-4 rounded-md text-sm font-medium">
-            Your User ID: <span class="font-mono break-all">{{userId}}</span>
-        </div>
-        <div ng-if="!isAuthReady" class="bg-yellow-100 text-yellow-800 p-3 mb-4 rounded-md text-sm font-medium animate-pulse">
-            Loading authentication...
-        </div> -->
 
-        <!-- Views -->
+        <!-- Views Section -->
+        <!-- Home View -->
         <section ng-show="view === 'home'">
             <h2 class="text-3xl font-semibold mb-4 text-gray-800">Welcome to Xschizq</h2>
             <p class="text-gray-700 text-lg"><strong>AI-Powered Precision Psychiatry</strong> — Predict patient responses to psychiatric treatments using EEG, genomics, and behavioral data.</p>
         </section>
 
+        <!-- Mission View -->
         <section ng-show="view === 'mission'">
-            <h2 class="text-3xl font-semibold mb-4 text-gray-800">Mission</h2>
+            <h2 class="text-3xl font-semibold mb-4 text-gray-800">Our Mission</h2>
             <p class="text-gray-700 text-lg">Xschizq enables precision psychiatry using multimodal machine learning for treatment response prediction in mental health.</p>
         </section>
 
+        <!-- Market Monitoring View -->
         <section ng-show="view === 'market'">
             <h2 class="text-3xl font-semibold mb-4 text-gray-800">Market Monitoring</h2>
             <div class="mb-4">
@@ -100,62 +105,92 @@
             </div>
         </section>
 
+        <!-- Research Section (NEW) -->
+        <section ng-show="view === 'research'">
+            <h2 class="text-3xl font-semibold mb-4 text-gray-800">Our Research & Innovation</h2>
+            <p class="text-gray-700 text-lg mb-6">At Xschizq, we are at the forefront of applying cutting-edge Artificial Intelligence to transform precision psychiatry. Our research focuses on leveraging advanced computational methods and diverse data modalities to predict and optimize treatment outcomes for mental health disorders.</p>
+
+            <h3 class="text-2xl font-semibold mb-3 text-gray-700">AI/ML Methodologies</h3>
+            <p class="text-gray-700 mb-4">We utilize a range of powerful AI and Machine Learning algorithms, including **Support Vector Machines (SVM)**, **Random Forests (RF)**, **Gradient Boosting Machines (GBM)**, and **Deep Learning (DL) models** like Convolutional Neural Networks (CNNs) and Recurrent Neural Networks (RNNs). These methods are crucial for processing complex, high-dimensional datasets and uncovering subtle patterns indicative of treatment response.</p>
+
+            <h3 class="text-2xl font-semibold mb-3 text-gray-700">Multimodal Data Integration</h3>
+            <p class="text-gray-700 mb-4">Our approach integrates diverse data sources to create a comprehensive "digital twin" of each patient, enabling a holistic understanding of their unique profile:</p>
+            <ul class="list-disc list-inside text-gray-700 mb-4 ml-4">
+                <li><strong>Clinical Data:</strong> Electronic Health Records (EHRs), symptom severity scales, medication history, and clinical notes (analyzed with NLP).</li>
+                <li><strong>Genetic Data:</strong> Pharmacogenomic markers and genetic predispositions influencing drug metabolism and response.</li>
+                <li><strong>Neuroimaging Data:</strong> Insights from MRI, PET, fMRI, and especially **EEG-based biomarkers**, which show high predictive utility for treatment response.</li>
+                <li><strong>Digital Phenotyping:</strong> Continuous, real-time behavioral and physiological data collected passively from smartphones, providing insights into mood, activity, and sleep patterns.</li>
+            </ul>
+
+            <h3 class="text-2xl font-semibold mb-3 text-gray-700">Specific Applications & Predictive Biomarkers</h3>
+            <p class="text-gray-700 mb-4">Our research specifically applies these methods to predict efficacy for D2 receptor partial agonist antipsychotics such as **Aripiprazole, Brexpiprazole, and Cariprazine**. We identify critical predictive biomarkers, including **gamma power in EEG for non-response in bipolar disorder** and **extracellular vesicle proteomics for schizophrenia diagnosis and antipsychotic response**, moving beyond traditional trial-and-error.</p>
+
+            <h3 class="text-2xl font-semibold mb-3 text-gray-700">Accelerating Novel Drug Discovery</h3>
+            <p class="text-gray-700 mb-6">AI plays a transformative role in accelerating the entire drug discovery and development lifecycle. We utilize AI-enabled platforms for *de novo* drug design, identifying novel therapeutic targets (e.g., TAAR1 agonists like Ulotaront, M4 selective agonists like NBI-1117568), optimizing dose regimens, and designing more effective combination therapies. This significantly reduces the time and cost associated with bringing new treatments to patients.</p>
+
+            <p class="text-gray-700 text-lg mt-6">For research collaborations or inquiries into our methodologies, please <a ng-click="setView('contact')" class="text-blue-600 hover:underline cursor-pointer">contact us</a>.</p>
+        </section>
+
+        <!-- "Contact (Inquiry)" section - now a simple mailto form -->
         <section ng-show="view === 'tickets'">
-            <h2 class="text-3xl font-semibold mb-4 text-gray-800">JIRA-Style Tickets</h2>
-            <!-- Netlify form for tickets -->
-            <form name="ticket-form" netlify="true" ng-submit="addTicket()" class="bg-gray-50 p-6 rounded-lg shadow-md mb-6">
-                <input type="hidden" name="form-name" value="ticket-form" />
-                <input type="text" ng-model="newTicket.title" name="ticket-title" placeholder="Issue title" required
+            <h2 class="text-3xl font-semibold mb-4 text-gray-800">Send an Inquiry or Report</h2>
+            <form action="mailto:nsh531@gmail.com" method="post" enctype="text/plain" class="bg-gray-50 p-6 rounded-lg shadow-md mb-6">
+                <input type="text" name="subject" placeholder="Subject of your message" required
                        class="w-full p-3 mb-4 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                <textarea ng-model="newTicket.description" name="ticket-description" placeholder="Describe the issue..." required
+                <textarea name="body" placeholder="Describe your inquiry/report..." required
                           class="w-full p-3 mb-4 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 min-h-[100px]"></textarea>
-                <label class="flex items-center mb-4 text-gray-700">
-                    <input type="checkbox" ng-model="encryptTicket" class="form-checkbox h-5 w-5 text-blue-600 rounded">
-                    <span class="ml-2">Encrypt Ticket JSON (Base64)</span>
-                </label>
-                <!-- Hidden input to send the actual JSON payload -->
-                <input type="hidden" name="ticket-payload" ng-value="encryptedTicketPayload">
-                <button type="submit" ng-disabled="isSaving"
+                
+                <button type="submit"
                         class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105">
-                    <span ng-if="!isSaving">Add & Send Ticket</span>
-                    <span ng-if="isSaving">Saving Ticket...</span>
+                    Send Email
                 </button>
             </form>
-            <div ng-if="tickets.length === 0" class="text-center text-gray-500 p-4 border rounded-md">No tickets added yet.</div>
-            <div class="ticket bg-blue-50 p-4 rounded-lg shadow-sm mb-4 border-l-4 border-blue-500" ng-repeat="t in tickets track by t.id">
-                <div class="ticket-header flex justify-between items-center mb-2">
-                    <div>
-                        <strong class="text-lg text-blue-800">{{t.id}}</strong>: <span class="text-gray-900 font-medium">{{t.title}}</span><br>
-                        <small class="text-gray-600">{{t.description}}</small>
-                    </div>
-                </div>
-                <small class="text-gray-500">Created: {{t.created | date:'medium'}}</small>
-            </div>
+            <p class="text-center text-gray-600">This action will open your default email client.</p>
         </section>
 
+        <!-- "Register (Contact)" section - now a simple mailto form -->
         <section ng-show="view === 'register'">
-            <h2 class="text-3xl font-semibold mb-4 text-gray-800">Register New Client</h2>
-            <register-client></register-client>
+            <h2 class="text-3xl font-semibold mb-4 text-gray-800">Register for Contact</h2>
+            <form action="mailto:nsh531@gmail.com" method="post" enctype="text/plain" class="bg-gray-50 p-6 rounded-lg shadow-md">
+                <input type="text" name="name" placeholder="Full Name" required
+                       class="w-full p-3 mb-4 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                <input type="email" name="email" placeholder="Email" required
+                       class="w-full p-3 mb-4 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                <input type="text" name="organization" placeholder="Organization (Optional)"
+                       class="w-full p-3 mb-4 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                <input type="hidden" name="subject" value="New Client Contact Registration for Xschizq">
+                <!-- Using Angular's ng-model for dynamic value in mailto body (may require user interaction to confirm) -->
+                <input type="hidden" name="body" ng-value="'Client Details: Name - ' + client.name + ', Email - ' + client.email + ', Organization - ' + client.organization">
+                
+                <button type="submit"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105">
+                    Register and Send Email
+                </button>
+            </form>
+             <p class="text-center text-gray-600 mt-4">This action will open your default email client with your details pre-filled.</p>
         </section>
 
+        <!-- Contact Details section -->
         <section ng-show="view === 'contact'">
-            <h2 class="text-3xl font-semibold mb-4 text-gray-800">Contact</h2>
+            <h2 class="text-3xl font-semibold mb-4 text-gray-800">Contact Details</h2>
             <p class="text-gray-700 text-lg">Netanel Stern – Founder</p>
             <p class="text-gray-700 text-lg">Email: <a href="mailto:nsh531@gmail.com" class="text-blue-600 hover:underline">nsh531@gmail.com</a></p>
             <p class="text-gray-700 text-lg">
-                <a href="[https://linkedin.com](https://linkedin.com)" target="_blank" class="text-blue-600 hover:underline">LinkedIn</a> |
-                <a href="[https://twitter.com](https://twitter.com)" target="_blank" class="text-blue-600 hover:underline">Twitter</a>
+                <a href="https://linkedin.com" target="_blank" class="text-blue-600 hover:underline">LinkedIn</a> |
+                <a href="https://twitter.com" target="_blank" class="text-blue-600 hover:underline">Twitter</a>
             </p>
         </section>
     </div>
 
+    <!-- Footer -->
     <footer class="text-center p-4 mt-8 bg-gray-900 text-gray-400 text-sm rounded-t-lg shadow-lg">
         &copy; 2025 Xschizq. All rights reserved.
     </footer>
 
-    <!-- No Firebase SDK needed for Netlify Forms -->
+    <!-- AngularJS Library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
     <script>
-        // Function to show custom alert modal
+        // Function to show custom alert modal, replacing native alert()
         window.showAlert = function(message) {
             document.getElementById('modalMessage').innerText = message;
             document.getElementById('customAlertModal').style.display = 'flex';
@@ -163,51 +198,14 @@
 
         // Define the main AngularJS module and its dependencies
         angular.module('xschiqApp', [])
-            // Encryption Service: Handles Base64 encoding/decoding for JSON objects.
-            .factory('EncryptionService', function() {
-                return {
-                    encrypt: function(data) {
-                        try {
-                            return btoa(JSON.stringify(data)); // Base64 encode JSON string
-                        } catch (e) {
-                            console.error("Encryption failed:", e);
-                            return null;
-                        }
-                    },
-                    decrypt: function(encryptedData) {
-                        try {
-                            return JSON.parse(atob(encryptedData)); // Decode Base64 and parse JSON
-                        } catch (e) {
-                            console.error("Decryption failed:", e);
-                            return null;
-                        }
-                    }
-                };
-            })
-
-            // Netlify Form Submission Service: Manages triggering native form submissions for Netlify.
-            .factory('NetlifyFormService', ['$window', function($window) {
-                return {
-                    submit: function(formElement) {
-                        // Netlify Forms work by intercepting native form submissions.
-                        // We trigger the form's submit method.
-                        formElement.submit();
-                    }
-                };
-            }])
-
-            // Main Controller: Manages global state and ticket section logic.
-            .controller('MainController', ['$scope', 'EncryptionService', 'NetlifyFormService', '$timeout', '$window', function($scope, EncryptionService, NetlifyFormService, $timeout, $window) {
-                // Initialize scope variables
+            // Main Controller: Manages global view state and market monitoring data.
+            .controller('MainController', ['$scope', function($scope) {
+                // Initialize scope variables for view management
                 $scope.view = 'home';
-                $scope.setView = view => $scope.view = view;
-                $scope.tickets = [];
-                $scope.newTicket = {};
-                $scope.encryptTicket = false; // Checkbox model for tickets
-                $scope.isSaving = false; // Loading state for save operations
-                $scope.encryptedTicketPayload = ''; // Holds the JSON string for the hidden Netlify form input
-
-                // Sample market growth data
+                // Add 'research' to the possible views
+                $scope.setView = view => $scope.view = view; 
+                
+                // Sample market growth data for the Market Monitoring section
                 $scope.marketGrowth = [
                     { year: 2024, value: 1.3 },
                     { year: 2026, value: 3.5 },
@@ -216,151 +214,12 @@
                     { year: 2033, value: 14.0 }
                 ];
 
-                // Function to add a new ticket and send it to storage via Netlify Forms.
-                $scope.addTicket = function () {
-                    // Prevent multiple submissions
-                    if ($scope.isSaving) return;
+                // Models for the "Register for Contact" form
+                $scope.client = {}; 
 
-                    $scope.isSaving = true; // Set saving state
-
-                    const id = 'XSQ-' + Math.floor(1000 + Math.random() * 9000);
-                    const ticket = {
-                        id,
-                        title: $scope.newTicket.title,
-                        description: $scope.newTicket.description,
-                        created: new Date().toISOString() // Add timestamp for data
-                    };
-                    $scope.tickets.push(ticket); // Add to local list for immediate display
-
-                    let dataToSubmit = ticket;
-                    if ($scope.encryptTicket) {
-                        // If encryption is requested, encrypt the whole ticket object
-                        dataToSubmit = {
-                            encryptedPayload: EncryptionService.encrypt(ticket),
-                            isEncrypted: true
-                        };
-                    } else {
-                        // Otherwise, wrap the ticket directly
-                        dataToSubmit = {
-                            payload: ticket,
-                            isEncrypted: false
-                        };
-                    }
-
-                    // Netlify Forms expects string values for fields.
-                    // Assign the JSON string to the hidden input for Netlify to capture.
-                    $scope.encryptedTicketPayload = JSON.stringify(dataToSubmit);
-
-                    // Netlify forms need the native form submission. Use $timeout to ensure
-                    // Angular has updated the ng-value of the hidden input before submission.
-                    $timeout(function() {
-                        const formElement = document.querySelector('form[name="ticket-form"]');
-                        if (formElement) {
-                            NetlifyFormService.submit(formElement);
-                            $window.showAlert('Ticket ' + ticket.id + ' sent to Netlify Forms!');
-                            $scope.newTicket = {}; // Clear form fields after submission
-                            $scope.encryptedTicketPayload = ''; // Clear payload
-                        } else {
-                            console.error("Ticket form not found for Netlify submission!");
-                            $window.showAlert("Error: Ticket form not found.");
-                        }
-                        $scope.isSaving = false; // Reset saving state
-                    }, 0); // Short delay to allow Angular digest cycle
-                };
-            }])
-
-            // Register Client Directive: Handles client registration form and data submission.
-            .directive('registerClient', function() {
-                return {
-                    restrict: 'E', // Restrict to element usage (<register-client>)
-                    template: `
-                        <!-- Netlify form for client registration -->
-                        <form name="client-form" netlify="true" ng-submit="register()" class="bg-gray-50 p-6 rounded-lg shadow-md">
-                            <input type="hidden" name="form-name" value="client-form" />
-                            <input type="text" ng-model="client.name" name="client-name" placeholder="Full Name" required
-                                   class="w-full p-3 mb-4 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            <input type="email" ng-model="client.email" name="client-email" placeholder="Email" required
-                                   class="w-full p-3 mb-4 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            <input type="text" ng-model="client.org" name="client-organization" placeholder="Organization" required
-                                   class="w-full p-3 mb-4 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            <label class="flex items-center mb-4 text-gray-700">
-                                <input type="checkbox" ng-model="encryptClient" class="form-checkbox h-5 w-5 text-blue-600 rounded">
-                                <span class="ml-2">Encrypt JSON (Base64)</span>
-                            </label>
-                            <!-- Hidden input to send the actual JSON payload -->
-                            <input type="hidden" name="client-payload" ng-value="encryptedClientPayload">
-                            <button type="submit" ng-disabled="isSaving"
-                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105">
-                                <span ng-if="!isSaving">Register & Send Client</span>
-                                <span ng-if="isSaving">Registering Client...</span>
-                            </button>
-                        </form>
-                        <div class="client bg-green-50 p-4 rounded-lg shadow-sm mt-6 border-l-4 border-green-500" ng-if="clientSaved">
-                            <h3 class="text-xl font-semibold text-green-800 mb-2">Client Registered!</h3>
-                            <div class="client-header flex justify-between items-center mb-2">
-                                <div>
-                                    <strong class="text-lg text-green-700">{{client.name}}</strong> (<span class="text-gray-900 font-medium">{{client.org}}</span>)<br>
-                                    <small class="text-gray-600">{{client.email}}</small>
-                                </div>
-                            </div>
-                            <small class="text-gray-500">Registered: {{client.timestamp | date:'medium'}}</small>
-                            <p class="text-xs text-gray-400 mt-2">Data sent to Netlify Forms.</p>
-                        </div>
-                    `,
-                    controller: ['$scope', 'EncryptionService', 'NetlifyFormService', '$timeout', '$window', function($scope, EncryptionService, NetlifyFormService, $timeout, $window) {
-                        $scope.client = {};
-                        $scope.encryptClient = false; // Checkbox model for clients
-                        $scope.clientSaved = false; // Flag to show success message
-                        $scope.isSaving = false; // Loading state
-                        $scope.encryptedClientPayload = ''; // Holds the JSON string for the hidden Netlify form input
-
-                        // Function to register a new client and send data to storage.
-                        $scope.register = function () {
-                            if ($scope.isSaving) return;
-
-                            $scope.isSaving = true;
-
-                            $scope.client.id = 'CL-' + Math.floor(Math.random() * 10000);
-                            $scope.client.timestamp = new Date().toISOString(); // Add timestamp for data
-
-                            let dataToSubmit = angular.copy($scope.client);
-                            if ($scope.encryptClient) {
-                                // If encryption is requested, encrypt the whole client object
-                                dataToSubmit = {
-                                    encryptedPayload: EncryptionService.encrypt(dataToSubmit),
-                                    isEncrypted: true
-                                };
-                            } else {
-                                // Otherwise, wrap the client directly
-                                dataToSubmit = {
-                                    payload: dataToSubmit,
-                                    isEncrypted: false
-                                };
-                            }
-
-                            // Assign the JSON string to the hidden input for Netlify to capture.
-                            $scope.encryptedClientPayload = JSON.stringify(dataToSubmit);
-
-                            // Netlify forms need the native form submission.
-                            $timeout(function() {
-                                const formElement = document.querySelector('form[name="client-form"]');
-                                if (formElement) {
-                                    NetlifyFormService.submit(formElement);
-                                    $scope.clientSaved = true; // Show success message after successful submission trigger
-                                    $window.showAlert('Client ' + $scope.client.name + ' registered and sent to Netlify Forms!');
-                                    // Optionally reset form after successful submission
-                                    // $scope.client = {};
-                                    // $scope.encryptedClientPayload = '';
-                                } else {
-                                    console.error("Client form not found for Netlify submission!");
-                                    $window.showAlert("Error: Client form not found.");
-                                }
-                                $scope.isSaving = false; // Reset saving state
-                            }, 0);
-                        };
-                    }]
-                };
-            });
+                // Note: Previous ticket/register functions and associated services (EncryptionService, NetlifyFormService)
+                // have been removed as forms are now handled directly by mailto:
+            }]);
     </script>
 </body>
 </html>
