@@ -38,6 +38,30 @@
       padding: 1rem;
       color: #6c757d;
     }
+    form input {
+      display: block;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      width: 100%;
+    }
+    .jira-sample {
+      background: #fff;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      margin-top: 1.5rem;
+    }
+    .jira-sample h3 {
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+      color: #0d6efd;
+    }
+    .jira-ticket {
+      border-bottom: 1px solid #eee;
+      padding: 0.5rem 0;
+    }
+    .jira-ticket:last-child {
+      border-bottom: none;
+    }
   </style>
 </head>
 <body ng-controller="MainController">
@@ -48,6 +72,8 @@
       <a ng-click="setView('mission')">Mission</a>
       <a ng-click="setView('market')">Market</a>
       <a ng-click="setView('contact')">Contact</a>
+      <a ng-click="setView('clientLogin')">Client Login</a>
+      <a ng-click="setView('extranetLogin')">Extranet</a>
     </div>
   </nav>
 
@@ -73,6 +99,32 @@
       <p>Email: <a href="mailto:nsh531@gmail.com">nsh531@gmail.com</a></p>
       <p>Follow us on <a href="https://twitter.com/">Twitter</a> | <a href="https://linkedin.com/">LinkedIn</a></p>
     </section>
+
+    <section ng-show="view === 'clientLogin'">
+      <h2>Client Login</h2>
+      <form ng-submit="login('client')">
+        <input type="text" placeholder="Username" ng-model="client.username" required>
+        <input type="password" placeholder="Password" ng-model="client.password" required>
+        <button type="submit">Login</button>
+      </form>
+
+      <div class="jira-sample" ng-if="client.username">
+        <h3>Sample JIRA Issues</h3>
+        <div class="jira-ticket" ng-repeat="ticket in sampleJiraTickets">
+          <strong>{{ticket.key}}</strong>: {{ticket.summary}}<br>
+          <small>Status: {{ticket.status}}</small>
+        </div>
+      </div>
+    </section>
+
+    <section ng-show="view === 'extranetLogin'">
+      <h2>Extranet Login</h2>
+      <form ng-submit="login('extranet')">
+        <input type="text" placeholder="Username" ng-model="extranet.username" required>
+        <input type="password" placeholder="Password" ng-model="extranet.password" required>
+        <button type="submit">Login</button>
+      </form>
+    </section>
   </div>
 
   <footer>
@@ -85,6 +137,23 @@
         $scope.view = 'home';
         $scope.setView = function(viewName) {
           $scope.view = viewName;
+        };
+
+        $scope.client = {};
+        $scope.extranet = {};
+
+        $scope.sampleJiraTickets = [
+          { key: 'XSQ-101', summary: 'Precision model update for TAAR1', status: 'In Progress' },
+          { key: 'XSQ-108', summary: 'EEG integration layer testing', status: 'To Do' },
+          { key: 'XSQ-115', summary: 'Bug: Genetic profile parser timeout', status: 'Resolved' }
+        ];
+
+        $scope.login = function(type) {
+          if (type === 'client') {
+            alert('Client login submitted for ' + $scope.client.username);
+          } else if (type === 'extranet') {
+            alert('Extranet login submitted for ' + $scope.extranet.username);
+          }
         };
       }]);
   </script>
