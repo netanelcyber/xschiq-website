@@ -2,158 +2,147 @@
 <html lang="en" ng-app="xschiqApp">
 <head>
   <meta charset="UTF-8">
+  <title>Xschiq – AI Precision Psychiatry</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Xschiq – AI-Powered Precision Psychiatry</title>
-  <meta name="description" content="Xschiq is building AI-powered tools to predict individual response to psychiatric medications, including experimental antipsychotics, using multimodal data like EEG, genomics, and digital phenotyping.">
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f8f9fa;
-      color: #212529;
-      line-height: 1.6;
-    }
-    nav {
-      background-color: #212529;
-      padding: 1rem;
-      color: white;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    nav a {
-      color: #fff;
-      text-decoration: none;
-      margin-left: 1rem;
-      cursor: pointer;
-    }
-    .container {
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 1rem;
-    }
-    footer {
-      text-align: center;
-      padding: 1rem;
-      color: #6c757d;
-    }
-    form input {
-      display: block;
-      margin-bottom: 1rem;
-      padding: 0.5rem;
-      width: 100%;
-    }
-    .jira-sample {
-      background: #fff;
-      padding: 1rem;
-      border: 1px solid #ccc;
-      margin-top: 1.5rem;
-    }
-    .jira-sample h3 {
-      margin-bottom: 1rem;
-      font-size: 1.1rem;
-      color: #0d6efd;
-    }
-    .jira-ticket {
-      border-bottom: 1px solid #eee;
-      padding: 0.5rem 0;
-    }
-    .jira-ticket:last-child {
-      border-bottom: none;
-    }
+    body { font-family: sans-serif; background: #f0f2f5; color: #333; }
+    nav { background: #212529; color: white; padding: 1rem; display: flex; justify-content: space-between; }
+    nav a { color: white; margin-left: 1rem; text-decoration: none; cursor: pointer; }
+    .container { max-width: 800px; margin: 2rem auto; padding: 1rem; }
+    footer { text-align: center; margin-top: 2rem; font-size: 0.9rem; color: #888; }
+    input, button { padding: 0.6rem; width: 100%; margin-bottom: 1rem; }
+    textarea { width: 100%; height: 80px; margin-bottom: 1rem; }
+    .jira-ticket { background: #fff; margin: 0.5rem 0; padding: 1rem; border-left: 4px solid #0d6efd; }
+    .hidden { display: none; }
   </style>
 </head>
 <body ng-controller="MainController">
   <nav>
-    <div><strong>Xschiq</strong></div>
+    <strong>Xschiq</strong>
     <div>
       <a ng-click="setView('home')">Home</a>
       <a ng-click="setView('mission')">Mission</a>
       <a ng-click="setView('market')">Market</a>
       <a ng-click="setView('contact')">Contact</a>
-      <a ng-click="setView('clientLogin')">Client Login</a>
-      <a ng-click="setView('extranetLogin')">Extranet</a>
+      <a ng-click="setView('login')">Login</a>
     </div>
   </nav>
 
   <div class="container">
     <section ng-show="view === 'home'">
       <h2>Welcome to Xschiq</h2>
-      <p>AI-Driven Precision Psychiatry: Predicting patient-specific responses to both FDA-approved and experimental antipsychotics through multimodal data integration.</p>
+      <p>AI-powered tools to predict responses to psychiatric medications using multimodal data: EEG, genomics, and behavior.</p>
     </section>
 
     <section ng-show="view === 'mission'">
       <h2>Our Mission</h2>
-      <p>We're building the future of personalized psychiatry using AI. Xschiq helps clinicians and biotech partners make smarter, evidence-based decisions with data from EEG, genomics, imaging, and digital behavior.</p>
+      <p>Xschiq is building the future of personalized psychiatry. We help clinicians use AI for better patient outcomes.</p>
     </section>
 
     <section ng-show="view === 'market'">
       <h2>Market Opportunity</h2>
-      <p>The AI in mental health market is projected to grow from $1.3B in 2024 to over $14B by 2033. Precision psychiatry alone is expected to reach $4.3B. Xschiq sits at the intersection of these booming domains.</p>
+      <p>The mental health AI market is growing rapidly. Xschiq is positioned at the intersection of psychiatry, AI, and data science.</p>
     </section>
 
     <section ng-show="view === 'contact'">
       <h2>Contact</h2>
-      <p>Founder: <strong>Netanel Stern</strong></p>
+      <p>Netanel Stern – Founder</p>
       <p>Email: <a href="mailto:nsh531@gmail.com">nsh531@gmail.com</a></p>
-      <p>Follow us on <a href="https://twitter.com/">Twitter</a> | <a href="https://linkedin.com/">LinkedIn</a></p>
+      <p><a href="https://linkedin.com">LinkedIn</a> | <a href="https://twitter.com">Twitter</a></p>
     </section>
 
-    <section ng-show="view === 'clientLogin'">
-      <h2>Client Login</h2>
-      <form ng-submit="login('client')">
-        <input type="text" placeholder="Username" ng-model="client.username" required>
-        <input type="password" placeholder="Password" ng-model="client.password" required>
-        <button type="submit">Login</button>
-      </form>
+    <section ng-show="view === 'login'">
+      <h2>Login</h2>
+      <input type="text" placeholder="Username" ng-model="login.username">
+      <input type="password" placeholder="Password" ng-model="login.password">
+      <button ng-click="doLogin()">Login</button>
 
-      <div class="jira-sample" ng-if="client.username">
-        <h3>Sample JIRA Issues</h3>
-        <div class="jira-ticket" ng-repeat="ticket in sampleJiraTickets">
-          <strong>{{ticket.key}}</strong>: {{ticket.summary}}<br>
-          <small>Status: {{ticket.status}}</small>
+      <div ng-if="loggedIn">
+        <h3>Encrypted JIRA-Like Issues</h3>
+        <form ng-submit="addTicket()">
+          <input type="text" ng-model="newTicket.title" placeholder="Issue title" required>
+          <textarea ng-model="newTicket.description" placeholder="Issue description" required></textarea>
+          <button type="submit">Add Ticket</button>
+        </form>
+        <div class="jira-ticket" ng-repeat="t in tickets">
+          <strong>{{t.title}}</strong><br>
+          <small>{{t.description}}</small>
         </div>
+        <button ng-click="logout()">Logout</button>
       </div>
-    </section>
-
-    <section ng-show="view === 'extranetLogin'">
-      <h2>Extranet Login</h2>
-      <form ng-submit="login('extranet')">
-        <input type="text" placeholder="Username" ng-model="extranet.username" required>
-        <input type="password" placeholder="Password" ng-model="extranet.password" required>
-        <button type="submit">Login</button>
-      </form>
     </section>
   </div>
 
-  <footer>
-    <p>&copy; 2025 Xschiq. All rights reserved.</p>
-  </footer>
+  <footer>&copy; 2025 Xschiq. All rights reserved.</footer>
 
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
   <script>
     angular.module('xschiqApp', [])
       .controller('MainController', ['$scope', function($scope) {
         $scope.view = 'home';
-        $scope.setView = function(viewName) {
-          $scope.view = viewName;
+        $scope.setView = view => $scope.view = view;
+
+        $scope.login = {};
+        $scope.loggedIn = false;
+        $scope.newTicket = {};
+        $scope.tickets = [];
+
+        const STORAGE_KEY = "xschiq_tickets";
+
+        async function getKey() {
+          const raw = new TextEncoder().encode("12345678901234567890123456789012");
+          return await crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["encrypt", "decrypt"]);
+        }
+
+        async function encryptData(data) {
+          const key = await getKey();
+          const iv = crypto.getRandomValues(new Uint8Array(12));
+          const encoded = new TextEncoder().encode(JSON.stringify(data));
+          const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoded);
+          return JSON.stringify({ iv: Array.from(iv), data: Array.from(new Uint8Array(encrypted)) });
+        }
+
+        async function decryptData(json) {
+          const key = await getKey();
+          const obj = JSON.parse(json);
+          const iv = new Uint8Array(obj.iv);
+          const data = new Uint8Array(obj.data);
+          const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, data);
+          return JSON.parse(new TextDecoder().decode(decrypted));
+        }
+
+        async function loadTickets() {
+          const stored = localStorage.getItem(STORAGE_KEY);
+          if (!stored) return;
+          try {
+            $scope.tickets = await decryptData(stored);
+            $scope.$apply();
+          } catch (e) {
+            alert("Error decrypting saved tickets.");
+          }
+        }
+
+        $scope.doLogin = async function () {
+          if ($scope.login.username === 'admin' && $scope.login.password === 'xschiq') {
+            $scope.loggedIn = true;
+            await loadTickets();
+          } else {
+            alert("Invalid credentials.");
+          }
         };
 
-        $scope.client = {};
-        $scope.extranet = {};
+        $scope.logout = () => {
+          $scope.loggedIn = false;
+          $scope.login = {};
+          $scope.tickets = [];
+        };
 
-        $scope.sampleJiraTickets = [
-          { key: 'XSQ-101', summary: 'Precision model update for TAAR1', status: 'In Progress' },
-          { key: 'XSQ-108', summary: 'EEG integration layer testing', status: 'To Do' },
-          { key: 'XSQ-115', summary: 'Bug: Genetic profile parser timeout', status: 'Resolved' }
-        ];
-
-        $scope.login = function(type) {
-          if (type === 'client') {
-            alert('Client login submitted for ' + $scope.client.username);
-          } else if (type === 'extranet') {
-            alert('Extranet login submitted for ' + $scope.extranet.username);
-          }
+        $scope.addTicket = async function () {
+          $scope.tickets.push({ title: $scope.newTicket.title, description: $scope.newTicket.description });
+          const encrypted = await encryptData($scope.tickets);
+          localStorage.setItem(STORAGE_KEY, encrypted);
+          $scope.newTicket = {};
         };
       }]);
   </script>
