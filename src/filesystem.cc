@@ -37,9 +37,10 @@ class PosixReadableFile : public ReadableFile {
                 : new std::ifstream(WPATH(filename),
                                     is_binary ? std::ios::binary | std::ios::in
                                               : std::ios::in)) {
-    if (!*is_)
+    if (!*is_ || (is_->peek() && is_->fail())) {
       status_ = util::StatusBuilder(util::StatusCode::kNotFound, GTL_LOC)
                 << "\"" << filename.data() << "\": " << util::StrError(errno);
+    }
   }
 
   ~PosixReadableFile() {
