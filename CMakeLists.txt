@@ -98,8 +98,8 @@ endif()
 
 if (MSVC)
   add_definitions("/wd4267 /wd4244 /wd4305 /Zc:strictStrings /utf-8")
-  # TODO(taku): Update protobuf to deprecate C++17 std::is_pod
-  add_compile_definitions(_SILENCE_CXX20_IS_POD_DEPRECATION_WARNING)
+  # TODO(taku): Update protobuf to deprecate C++17
+  add_compile_definitions(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
   if (SPM_ENABLE_MSVC_MT_BUILD)
     string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_DEBUG          ${CMAKE_CXX_FLAGS_DEBUG})
     string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_MINSIZEREL     ${CMAKE_CXX_FLAGS_MINSIZEREL})
