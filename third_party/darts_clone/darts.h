@@ -1457,12 +1457,12 @@ class DoubleArrayBuilder {
   void clear();
 
  private:
-  enum { BLOCK_SIZE = 256 };
-  enum { NUM_EXTRA_BLOCKS = 16 };
-  enum { NUM_EXTRAS = BLOCK_SIZE * NUM_EXTRA_BLOCKS };
+  static constexpr int BLOCK_SIZE = 256;
+  static constexpr int NUM_EXTRA_BLOCKS = 16;
+  static constexpr int NUM_EXTRAS = BLOCK_SIZE * NUM_EXTRA_BLOCKS;
 
-  enum { UPPER_MASK = 0xFF << 21 };
-  enum { LOWER_MASK = 0xFF };
+  static constexpr int  UPPER_MASK = 0xFF << 21;
+  static constexpr int  LOWER_MASK = 0xFF;
 
   typedef DoubleArrayBuilderUnit unit_type;
   typedef DoubleArrayBuilderExtraUnit extra_type;
