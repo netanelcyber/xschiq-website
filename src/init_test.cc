@@ -17,6 +17,8 @@
 #include "common.h"
 #include "testharness.h"
 
+#ifndef _USE_EXTERNAL_ABSL
+
 ABSL_FLAG(int32_t, int32_f, 10, "int32_flags");
 ABSL_FLAG(bool, bool_f, false, "bool_flags");
 ABSL_FLAG(int64_t, int64_f, 9223372036854775807LL, "int64_flags");
@@ -87,8 +89,6 @@ TEST(FlagsTest, ParseCommandLineFlagsTest3) {
   EXPECT_EQ(1, argc);
 }
 
-#ifndef _USE_EXTERNAL_ABSL
-
 TEST(FlagsTest, ParseCommandLineFlagsHelpTest) {
   const char *kFlags[] = {"program", "--help"};
   int argc = arraysize(kFlags);
@@ -143,5 +143,6 @@ TEST(FlagsTest, ParseCommandLineFlagsEmptyIntArgs) {
   char **argv = const_cast<char **>(kFlags);
   EXPECT_DEATH(ParseCommandLineFlags(kFlags[0], &argc, &argv), );
 }
-#endif  // _USE_EXTERNAL_ABSL
 }  // namespace absl
+
+#endif  // _USE_EXTERNAL_ABSL

@@ -23,11 +23,15 @@
 #include <utility>
 #include <vector>
 
+#ifdef _USE_EXTERNAL_ABSL
+#include "third_party/absl/strings/string_view.h"
+#else  // _USE_EXTERNAL_ABSL
 #ifndef SWIG
 namespace absl {
 using std::string_view;
 }  // namespace absl
 #endif  // SWIG
+#endif  // _USE_EXTERNAL_ABSL
 
 namespace sentencepiece {
 namespace util {
