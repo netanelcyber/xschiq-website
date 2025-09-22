@@ -153,11 +153,11 @@ Builder::Chars Normalize(const Builder::CharsMap &chars_map,
   return normalized;
 }
 
-bool IsValidNormalizerData(absl::string_view blob_data) {
+util::Status IsValidNormalizerData(absl::string_view blob_data) {
   NormalizerSpec spec;
   spec.set_precompiled_charsmap(blob_data.data(), blob_data.size());
   const Normalizer normalizer(spec);
-  return normalizer.status().ok();
+  return normalizer.status();
 }
 
 }  // namespace
@@ -223,7 +223,7 @@ util::Status Builder::CompileCharsMap(const CharsMap &chars_map,
   absl::string_view trie_blob(static_cast<const char *>(trie.array()),
                               trie.size() * trie.unit_size());
   *output = Normalizer::EncodePrecompiledCharsMap(trie_blob, normalized);
-  CHECK_OR_RETURN(IsValidNormalizerData(*output));
+  RETURN_IF_ERROR(IsValidNormalizerData(*output));
 
   LOG(INFO) << "Generated normalizer blob. size=" << output->size();
 
@@ -300,8 +300,7 @@ util::Status Builder::GetPrecompiledCharsMap(absl::string_view name,
     const auto *blob = &kNormalizationRules_blob[i];
     if (blob->name == name) {
       output->assign(blob->data, blob->size);
-      CHECK_OR_RETURN(IsValidNormalizerData(*output));
-      return util::OkStatus();
+      return IsValidNormalizerData(*output);
     }
   }
 #else   // DISABLE_EMBEDDED_DATA
@@ -311,8 +310,7 @@ util::Status Builder::GetPrecompiledCharsMap(absl::string_view name,
     auto input = filesystem::NewReadableFile(filename, true /* is binary */);
     if (input->status().ok()) {
       input->ReadAll(output);
-      CHECK_OR_RETURN(IsValidNormalizerData(*output));
-      return util::OkStatus();
+      return IsValidNormalizerData(*output);
     }
   }
 #endif  // DISABLE_EMBEDDED_DATA
