@@ -293,6 +293,13 @@ util::Status Builder::GetPrecompiledCharsMap(absl::string_view name,
     return util::OkStatus();
   }
 
+  if (!std::all_of(name.begin(), name.end(), [](auto c) {
+        return (c >= 'a' && c <= 'z') || c == '_' || c == '-';
+      })) {
+    return util::StatusBuilder(util::StatusCode::kInvalidArgument, GTL_LOC)
+           << "Invalid charsmap name " << name;
+  }
+
   std::string result;
 
 #ifndef DISABLE_EMBEDDED_DATA

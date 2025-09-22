@@ -74,11 +74,11 @@ inline uint32_t Swap32(uint32_t x) {
 }  // namespace util
 
 constexpr bool is_bigendian() {
-#ifdef IS_BIGENDIAN
+#ifdef IS_BIG_ENDIAN
   return true;
-#else   // IS_BIGENDIAN
+#else   // IS_BIG_ENDIAN
   return false;
-#endif  // IS_BIGENDIAN
+#endif  // IS_BIG_ENDIAN
 }
 
 namespace error {
