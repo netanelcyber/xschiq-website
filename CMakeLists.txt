@@ -50,7 +50,7 @@ if(WIN32)
   set(SPM_ENABLE_SHARED OFF)
 endif()
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if((CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND
@@ -98,8 +98,6 @@ endif()
 
 if (MSVC)
   add_definitions("/wd4267 /wd4244 /wd4305 /Zc:strictStrings /utf-8")
-  # TODO(taku): Update protobuf to deprecate C++17
-  add_compile_definitions(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
   if (SPM_ENABLE_MSVC_MT_BUILD)
     string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_DEBUG          ${CMAKE_CXX_FLAGS_DEBUG})
     string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_MINSIZEREL     ${CMAKE_CXX_FLAGS_MINSIZEREL})
