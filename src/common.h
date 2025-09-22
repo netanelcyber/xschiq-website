@@ -62,9 +62,15 @@ static constexpr uint32_t kUnicodeError = 0xFFFD;
 
 namespace sentencepiece {
 namespace util {
-#ifndef OS_WIN
-inline uint32_t Swap32(uint32_t x) { return __builtin_bswap32(x); }
+
+inline uint32_t Swap32(uint32_t x) {
+#ifdef OS_WIN
+  return _byteswap_ulong(x);
+#else   // OS_WIN
+  return __builtin_bswap32(x);
 #endif  // OS_WIN
+}
+
 }  // namespace util
 
 constexpr bool is_bigendian() {
