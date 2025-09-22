@@ -47,14 +47,12 @@ Normalizer::~Normalizer() {}
 
 void Normalizer::Init() {
   absl::string_view index = spec_->precompiled_charsmap();
+
   if (!index.empty()) {
     absl::string_view trie_blob;
-#ifdef IS_BIG_ENDIAN
     status_ = DecodePrecompiledCharsMap(index, &trie_blob, &normalized_,
                                         &precompiled_charsmap_buffer_);
-#else
-    status_ = DecodePrecompiledCharsMap(index, &trie_blob, &normalized_);
-#endif
+
     if (!status_.ok()) return;
 
     // Reads the body of double array.
@@ -260,10 +258,10 @@ std::string Normalizer::EncodePrecompiledCharsMap(
   blob.append(string_util::EncodePOD<uint32_t>(trie_blob.size()));
   blob.append(trie_blob.data(), trie_blob.size());
 
-#ifdef IS_BIG_ENDIAN
-  uint32_t *data = reinterpret_cast<uint32_t *>(blob.data());
-  for (int i = 0; i < blob.size() / 4; ++i) data[i] = util::Swap32(data[i]);
-#endif
+  if constexpr (is_bigendian()) {
+    uint32_t *data = reinterpret_cast<uint32_t *>(blob.data());
+    for (int i = 0; i < blob.size() / 4; ++i) data[i] = util::Swap32(data[i]);
+  }
 
   blob.append(normalized.data(), normalized.size());
 
@@ -282,9 +280,9 @@ util::Status Normalizer::DecodePrecompiledCharsMap(
     return util::InternalError("Blob for normalization rule is broken.");
   }
 
-#ifdef IS_BIG_ENDIAN
-  trie_blob_size = util::Swap32(trie_blob_size);
-#endif
+  if constexpr (is_bigendian()) {
+    trie_blob_size = util::Swap32(trie_blob_size);
+  }
 
   if (trie_blob_size >= blob.size()) {
     return util::InternalError("Trie data size exceeds the input blob size.");
@@ -297,16 +295,17 @@ util::Status Normalizer::DecodePrecompiledCharsMap(
 
   blob.remove_prefix(sizeof(trie_blob_size));
 
-#ifdef IS_BIG_ENDIAN
-  CHECK_OR_RETURN(buffer);
-  buffer->assign(blob.data(), trie_blob_size);
-  uint32_t *data =
-      reinterpret_cast<uint32_t *>(const_cast<char *>(buffer->data()));
-  for (int i = 0; i < buffer->size() / 4; ++i) data[i] = util::Swap32(data[i]);
-  *trie_blob = absl::string_view(buffer->data(), trie_blob_size);
-#else
-  *trie_blob = absl::string_view(blob.data(), trie_blob_size);
-#endif
+  if constexpr (is_bigendian()) {
+    CHECK_OR_RETURN(buffer);
+    buffer->assign(blob.data(), trie_blob_size);
+    uint32_t *data =
+        reinterpret_cast<uint32_t *>(const_cast<char *>(buffer->data()));
+    for (int i = 0; i < buffer->size() / 4; ++i)
+      data[i] = util::Swap32(data[i]);
+    *trie_blob = absl::string_view(buffer->data(), trie_blob_size);
+  } else {
+    *trie_blob = absl::string_view(blob.data(), trie_blob_size);
+  }
 
   blob.remove_prefix(trie_blob_size);
   *normalized = absl::string_view(blob.data(), blob.size());

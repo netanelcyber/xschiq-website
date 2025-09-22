@@ -45,16 +45,6 @@ typedef uint32_t char32;
 
 static constexpr uint32_t kUnicodeError = 0xFFFD;
 
-template <typename T, size_t N>
-char (&ArraySizeHelper(T (&array)[N]))[N];
-
-#ifndef _MSC_VER
-template <typename T, size_t N>
-char (&ArraySizeHelper(const T (&array)[N]))[N];
-#endif  // !_MSC_VER
-
-#define arraysize(array) (sizeof(ArraySizeHelper(array)))
-
 #if defined(_FREEBSD)
 #include <sys/endian.h>
 #endif
@@ -76,6 +66,14 @@ namespace util {
 inline uint32_t Swap32(uint32_t x) { return __builtin_bswap32(x); }
 #endif  // OS_WIN
 }  // namespace util
+
+constexpr bool is_bigendian() {
+#ifdef IS_BIGENDIAN
+  return true;
+#else   // IS_BIGENDIAN
+  return false;
+#endif  // IS_BIGENDIAN
+}
 
 namespace error {
 
@@ -143,7 +141,6 @@ inline const char *BaseName(const char *path) {
                               << "(" << __LINE__ << ") [" << #condition       \
                               << "] "
 
-#define CHECK_STREQ(a, b) CHECK_EQ(std::string(a), std::string(b))
 #define CHECK_EQ(a, b) CHECK((a) == (b))
 #define CHECK_NE(a, b) CHECK((a) != (b))
 #define CHECK_GE(a, b) CHECK((a) >= (b))
