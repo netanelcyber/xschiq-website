@@ -32,10 +32,6 @@
 #include "sentencepiece_processor.h"
 #include "third_party/absl/strings/string_view.h"
 
-#ifdef SPM_NO_THREADLOCAL
-#include <pthread.h>
-#endif
-
 namespace sentencepiece {
 template <typename T>
 std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
@@ -314,7 +310,8 @@ class ReservoirSampler {
  public:
   explicit ReservoirSampler(std::vector<T> *sampled, uint64_t size)
       : sampled_(sampled), size_(size), engine_(GetRandomGeneratorSeed()) {}
-  explicit ReservoirSampler(std::vector<T> *sampled, uint64_t size, uint64_t seed)
+  explicit ReservoirSampler(std::vector<T> *sampled, uint64_t size,
+                            uint64_t seed)
       : sampled_(sampled), size_(size), engine_(seed) {}
   virtual ~ReservoirSampler() {}
 

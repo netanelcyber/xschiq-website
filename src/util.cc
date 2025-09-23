@@ -179,35 +179,6 @@ std::string UnicodeTextToUTF8(const UnicodeText &utext) {
 }  // namespace string_util
 
 namespace random {
-#ifdef SPM_NO_THREADLOCAL
-namespace {
-class RandomGeneratorStorage {
- public:
-  RandomGeneratorStorage() {
-    pthread_key_create(&key_, &RandomGeneratorStorage::Delete);
-  }
-  virtual ~RandomGeneratorStorage() { pthread_key_delete(key_); }
-
-  std::mt19937 *Get() {
-    auto *result = static_cast<std::mt19937 *>(pthread_getspecific(key_));
-    if (result == nullptr) {
-      result = new std::mt19937(GetRandomGeneratorSeed());
-      pthread_setspecific(key_, result);
-    }
-    return result;
-  }
-
- private:
-  static void Delete(void *value) { delete static_cast<std::mt19937 *>(value); }
-  pthread_key_t key_;
-};
-}  // namespace
-
-std::mt19937 *GetRandomGenerator() {
-  static RandomGeneratorStorage *storage = new RandomGeneratorStorage;
-  return storage->Get();
-}
-#else
 std::mt19937 *GetRandomGenerator() {
   // Thread-locals occupy stack space in every thread ever created by the
   // program, even if that thread never uses the thread-local variable.
@@ -222,7 +193,6 @@ std::mt19937 *GetRandomGenerator() {
       std::make_unique<std::mt19937>(GetRandomGeneratorSeed());
   return mt.get();
 }
-#endif
 }  // namespace random
 
 namespace util {

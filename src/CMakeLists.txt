@@ -251,10 +251,6 @@ set_target_properties(sentencepiece_train-static PROPERTIES OUTPUT_NAME "sentenc
 
 if (NOT MSVC)
   set(CMAKE_CXX_FLAGS "-O3 -Wall -fPIC ${CMAKE_CXX_FLAGS}")
-  if (SPM_NO_THREADLOCAL)
-    add_definitions(-DSPM_NO_THREADLOCAL=1)
-    add_definitions(-DGOOGLE_PROTOBUF_NO_THREADLOCAL=1)
-  endif()
   set_source_files_properties(
     sentencepiece.pb.cc sentencepiece_model.pb.cc
     PROPERTIES COMPILE_FLAGS "-Wno-misleading-indentation")

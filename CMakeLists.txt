@@ -27,7 +27,6 @@ option(SPM_ENABLE_SHARED "Builds shared libaries in addition to static libraries
 option(SPM_BUILD_TEST "Builds test binaries." OFF)
 option(SPM_ENABLE_TCMALLOC "Enable TCMalloc if available." ON)
 option(SPM_TCMALLOC_STATIC "Link static library of TCMALLOC." OFF)
-option(SPM_NO_THREADLOCAL "Disable thread_local operator" OFF)
 option(SPM_ENABLE_MSVC_MT_BUILD, "Use /MT flag in MSVC build" OFF)
 option(SPM_CROSS_SYSTEM_PROCESSOR, "Override system processor" "")
 option(SPM_DISABLE_EMBEDDED_DATA, "Disable to embed pre-compiled data." OFF)
