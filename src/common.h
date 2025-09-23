@@ -117,15 +117,15 @@ enum LogSeverity {
 int GetMinLogLevel();
 void SetMinLogLevel(int v);
 
-inline const char *BaseName(const char *path) {
+inline absl::string_view BaseName(absl::string_view path) {
 #ifdef OS_WIN
-  const char *p = strrchr(path, '\\');
+  const size_t pos = path.find_last_of('\\');
 #else
-  const char *p = strrchr(path, '/');
+  const size_t pos = path.find_last_of('/');
 #endif
-  if (p == nullptr) return path;
-  return p + 1;
+  return pos == absl::string_view::npos ? path : path.substr(pos + 1);
 }
+
 }  // namespace logging
 }  // namespace sentencepiece
 
