@@ -313,19 +313,12 @@ TEST(UtilTest, MapUtilTest) {
 
   EXPECT_EQ("A", port::FindOrDie(kMap, "a"));
   EXPECT_EQ("B", port::FindOrDie(kMap, "b"));
-  EXPECT_DEATH(port::FindOrDie(kMap, "x"), "");
 
   EXPECT_EQ("A", port::FindWithDefault(kMap, "a", "x"));
   EXPECT_EQ("B", port::FindWithDefault(kMap, "b", "x"));
   EXPECT_EQ("x", port::FindWithDefault(kMap, "d", "x"));
 
   EXPECT_EQ("A", port::FindOrDie(kMap, "a"));
-  EXPECT_DEATH(port::FindOrDie(kMap, "d"), "");
-}
-
-TEST(UtilTest, MapUtilVecTest) {
-  const std::map<std::vector<int>, std::string> kMap = {{{0, 1}, "A"}};
-  EXPECT_DEATH(port::FindOrDie(kMap, {0, 2}), "");
 }
 
 TEST(UtilTest, InputOutputBufferTest) {

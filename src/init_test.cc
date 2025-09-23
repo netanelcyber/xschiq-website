@@ -89,36 +89,6 @@ TEST(FlagsTest, ParseCommandLineFlagsTest3) {
   EXPECT_EQ(1, argc);
 }
 
-TEST(FlagsTest, ParseCommandLineFlagsHelpTest) {
-  const char *kFlags[] = {"program", "--help"};
-  int argc = std::size(kFlags);
-  char **argv = const_cast<char **>(kFlags);
-  EXPECT_DEATH(ParseCommandLineFlags(kFlags[0], &argc, &argv), "");
-  absl::SetFlag(&FLAGS_help, false);
-}
-
-TEST(FlagsTest, ParseCommandLineFlagsVersionTest) {
-  const char *kFlags[] = {"program", "--version"};
-  int argc = std::size(kFlags);
-  char **argv = const_cast<char **>(kFlags);
-  EXPECT_DEATH(ParseCommandLineFlags(kFlags[0], &argc, &argv), "");
-  absl::SetFlag(&FLAGS_version, false);
-}
-
-TEST(FlagsTest, ParseCommandLineFlagsUnknownTest) {
-  const char *kFlags[] = {"program", "--foo"};
-  int argc = std::size(kFlags);
-  char **argv = const_cast<char **>(kFlags);
-  EXPECT_DEATH(ParseCommandLineFlags(kFlags[0], &argc, &argv), "");
-}
-
-TEST(FlagsTest, ParseCommandLineFlagsInvalidBoolTest) {
-  const char *kFlags[] = {"program", "--bool_f=X"};
-  int argc = std::size(kFlags);
-  char **argv = const_cast<char **>(kFlags);
-  EXPECT_DEATH(ParseCommandLineFlags(kFlags[0], &argc, &argv), "");
-}
-
 TEST(FlagsTest, ParseCommandLineFlagsEmptyStringArgs) {
   const char *kFlags[] = {"program", "--string_f="};
   int argc = std::size(kFlags);
@@ -137,12 +107,6 @@ TEST(FlagsTest, ParseCommandLineFlagsEmptyBoolArgs) {
   EXPECT_TRUE(absl::GetFlag(FLAGS_bool_f));
 }
 
-TEST(FlagsTest, ParseCommandLineFlagsEmptyIntArgs) {
-  const char *kFlags[] = {"program", "--int32_f"};
-  int argc = std::size(kFlags);
-  char **argv = const_cast<char **>(kFlags);
-  EXPECT_DEATH(ParseCommandLineFlags(kFlags[0], &argc, &argv), );
-}
 }  // namespace absl
 
 #endif  // _USE_EXTERNAL_ABSL

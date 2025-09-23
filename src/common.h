@@ -85,9 +85,6 @@ namespace error {
 
 void Abort();
 void Exit(int code);
-void SetTestCounter(int c);
-void ResetTestMode();
-bool GetTestCounter();
 
 class Die {
  public:

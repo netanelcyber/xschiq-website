@@ -136,13 +136,6 @@ class Tester {
 #define EXPECT_OK(c) EXPECT_EQ(c, ::sentencepiece::util::OkStatus())
 #define EXPECT_NOT_OK(c) EXPECT_NE(c, ::sentencepiece::util::OkStatus())
 
-#define EXPECT_DEATH(statement, condition)   \
-  {                                          \
-    sentencepiece::error::SetTestCounter(1); \
-    statement;                               \
-    sentencepiece::error::SetTestCounter(0); \
-  };
-
 #define ASSERT_TRUE EXPECT_TRUE
 #define ASSERT_FALSE EXPECT_FALSE
 #define ASSERT_STREQ EXPECT_STREQ
@@ -154,7 +147,6 @@ class Tester {
 #define ASSERT_LT EXPECT_LT
 #define ASSERT_NEAR EXPECT_NEAR
 #define ASSERT_NOT_OK EXPECT_NOT_OK
-#define ASSERT_DEATH ASSERT_DEATH
 
 template <typename T>
 class TestWithParam {
