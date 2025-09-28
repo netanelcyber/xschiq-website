@@ -37,9 +37,12 @@ void ParseCommandLineFlags(const char *usage, int *argc, char ***argv,
   absl::SetProgramUsageMessage(absl::StrCat(PACKAGE_STRING, " ", VERSION,
                                             "\n\n", "Usage: ", *argv[0],
                                             " [options] files"));
-  absl::SetFlagsUsageConfig({.version_string = [&]() {
+
+  absl::FlagsUsageConfig usage_config;
+  usage_config.version_string = [&]() {
     return absl::StrCat(PACKAGE_STRING, " ", VERSION, "\n");
-  }});
+  };
+  absl::SetFlagsUsageConfig(usage_config);
 
   const auto unused_args = absl::ParseCommandLine(*argc, *argv);
 
