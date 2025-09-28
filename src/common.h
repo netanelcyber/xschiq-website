@@ -15,17 +15,12 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-
+#include <cstdint>
 #include <iostream>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
 
-#include "config.h"
+#include "third_party/absl/log/check.h"
+#include "third_party/absl/log/globals.h"
+#include "third_party/absl/log/log.h"
 #include "third_party/absl/strings/string_view.h"
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
@@ -41,117 +36,26 @@
 #include <windows.h>
 #endif
 
-typedef uint32_t char32;
+using char32 = uint32_t;
 
 static constexpr uint32_t kUnicodeError = 0xFFFD;
 
-#if defined(_FREEBSD)
-#include <sys/endian.h>
-#endif
-#if !defined(__APPLE__) && !defined(_WIN32) && !defined(_FREEBSD) && \
-    !defined(_AIX)
-#include <endian.h>
-#if BYTE_ORDER == __BIG_ENDIAN
-#define IS_BIG_ENDIAN
-#endif
-#endif
-
-#if defined(_AIX) && BYTE_ORDER == BIG_ENDIAN
-#define IS_BIG_ENDIAN
-#endif
-
-namespace sentencepiece {
-namespace util {
-
-inline uint32_t Swap32(uint32_t x) {
-#ifdef OS_WIN
-  return _byteswap_ulong(x);
-#else   // OS_WIN
-  return __builtin_bswap32(x);
-#endif  // OS_WIN
-}
-
-}  // namespace util
-
-constexpr bool is_bigendian() {
-#ifdef IS_BIG_ENDIAN
-  return true;
-#else   // IS_BIG_ENDIAN
-  return false;
-#endif  // IS_BIG_ENDIAN
-}
-
-namespace error {
-
-void Abort();
-void Exit(int code);
-
-class Die {
- public:
-  explicit Die(bool die) : die_(die) {}
-  ~Die() {
-    std::cerr << std::endl;
-    if (die_) {
-      Abort();
-    }
-  }
-  int operator&(std::ostream &) { return 0; }
-
- private:
-  bool die_;
-};
-}  // namespace error
-
-namespace logging {
-enum LogSeverity {
-  LOG_INFO = 0,
-  LOG_WARNING = 1,
-  LOG_ERROR = 2,
-  LOG_FATAL = 3,
-  LOG_SEVERITY_SIZE = 4,
-};
-
-int GetMinLogLevel();
-void SetMinLogLevel(int v);
-
-inline absl::string_view BaseName(absl::string_view path) {
-#ifdef OS_WIN
-  const size_t pos = path.find_last_of('\\');
-#else
-  const size_t pos = path.find_last_of('/');
-#endif
-  return pos == absl::string_view::npos ? path : path.substr(pos + 1);
-}
-
-}  // namespace logging
-}  // namespace sentencepiece
-
-#define LOG(severity)                                                        \
-  (::sentencepiece::logging::GetMinLogLevel() >                              \
-   ::sentencepiece::logging::LOG_##severity)                                 \
-      ? 0                                                                    \
-      : ::sentencepiece::error::Die(                                         \
-            ::sentencepiece::logging::LOG_##severity >=                      \
-            ::sentencepiece::logging::LOG_FATAL) &                           \
-            std::cerr << ::sentencepiece::logging::BaseName(__FILE__) << "(" \
-                      << __LINE__ << ") "                                    \
-                      << "LOG(" << #severity << ") "
-
-#define CHECK(condition)                                                      \
-  (condition) ? 0                                                             \
-              : ::sentencepiece::error::Die(true) &                           \
-                    std::cerr << ::sentencepiece::logging::BaseName(__FILE__) \
-                              << "(" << __LINE__ << ") [" << #condition       \
-                              << "] "
-
-#define CHECK_EQ(a, b) CHECK((a) == (b))
-#define CHECK_NE(a, b) CHECK((a) != (b))
-#define CHECK_GE(a, b) CHECK((a) >= (b))
-#define CHECK_LE(a, b) CHECK((a) <= (b))
-#define CHECK_GT(a, b) CHECK((a) > (b))
-#define CHECK_LT(a, b) CHECK((a) < (b))
-
 #define FRIEND_TEST(a, b) friend class a##_Test_##b;
+
+#define RETURN_IF_ERROR(expr)          \
+  do {                                 \
+    const auto _status = expr;         \
+    if (!_status.ok()) return _status; \
+  } while (0)
+
+// CHECK_OK must work on util::Status, not absl::Status.
+#if defined CHECK_OK
+#undef CHECK_OK
+#endif  // CHECK_OK
+
+#if defined QCHECK_OK
+#undef QCHECK_OK
+#endif  // QCHECK_OK
 
 #define CHECK_OK(expr)                         \
   do {                                         \
@@ -159,16 +63,6 @@ inline absl::string_view BaseName(absl::string_view path) {
     CHECK(_status.ok()) << _status.ToString(); \
   } while (0)
 
-#define CHECK_NOT_OK(expr)                      \
-  do {                                          \
-    const auto _status = expr;                  \
-    CHECK(!_status.ok()) << _status.ToString(); \
-  } while (0)
-
-#define RETURN_IF_ERROR(expr)          \
-  do {                                 \
-    const auto _status = expr;         \
-    if (!_status.ok()) return _status; \
-  } while (0)
+#define QCHECK_OK CHECK_OK
 
 #endif  // COMMON_H_

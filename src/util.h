@@ -29,6 +29,7 @@
 #include <vector>
 
 #include "common.h"
+#include "config.h"
 #include "sentencepiece_processor.h"
 #include "third_party/absl/strings/string_view.h"
 
@@ -214,8 +215,10 @@ template <class Collection>
 const typename Collection::value_type::second_type &FindOrDie(
     const Collection &collection,
     const typename Collection::value_type::first_type &key) {
-  typename Collection::const_iterator it = collection.find(key);
-  CHECK(it != collection.end()) << "Map key not found: " << key;
+  const auto it = collection.find(key);
+  //  if (it == collection.end()) {
+  //    LOG(FATAL) << "Map key not found: " << key;
+  //  }
   return it->second;
 }
 
@@ -224,11 +227,10 @@ const typename Collection::value_type::second_type &FindWithDefault(
     const Collection &collection,
     const typename Collection::value_type::first_type &key,
     const typename Collection::value_type::second_type &value) {
-  typename Collection::const_iterator it = collection.find(key);
-  if (it == collection.end()) {
-    return value;
+  if (const auto it = collection.find(key); it != collection.end()) {
+    return it->second;
   }
-  return it->second;
+  return value;
 }
 
 template <class Collection>
@@ -340,6 +342,37 @@ class ReservoirSampler {
 }  // namespace random
 
 namespace util {
+
+#if defined(_FREEBSD)
+#include <sys/endian.h>
+#endif
+#if !defined(__APPLE__) && !defined(_WIN32) && !defined(_FREEBSD) && \
+    !defined(_AIX)
+#include <endian.h>
+#if BYTE_ORDER == __BIG_ENDIAN
+#define IS_BIG_ENDIAN
+#endif
+#endif
+
+#if defined(_AIX) && BYTE_ORDER == BIG_ENDIAN
+#define IS_BIG_ENDIAN
+#endif
+
+constexpr bool is_bigendian() {
+#ifdef IS_BIG_ENDIAN
+  return true;
+#else   // IS_BIG_ENDIAN
+  return false;
+#endif  // IS_BIG_ENDIAN
+}
+
+inline uint32_t Swap32(uint32_t x) {
+#ifdef OS_WIN
+  return _byteswap_ulong(x);
+#else   // OS_WIN
+  return __builtin_bswap32(x);
+#endif  // OS_WIN
+}
 
 inline std::string JoinPath(absl::string_view path) {
   return std::string(path.data(), path.size());

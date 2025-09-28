@@ -22,12 +22,11 @@
 namespace sentencepiece {
 
 namespace {
-constexpr unsigned int kDefaultSeed = static_cast<unsigned int>(-1);
-static std::atomic<unsigned int> g_seed = kDefaultSeed;
-static std::atomic<int> g_minloglevel = 0;
+constexpr uint32_t kDefaultSeed = static_cast<uint32_t>(-1);
+static std::atomic<uint32_t> g_seed = kDefaultSeed;
 }  // namespace
 
-void SetRandomGeneratorSeed(unsigned int seed) {
+void SetRandomGeneratorSeed(uint32_t seed) {
   if (seed != kDefaultSeed) g_seed.store(seed);
 }
 
@@ -57,12 +56,9 @@ void SetDataDir(absl::string_view data_dir) {
   std::atomic_store(GetSharedDataDir(), std::move(shared_data_dir));
 }
 
-namespace logging {
-int GetMinLogLevel() { return g_minloglevel.load(); }
-void SetMinLogLevel(int v) { g_minloglevel.store(v); }
-}  // namespace logging
-
-void SetMinLogLevel(int v) { logging::SetMinLogLevel(v); }
+void SetMinLogLevel(int v) {
+  absl::SetMinLogLevel(static_cast<absl::LogSeverityAtLeast>(v));
+}
 
 namespace string_util {
 

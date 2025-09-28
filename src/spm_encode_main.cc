@@ -65,22 +65,23 @@ int main(int argc, char *argv[]) {
     rest_args.push_back(absl::GetFlag(FLAGS_input));
   }
 
-  if (absl::GetFlag(FLAGS_random_seed) != std::numeric_limits<uint32_t>::max()) {
+  if (absl::GetFlag(FLAGS_random_seed) !=
+      std::numeric_limits<uint32_t>::max()) {
     sentencepiece::SetRandomGeneratorSeed(absl::GetFlag(FLAGS_random_seed));
   }
 
   if (rest_args.empty())
     rest_args.push_back("");  // empty means that reading from stdin.
 
-  CHECK(!absl::GetFlag(FLAGS_model).empty());
+  QCHECK(!absl::GetFlag(FLAGS_model).empty());
 
   sentencepiece::SentencePieceProcessor sp;
   CHECK_OK(sp.Load(absl::GetFlag(FLAGS_model)));
   CHECK_OK(sp.SetEncodeExtraOptions(absl::GetFlag(FLAGS_extra_options)));
 
   if (!absl::GetFlag(FLAGS_vocabulary).empty()) {
-    CHECK_OK(sp.LoadVocabulary(absl::GetFlag(FLAGS_vocabulary),
-                               absl::GetFlag(FLAGS_vocabulary_threshold)));
+    QCHECK_OK(sp.LoadVocabulary(absl::GetFlag(FLAGS_vocabulary),
+                                absl::GetFlag(FLAGS_vocabulary_threshold)));
   }
 
   auto output =
@@ -159,7 +160,7 @@ int main(int argc, char *argv[]) {
 
   for (const auto &filename : rest_args) {
     auto input = sentencepiece::filesystem::NewReadableFile(filename);
-    CHECK_OK(input->status());
+    QCHECK_OK(input->status());
     while (input->ReadLine(&line)) {
       process(line);
     }

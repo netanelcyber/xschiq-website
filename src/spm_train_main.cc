@@ -68,7 +68,8 @@ ABSL_FLAG(int32_t, num_sub_iterations, kDefaultTrainerSpec.num_sub_iterations(),
 ABSL_FLAG(int32_t, max_sentencepiece_length,
           kDefaultTrainerSpec.max_sentencepiece_length(),
           "maximum length of sentence piece");
-ABSL_FLAG(int32_t, max_sentence_length, kDefaultTrainerSpec.max_sentence_length(),
+ABSL_FLAG(int32_t, max_sentence_length,
+          kDefaultTrainerSpec.max_sentence_length(),
           "maximum length of sentence in byte");
 ABSL_FLAG(bool, split_by_unicode_script,
           kDefaultTrainerSpec.split_by_unicode_script(),
@@ -169,10 +170,11 @@ int main(int argc, char *argv[]) {
   sentencepiece::NormalizerSpec normalizer_spec;
   NormalizerSpec denormalizer_spec;
 
-  CHECK(!absl::GetFlag(FLAGS_input).empty());
-  CHECK(!absl::GetFlag(FLAGS_model_prefix).empty());
+  QCHECK(!absl::GetFlag(FLAGS_input).empty());
+  QCHECK(!absl::GetFlag(FLAGS_model_prefix).empty());
 
-  if (absl::GetFlag(FLAGS_random_seed) != std::numeric_limits<uint32_t>::max()) {
+  if (absl::GetFlag(FLAGS_random_seed) !=
+      std::numeric_limits<uint32_t>::max()) {
     sentencepiece::SetRandomGeneratorSeed(absl::GetFlag(FLAGS_random_seed));
   }
 

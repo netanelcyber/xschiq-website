@@ -12,15 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.!
 
-#ifndef ABSL_FLAGS_USAGE_H_
-#define ABSL_FLAGS_USAGE_H_
+#include "third_party/absl/log/log.h"
 
-#include "third_party/absl/strings/string_view.h"
+#include <atomic>
 
 namespace absl {
+namespace {
+static std::atomic<int> g_minloglevel = 0;
+}  // namespace
 
-void SetProgramUsageMessage(absl::string_view new_usage_message);
+LogSeverityAtLeast MinLogLevel() {
+  return static_cast<LogSeverityAtLeast>(g_minloglevel.load());
+}
+
+void SetMinLogLevel(LogSeverityAtLeast v) {
+  g_minloglevel.store(static_cast<int>(v));
+}
 
 }  // namespace absl
-
-#endif  // ABSL_FLAGS_USAGE_H_

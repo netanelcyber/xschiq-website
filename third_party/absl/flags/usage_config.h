@@ -12,15 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.!
 
-#ifndef ABSL_FLAGS_USAGE_H_
-#define ABSL_FLAGS_USAGE_H_
+#ifndef ABSL_FLAGS_USAGE_CONFIG_H_
+#define ABSL_FLAGS_USAGE_CONFIG_H_
 
-#include "third_party/absl/strings/string_view.h"
+#include <functional>
+#include <string>
 
 namespace absl {
 
-void SetProgramUsageMessage(absl::string_view new_usage_message);
+struct FlagsUsageConfig {
+  std::function<std::string()> version_string;
+};
+
+void SetFlagsUsageConfig(FlagsUsageConfig usage_config);
 
 }  // namespace absl
 
-#endif  // ABSL_FLAGS_USAGE_H_
+#endif  // ABSL_FLAGS_USAGE_CONFIG_H_

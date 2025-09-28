@@ -17,18 +17,16 @@
 #include <algorithm>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <sstream>
 #include <string>
 
-#include "config.h"
-#include "src/common.h"
 #include "src/util.h"
+#include "third_party/absl/flags/usage_config.h"
+#include "third_party/absl/strings/str_cat.h"
 
 ABSL_FLAG(bool, help, false, "show help");
 ABSL_FLAG(bool, version, false, "show version");
-ABSL_FLAG(int, minloglevel, 0,
-          "Messages logged at a lower level than this don't actually get "
-          "logged anywhere");
 
 namespace absl {
 namespace internal {
@@ -47,7 +45,7 @@ std::string to_str<bool>(const bool &value) {
 
 template <>
 std::string to_str<std::string>(const std::string &value) {
-  return std::string("\"") + value + std::string("\"");
+  return absl::StrCat("\"", value, "\"");
 }
 }  // namespace
 
@@ -64,14 +62,24 @@ namespace {
 using FlagMap = std::map<std::string, std::shared_ptr<FlagFunc>>;
 using FlagList = std::vector<std::shared_ptr<FlagFunc>>;
 
-FlagMap *GetFlagMap() {
-  static auto *flag_map = new FlagMap;
-  return flag_map;
+FlagMap &GetFlagMap() {
+  static auto flag_map = std::make_unique<FlagMap>();
+  return *flag_map;
 }
 
-FlagList *GetFlagList() {
-  static auto *flag_list = new FlagList;
-  return flag_list;
+FlagList &GetFlagList() {
+  static auto flag_list = std::make_unique<FlagList>();
+  return *flag_list;
+}
+
+std::string &GetUsageMessage() {
+  static auto usage_message = std::make_unique<std::string>();
+  return *usage_message;
+}
+
+FlagsUsageConfig &GetFlagsUsageConfig() {
+  static auto usage_config = std::make_unique<FlagsUsageConfig>();
+  return *usage_config;
 }
 
 bool CommandLineGetFlag(int argc, char **argv, std::string *key,
@@ -106,12 +114,11 @@ bool CommandLineGetFlag(int argc, char **argv, std::string *key,
   return true;
 }
 
-std::string PrintHelp(const char *programname) {
+std::string PrintHelp() {
   std::ostringstream os;
-  os << PACKAGE_STRING << "\n\n";
-  os << "Usage: " << programname << " [options] files\n\n";
+  os << internal::GetUsageMessage() << "\n\n";
 
-  for (auto func : *GetFlagList()) {
+  for (const auto &func : GetFlagList()) {
     os << "   --" << func->name << " (" << func->help << ")";
     os << "  type: " << func->type << " default: " << func->default_value
        << '\n';
@@ -124,8 +131,8 @@ std::string PrintHelp(const char *programname) {
 }  // namespace
 
 void RegisterFlag(const std::string &name, std::shared_ptr<FlagFunc> func) {
-  GetFlagList()->emplace_back(func);
-  GetFlagMap()->emplace(name, func);
+  GetFlagList().emplace_back(func);
+  GetFlagMap().emplace(name, func);
 }
 }  // namespace internal
 
@@ -188,11 +195,12 @@ std::vector<char *> ParseCommandLine(int argc, char *argv[]) {
   output_args.push_back(argv[0]);
 
   auto set_flag = [](const std::string &name, const std::string &value) {
-    const auto *flag_map = internal::GetFlagMap();
-    auto it = flag_map->find(name);
-    if (it == flag_map->end()) return false;
-    it->second->set_value(value);
-    return true;
+    const auto &flag_map = internal::GetFlagMap();
+    if (auto it = flag_map.find(name); it != flag_map.end()) {
+      it->second->set_value(value);
+      return true;
+    }
+    return false;
   };
 
   for (int i = 1; i < argc; i += used_argc) {
@@ -204,29 +212,35 @@ std::vector<char *> ParseCommandLine(int argc, char *argv[]) {
 
     if (!set_flag(key, value)) {
       std::cerr << "Unknown/Invalid flag " << key << "\n\n"
-                << internal::PrintHelp(argv[0]);
-      sentencepiece::error::Exit(1);
+                << internal::PrintHelp();
+      std::exit(1);
     }
   }
 
   if (absl::GetFlag(FLAGS_help)) {
-    std::cout << internal::PrintHelp(argv[0]);
-    sentencepiece::error::Exit(1);
-  } else if (absl::GetFlag(FLAGS_version)) {
-    std::cout << PACKAGE_STRING << " " << VERSION << std::endl;
-    sentencepiece::error::Exit(0);
+    std::cout << internal::PrintHelp();
+    std::exit(1);
+  }
+
+  if (absl::GetFlag(FLAGS_version)) {
+    if (const auto &usage_config = internal::GetFlagsUsageConfig();
+        usage_config.version_string) {
+      std::cout << usage_config.version_string();
+    }
+    std::exit(0);
   }
 
   return output_args;
 }
 
-void CleanupFlags() {
-  static bool is_shutdown = false;
-  if (!is_shutdown) {
-    delete internal::GetFlagList();
-    delete internal::GetFlagMap();
-    is_shutdown = true;
-  }
+void SetProgramUsageMessage(absl::string_view new_usage_message) {
+  auto &usage_message = internal::GetUsageMessage();
+  usage_message = new_usage_message;
+}
+
+void SetFlagsUsageConfig(FlagsUsageConfig usage_config) {
+  auto &current_usage_config = internal::GetFlagsUsageConfig();
+  current_usage_config = usage_config;
 }
 
 }  // namespace absl

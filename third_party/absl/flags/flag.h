@@ -54,10 +54,6 @@ void SetFlag(Flag<T> *flag, const V &v) {
   flag->set_value(value);
 }
 
-#define HAS_ABSL_CLEANUP_FLAGS
-
-void CleanupFlags();
-
 }  // namespace absl
 
 #define ABSL_FLAG(Type, name, defautl_value, help) \

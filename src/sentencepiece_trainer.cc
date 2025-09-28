@@ -150,7 +150,7 @@ util::Status SentencePieceTrainer::MergeSpecsFromArgs(
     } else if (key == "minloglevel") {
       int v = 0;
       CHECK_OR_RETURN(absl::SimpleAtoi(value, &v));
-      logging::SetMinLogLevel(v);
+      SetMinLogLevel(v);
       continue;
     }
 

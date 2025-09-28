@@ -258,7 +258,7 @@ std::string Normalizer::EncodePrecompiledCharsMap(
   blob.append(string_util::EncodePOD<uint32_t>(trie_blob.size()));
   blob.append(trie_blob.data(), trie_blob.size());
 
-  if constexpr (is_bigendian()) {
+  if constexpr (util::is_bigendian()) {
     uint32_t *data = reinterpret_cast<uint32_t *>(blob.data());
     for (int i = 0; i < blob.size() / 4; ++i) data[i] = util::Swap32(data[i]);
   }
@@ -280,7 +280,7 @@ util::Status Normalizer::DecodePrecompiledCharsMap(
     return util::InternalError("Blob for normalization rule is broken.");
   }
 
-  if constexpr (is_bigendian()) {
+  if constexpr (util::is_bigendian()) {
     trie_blob_size = util::Swap32(trie_blob_size);
   }
 
@@ -295,7 +295,7 @@ util::Status Normalizer::DecodePrecompiledCharsMap(
 
   blob.remove_prefix(sizeof(trie_blob_size));
 
-  if constexpr (is_bigendian()) {
+  if constexpr (util::is_bigendian()) {
     CHECK_OR_RETURN(buffer);
     buffer->assign(blob.data(), trie_blob_size);
     uint32_t *data =

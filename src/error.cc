@@ -15,34 +15,9 @@
 #include <cstring>
 
 #include "common.h"
-#include "init.h"
 #include "sentencepiece_processor.h"
 
-#ifdef _USE_EXTERNAL_ABSL
-// Naive workaround to define minloglevel on external absl package.
-// We want to define them in other cc file.
-#include "third_party/absl/flags/flag.h"
-#include "third_party/absl/flags/parse.h"
-ABSL_FLAG(int32_t, minloglevel, 0,
-          "Messages logged at a lower level than this don't actually.");
-#endif
-
 namespace sentencepiece {
-namespace error {
-
-void Abort() {
-  std::cerr << "Program terminated with an unrecoverable error." << std::endl;
-  ShutdownLibrary();
-  std::exit(-1);
-}
-
-void Exit(int code) {
-  ShutdownLibrary();
-  std::exit(code);
-}
-
-}  // namespace error
-
 namespace util {
 
 Status::Status() {}

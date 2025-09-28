@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.!
 
-#ifndef ABSL_FLAGS_USAGE_H_
-#define ABSL_FLAGS_USAGE_H_
+#ifndef ABSL_LOG_GLOBAL_H_
+#define ABSL_LOG_GLOBAL_H_
 
-#include "third_party/absl/strings/string_view.h"
+#include "third_party/absl/log/log.h"
 
 namespace absl {
 
-void SetProgramUsageMessage(absl::string_view new_usage_message);
+LogSeverityAtLeast MinLogLevel();
+void SetMinLogLevel(LogSeverityAtLeast x);
 
 }  // namespace absl
-
-#endif  // ABSL_FLAGS_USAGE_H_
+#endif  // ABSL_LOG_GLOBAL_H_

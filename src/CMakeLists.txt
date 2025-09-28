@@ -22,7 +22,9 @@ if (SPM_ABSL_PROVIDER STREQUAL "module" OR SPM_ABSL_PROVIDER STREQUAL "package")
   list(APPEND SPM_LIBS absl::check)
   add_compile_definitions(_USE_EXTERNAL_ABSL)
 elseif (SPM_ABSL_PROVIDER STREQUAL "internal")
-  set(ABSL_FLAGS_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/absl/flags/flag.cc)
+ set(ABSL_FLAGS_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/absl/flags/flag.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/absl/log/log.cc)
 endif()
 
 if (SPM_PROTOBUF_PROVIDER STREQUAL "internal")
@@ -102,6 +104,7 @@ set(SPM_SRCS
   char_model.cc
   error.cc
   filesystem.cc
+  init.cc
   model_factory.cc
   model_interface.cc
   normalizer.cc
