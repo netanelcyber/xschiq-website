@@ -31,6 +31,15 @@ jobs:
           - os: windows-11-arm
             arch: ARM64
             absl_provider: internal
+          - os: windows-latest
+            arch: Win32
+            absl_provider: module
+          - os: windows-latest
+            arch: x64
+            absl_provider: module
+          - os: windows-11-arm
+            arch: ARM64
+            absl_provider: module
 
     runs-on: ${{ matrix.os }}
 
