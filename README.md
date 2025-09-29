@@ -322,3 +322,7 @@ Then segment train/test corpus with `--vocabulary` option
 - [Use custom symbols](doc/special_symbols.md)
 - [Python Module](python/README.md)
 - [Segmentation and training algorithms in detail]
+
+## Related projects
+These are related projects to SentencePiece. They are managed independently. Please send a Pull Request (PR) if additions are needed.
+- [Java utilities/bindings for SentencePiece](https://mvnrepository.com/artifact/io.github.eix128/sentencepiece4j)
