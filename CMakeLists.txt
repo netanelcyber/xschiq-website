@@ -176,7 +176,8 @@ elseif (SPM_ABSL_PROVIDER STREQUAL "module")
   FetchContent_Populate(abseil-cpp
         GIT_REPOSITORY  https://github.com/abseil/abseil-cpp.git
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/abseil-cpp
-        GIT_PROGRESS TRUE)
+        GIT_PROGRESS TRUE
+        GIT_TAG 20250814.1)
   add_subdirectory(third_party/abseil-cpp)
   if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/third_party/absl.org)
     file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/third_party/absl ${CMAKE_CURRENT_SOURCE_DIR}/third_party/absl.org)

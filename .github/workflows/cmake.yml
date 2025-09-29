@@ -24,10 +24,13 @@ jobs:
         include:
           - os: windows-latest
             arch: Win32
+            absl_provider: internal
           - os: windows-latest
             arch: x64
+            absl_provider: internal
           - os: windows-11-arm
             arch: ARM64
+            absl_provider: internal
 
     runs-on: ${{ matrix.os }}
 
@@ -48,7 +51,7 @@ jobs:
         CMAKE_OSX_ARCHITECTURES: arm64;x86_64
 
     - name: Build
-      run: cmake --build build --config Release --target install --parallel 8
+      run: cmake --build build --config Release --target install --parallel 32
 
     - name: Test
       working-directory: build
