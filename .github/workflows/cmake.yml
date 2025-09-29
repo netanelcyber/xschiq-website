@@ -20,6 +20,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest, macos-latest ]
         arch: [ x64, arm64 ]
+        absl_provider: [ module, internal ]
         include:
           - os: windows-latest
             arch: Win32
@@ -38,11 +39,11 @@ jobs:
 
     - name: Config for Windows
       if: runner.os == 'Windows'
-      run: cmake -A ${{ matrix.arch }} -B build -DSPM_BUILD_TEST=ON -DSPM_ENABLE_SHARED=OFF -DCMAKE_INSTALL_PREFIX=build/root
+      run: cmake -A ${{ matrix.arch }} -B build -DSPM_BUILD_TEST=ON -DSPM_ENABLE_SHARED=OFF -DCMAKE_INSTALL_PREFIX=build/root -DSPM_ABSL_PROVIDER=${{ matrix.absl_provider }}
 
     - name: Config for Linux/MacOSX
       if: runner.os != 'Windows'
-      run: cmake -B build -DSPM_BUILD_TEST=ON -DCMAKE_INSTALL_PREFIX=build/root
+      run: cmake -B build -DSPM_BUILD_TEST=ON -DCMAKE_INSTALL_PREFIX=build/root -DSPM_ABSL_PROVIDER=${{ matrix.absl_provider }}
       env:
         CMAKE_OSX_ARCHITECTURES: arm64;x86_64
 
