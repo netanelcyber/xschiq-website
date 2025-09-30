@@ -121,6 +121,12 @@ if (APPLE)
   endif()
 endif()
 
+# Add -latomic on riscv64
+if (CMAKE_SYSTEM_PROCESSOR STREQUAL "riscv64")
+  string(APPEND CMAKE_C_STANDARD_LIBRARIES " -latomic")
+  string(APPEND CMAKE_CXX_STANDARD_LIBRARIES " -latomic")
+endif()
+
 # SPDX-License-Identifier: (MIT OR CC0-1.0)
 # Copyright 2020 Jan Tojnar
 # https://github.com/jtojnar/cmake-snips
