@@ -55,6 +55,7 @@ jobs:
           cmake -B build -DSPM_ENABLE_SHARED=OFF -DSPM_DISABLE_EMBEDDED_DATA=ON -DCMAKE_INSTALL_PREFIX=build/root
           cmake --build build --config Release --target install --parallel 8
         env:
+          MACOSX_DEPLOYMENT_TARGET: 10.13
           CMAKE_OSX_ARCHITECTURES: arm64;x86_64
 
       - name: Install cibuildwheel
