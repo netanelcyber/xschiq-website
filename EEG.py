@@ -40,18 +40,18 @@ def download_dataset():
     marker_file = os.path.join(OUTPUT_DIR, "dataset_description.json")
 
     if os.path.exists(marker_file):
-        print(f"[INFO] Dataset {DATASET_ID} already exists in {OUTPUT_DIR}, skipping download.")
-        return True
+        return (f"[INFO] Dataset {DATASET_ID} already exists in {OUTPUT_DIR}, skipping download.")
+        #return True
 
     print(f"[INFO] Downloading OpenNeuro dataset {DATASET_ID} to {OUTPUT_DIR}...")
     try:
         os.makedirs(OUTPUT_DIR, exist_ok=True)
         on.download(dataset=DATASET_ID, target_dir=OUTPUT_DIR, keep_dir_structure=True)
-        print(f"[INFO] Dataset {DATASET_ID} downloaded successfully to {OUTPUT_DIR}.")
-        return True
+        return(f"[INFO] Dataset {DATASET_ID} downloaded successfully to {OUTPUT_DIR}.")
+        #return True
     except Exception as e:
-        print(f"[ERROR] Failed to download dataset: {e}")
-        return False
+        return(f"[ERROR] Failed to download dataset: {e}")
+       |# return False
 # ---------------- EEG FEATURE EXTRACTION ----------------
 def extract_features_from_file(vhdr_file):
     try:
