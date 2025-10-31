@@ -16,6 +16,7 @@ from flask import Flask, jsonify
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, TextIteratorStreamer,AutoModelForSeq2SeqLM
 import openneuro as on  # Correct import
+app = Flask(__name__)
 
 # ---------------- CONFIG ----------------
 REMOTE_MODEL = "Mahalingam/DistilBart-Med-Summary"
@@ -32,6 +33,8 @@ BPRS_TSV_PATH = os.path.join(OUTPUT_DIR, "phenotype", "bprs.tsv")
 EEG_DIR = os.path.join(OUTPUT_DIR)  # EEG files will be inside subfolders after download
 
 # ---------------- DOWNLOAD DATASET ----------------
+@app.route("/")
+@app.route("/download_dataset")
 def download_dataset():
     """Download the OpenNeuro dataset if not already downloaded."""
     marker_file = os.path.join(OUTPUT_DIR, "dataset_description.json")
@@ -148,7 +151,6 @@ def build_stage_prompts(context):
     }
 
 # ---------------- FLASK SERVER ----------------
-app = Flask(__name__)
 
 @app.route("/generate_report/<subj_id>", methods=["GET"])
 def generate_report(subj_id):
