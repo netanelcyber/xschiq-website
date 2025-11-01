@@ -8,18 +8,21 @@ Automatically downloads OpenNeuro ds003944, processes EEG data, and serves clini
 import os
 import json
 import threading
+from httpx import request
 import pandas as pd
 import numpy as np
 import mne
+import requests
 from scipy.signal import welch
 from flask import Flask, jsonify
 import torch
+from transformers.models.llama import LlamaTokenizer, LlamaForCausalLM,configuration_llama
 from transformers import AutoTokenizer, AutoModelForCausalLM, TextIteratorStreamer,AutoModelForSeq2SeqLM
 import openneuro as on  # Correct import
 app = Flask(__name__)
 
 # ---------------- CONFIG ----------------
-REMOTE_MODEL = "Mahalingam/DistilBart-Med-Summary"
+REMOTE_MODEL = "chukypedro/medical_llama_model"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 MAX_TOKENS = 500
 OUTPUT_DIR = "ds003944_local"
@@ -46,13 +49,13 @@ def download_dataset():
     print(f"[INFO] Downloading OpenNeuro dataset {DATASET_ID} to {OUTPUT_DIR}...")
     try:
         os.makedirs(OUTPUT_DIR, exist_ok=True)
-        on.download(dataset=DATASET_ID, target_dir=OUTPUT_DIR, keep_dir_structure=True)
+        on.download(dataset=DATASET_ID, target_dir=OUTPUT_DIR)
         return(f"[INFO] Dataset {DATASET_ID} downloaded successfully to {OUTPUT_DIR}.")
         #return True
     except Exception as e:
         return(f"[ERROR] Failed to download dataset: {e}")
-       |# return False
-# ---------------- EEG FEATURE EXTRACTION ----------------
+       
+       #----------- EEG FEATURE EXTRACTION ----------------
 def extract_features_from_file(vhdr_file):
     try:
         raw = mne.io.read_raw_brainvision(vhdr_file, preload=True, verbose=False)
@@ -111,8 +114,9 @@ def load_scores(tsv_path, subj_id, json_path):
 # ---------------- MODEL WRAPPER ----------------
 def model_call(prompt, model, tokenizer, stage):
     inputs = tokenizer(prompt, return_tensors="pt").to(DEVICE)
-    streamer = TextIteratorStreamer(tokenizer, skip_special_tokens=True)
-    kwargs = dict(**inputs, max_new_tokens=MAX_TOKENS, streamer=streamer)
+    streamer = TextIteratorStreamer(tokenizer, skip_special_tokens=True)  
+    kwargs = dict(**inputs, max_new_tokens=MAX_TOKENS, streamer=streamer, num_beams=1)  # הוספת num_beams=1
+
     thread = threading.Thread(target=model.generate, kwargs=kwargs)
     thread.start()
 
@@ -154,11 +158,37 @@ def build_stage_prompts(context):
 
 @app.route("/generate_report/<subj_id>", methods=["GET"])
 def generate_report(subj_id):
-    download_dataset()
+    #download_dataset()
+    #s.chdir(f"{EEG_DIR}")
 
+    eeg=requests.get(f"http://207.126.167.94/ds003944_local/{subj_id}/eeg/{subj_id}_task-Rest_eeg.eeg",stream=True)
+    json=requests.get(f"http://207.126.167.94/ds003944_local/{subj_id}/eeg/{subj_id}_task-Rest_eeg.json",stream=True)
+    vhdr=requests.get(f"http://207.126.167.94/ds003944_local/{subj_id}/eeg/{subj_id}_task-Rest_eeg.vhdr",stream=True)
+    with open(f"{subj_id}_task-Rest_eeg.eeg", 'wb') as local_file:
+        x=0
+        for chunk in eeg.iter_content(chunk_size=8192):
+            if chunk:  # filter out keep-alive chunks
+                print(f"chunk: {x+1}")
+                x=x+1
+                local_file.write(chunk)
+    with open(f"{subj_id}_task-Rest_eeg.json", 'wb') as local_file:
+        x=0
+        for chunk in json.iter_content(chunk_size=8192):
+            if chunk:  # filter out keep-alive chunks
+                print(f"chunk: {x+1}")
+                x=x+1
+                local_file.write(chunk)
+    with open(f"{subj_id}_task-Rest_eeg.vhdr", 'wb') as local_file:
+        x=0
+        for chunk in vhdr.iter_content(chunk_size=8192):
+            if chunk:  # filter out keep-alive chunks
+                print(f"chunk: {x+1}")
+                x=x+1
+                local_file.write(chunk)
+   #os.chdir("../../../")
     # Load model
-    tokenizer = AutoTokenizer.from_pretrained(REMOTE_MODEL)
-    model = AutoModelForSeq2SeqLM.from_pretrained(
+    tokenizer = LlamaTokenizer.from_pretrained(REMOTE_MODEL)
+    model = LlamaForCausalLM.from_pretrained(
         REMOTE_MODEL,
         torch_dtype=torch.float16 if DEVICE == "cuda" else torch.float32
     ).to(DEVICE)
@@ -178,8 +208,76 @@ def generate_report(subj_id):
 
     # Extract features and load scores
     features = extract_features_from_file(vhdr_file)
-    saps = load_scores(SAPS_TSV_PATH, subj_id, SAPS_JSON_PATH)
-    bprs = load_scores(BPRS_TSV_PATH, subj_id, BPRS_JSON_PATH)
+    # Load SAPS scores from remote URLs
+    saps_tsv = requests.get("http://207.126.167.94/ds003944_local/phenotype/saps.tsv").text
+    saps_json = requests.get("http://207.126.167.94/ds003944_local/phenotype/saps.json").json()
+    
+    # Create temporary file-like objects
+    tsv_data = pd.read_csv(pd.StringIO(saps_tsv), sep="\t", dtype=str)
+    
+    # Modified load_scores to work with the dataframe and json directly
+    row = tsv_data[tsv_data["participant_id"] == subj_id]
+    if not row.empty:
+        record = row.to_dict(orient="records")[0]
+        mapped = {}
+        for k, v in record.items():
+            if k == "participant_id":
+                continue
+            q_info = saps_json.get(k, {})
+            levels = q_info.get("Levels", {}) if isinstance(q_info, dict) else {}
+            desc = q_info.get("Description", "") if isinstance(q_info, dict) else ""
+            display_value = str(v)
+            meaning = ""
+            try:
+                if str(v).isdigit():
+                    meaning = levels.get(str(int(v)), "")
+                    if meaning:
+                        display_value = f"{v} ({meaning})"
+                else:
+                    meaning = levels.get(str(v), "")
+                    if meaning:
+                        display_value = f"{v} ({meaning})"
+            except Exception:
+                pass
+            mapped[k] = {"value": display_value, "desc": desc}
+        saps = mapped
+    else:
+        saps = None
+    # Load BPRS scores from remote URLs
+    bprs_tsv = requests.get("http://207.126.167.94/ds003944_local/phenotype/bprs.tsv").text
+    bprs_json = requests.get("http://207.126.167.94/ds003944_local/phenotype/bprs.json").json()
+    
+    # Create temporary dataframe from TSV
+    bprs_df = pd.read_csv(pd.StringIO(bprs_tsv), sep="\t", dtype=str)
+    
+    # Get BPRS scores for subject
+    bprs_row = bprs_df[bprs_df["participant_id"] == subj_id]
+    if not bprs_row.empty:
+        record = bprs_row.to_dict(orient="records")[0]
+        mapped = {}
+        for k, v in record.items():
+            if k == "participant_id":
+                continue
+            q_info = bprs_json.get(k, {})
+            levels = q_info.get("Levels", {}) if isinstance(q_info, dict) else {}
+            desc = q_info.get("Description", "") if isinstance(q_info, dict) else ""
+            display_value = str(v)
+            meaning = ""
+            try:
+                if str(v).isdigit():
+                    meaning = levels.get(str(int(v)), "")
+                    if meaning:
+                        display_value = f"{v} ({meaning})"
+                else:
+                    meaning = levels.get(str(v), "")
+                    if meaning:
+                        display_value = f"{v} ({meaning})"
+            except Exception:
+                pass
+            mapped[k] = {"value": display_value, "desc": desc}
+        bprs = mapped
+    else:
+        bprs = None
 
     context = build_context(features, saps, bprs, PATIENT_GROUP)
     prompts = build_stage_prompts(context)
@@ -196,4 +294,4 @@ def generate_report(subj_id):
     return jsonify({"message": f"Report generated for {subj_id}", "report_file": report_file})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0",port=5560)
