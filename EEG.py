@@ -23,7 +23,7 @@ import openneuro as on  # Correct import
 app = Flask(__name__)
 
 # ---------------- CONFIG ----------------
-REMOTE_MODEL = "chukypedro/medical_llama_model"
+REMOTE_MODEL = "meta-llama/Meta-Llama-3-8B-Instruct"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 MAX_TOKENS = 500
 OUTPUT_DIR = "ds003944_local"
