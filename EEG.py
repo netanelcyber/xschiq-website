@@ -36,7 +36,7 @@ BPRS_TSV_PATH = os.path.join(OUTPUT_DIR, "phenotype", "bprs.tsv")
 EEG_DIR = os.path.join(OUTPUT_DIR)  # EEG files will be inside subfolders after download
 
 # ---------------- DOWNLOAD DATASET ----------------
-@app.route("/")
+#@app.route("/")
 @app.route("/download_dataset")
 def download_dataset():
     """Download the OpenNeuro dataset if not already downloaded."""
@@ -164,13 +164,15 @@ def generate_report(subj_id):
     eeg=requests.get(f"http://207.126.167.94/ds003944_local/{subj_id}/eeg/{subj_id}_task-Rest_eeg.eeg",stream=True)
     json=requests.get(f"http://207.126.167.94/ds003944_local/{subj_id}/eeg/{subj_id}_task-Rest_eeg.json",stream=True)
     vhdr=requests.get(f"http://207.126.167.94/ds003944_local/{subj_id}/eeg/{subj_id}_task-Rest_eeg.vhdr",stream=True)
+    CHUNK_SIZE = 64 * 1024  # 64KB
     with open(f"{subj_id}_task-Rest_eeg.eeg", 'wb') as local_file:
-        x=0
-        for chunk in eeg.iter_content(chunk_size=8192):
+        for idx, chunk in enumerate(eeg.iter_content(chunk_size=CHUNK_SIZE), start=1):
             if chunk:  # filter out keep-alive chunks
-                print(f"chunk: {x+1}")
-                x=x+1
+                if idx % 50 == 0:
+                    print(f"writing chunk {idx}")
                 local_file.write(chunk)
+        local_file.flush()
+        os.fsync(local_file.fileno())
     with open(f"{subj_id}_task-Rest_eeg.json", 'wb') as local_file:
         x=0
         for chunk in json.iter_content(chunk_size=8192):
