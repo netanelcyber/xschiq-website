@@ -6,12 +6,13 @@ Automatically downloads OpenNeuro ds003944, processes EEG data, and serves clini
 """
 
 import os
-import json
+import json,asyncio
 import threading
 from httpx import request
 import pandas as pd
 import numpy as np
 import mne
+import httpx
 import requests
 from scipy.signal import welch
 from flask import Flask, jsonify
@@ -157,36 +158,63 @@ def build_stage_prompts(context):
 # ---------------- FLASK SERVER ----------------
 
 @app.route("/generate_report/<subj_id>", methods=["GET"])
-def generate_report(subj_id):
+async def generate_report(subj_id):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    threads = []
+    for _ in range(10):  # Create 10 threads
+        thread = threading.Thread(target=lambda: asyncio.run(asyncio.gather(
+            download_eeg_file(subj_id),
+            download_json_file(subj_id), 
+            download_vhdr_file(subj_id)
+        )))
+        threads.append(thread)
+        thread.start()
+
+    for thread in threads:
+        thread.join()
+    asyncio.set_event_loop(loop)
     #download_dataset()
     #s.chdir(f"{EEG_DIR}")
 
-    eeg=requests.get(f"http://207.126.167.94/ds003944_local/{subj_id}/eeg/{subj_id}_task-Rest_eeg.eeg",stream=True)
-    json=requests.get(f"http://207.126.167.94/ds003944_local/{subj_id}/eeg/{subj_id}_task-Rest_eeg.json",stream=True)
-    vhdr=requests.get(f"http://207.126.167.94/ds003944_local/{subj_id}/eeg/{subj_id}_task-Rest_eeg.vhdr",stream=True)
-    CHUNK_SIZE = 64 * 1024  # 64KB
-    with open(f"{subj_id}_task-Rest_eeg.eeg", 'wb') as local_file:
-        for idx, chunk in enumerate(eeg.iter_content(chunk_size=CHUNK_SIZE), start=1):
-            if chunk:  # filter out keep-alive chunks
-                if idx % 50 == 0:
-                    print(f"writing chunk {idx}")
-                local_file.write(chunk)
-        local_file.flush()
-        os.fsync(local_file.fileno())
-    with open(f"{subj_id}_task-Rest_eeg.json", 'wb') as local_file:
-        x=0
-        for chunk in json.iter_content(chunk_size=8192):
-            if chunk:  # filter out keep-alive chunks
-                print(f"chunk: {x+1}")
-                x=x+1
-                local_file.write(chunk)
-    with open(f"{subj_id}_task-Rest_eeg.vhdr", 'wb') as local_file:
-        x=0
-        for chunk in vhdr.iter_content(chunk_size=8192):
-            if chunk:  # filter out keep-alive chunks
-                print(f"chunk: {x+1}")
-                x=x+1
-                local_file.write(chunk)
+    async def download_file(url, filename, chunk_size=8192):
+        async with httpx.AsyncClient() as client:
+            async with client.stream('GET', url) as r:
+                total_size = 0
+                with open(filename, 'wb') as f:
+                    async for chunk in r.aiter_bytes(chunk_size=chunk_size):
+                        if chunk:
+                            total_size += len(chunk)
+                            if total_size % (1024*1024) == 0:  # Print every MB
+                                print(f"Downloaded {total_size/(1024*1024):.1f}MB")
+                            f.write(chunk)
+
+    async def download_eeg_file(subj_id):
+        url = f"http://207.126.167.94/ds003944_local/{subj_id}/eeg/{subj_id}_task-Rest_eeg.eeg"
+        print("Downloading EEG file...")
+        await download_file(url, f"{subj_id}_task-Rest_eeg.eeg", chunk_size=1024*1024)
+
+    async def download_json_file(subj_id):
+        url = f"http://207.126.167.94/ds003944_local/{subj_id}/eeg/{subj_id}_task-Rest_eeg.json"
+        print("Downloading JSON file...")
+        await download_file(url, f"{subj_id}_task-Rest_eeg.json")
+
+    async def download_vhdr_file(subj_id):
+        url = f"http://207.126.167.94/ds003944_local/{subj_id}/eeg/{subj_id}_task-Rest_eeg.vhdr"
+        print("Downloading VHDR file...")
+    # Download all files asynchronously
+    await asyncio.gather(
+        download_eeg_file(subj_id),
+        download_json_file(subj_id), 
+        download_vhdr_file(subj_id)
+    )
+    print("All files downloaded.")
+
+    # Download all files
+    download_eeg_file(subj_id)
+    download_json_file(subj_id)
+    download_vhdr_file(subj_id)
+
    #os.chdir("../../../")
     # Load model
     tokenizer = LlamaTokenizer.from_pretrained(REMOTE_MODEL)
