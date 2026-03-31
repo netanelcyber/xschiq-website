@@ -1,310 +1,1611 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="xschiqApp">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Xschizq - AI-Powered Precision Psychiatry</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Xschizq AI | Master Command & Audit Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* Base styles for Inter font and background */
-        body { font-family: 'Inter', sans-serif; background: #f5f7fa; color: #333; }
-        /* Style for the chart bar in Market Monitoring section */
-        .chart-bar { background: #0d6efd; height: 20px; color: white; text-align: right; padding-right: 5px; margin-bottom: 6px; }
-        /* Custom modal styles for alerts (to replace native alert() ) */
-        .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1000; /* Sit on top */
-            left: 0;
+        :root {
+            --bg: #09111f;
+            --panel: rgba(9, 17, 31, 0.78);
+            --panel-strong: rgba(13, 25, 45, 0.94);
+            --panel-soft: rgba(233, 239, 248, 0.92);
+            --text: #e5eef8;
+            --muted: #8ea3bb;
+            --border: rgba(154, 176, 201, 0.16);
+            --cyan: #2dd4bf;
+            --blue: #60a5fa;
+            --gold: #f6c665;
+            --danger: #fb7185;
+            --success: #34d399;
+            --shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+            --radius-xl: 32px;
+            --radius-lg: 22px;
+            --radius-md: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Space Grotesk", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(96, 165, 250, 0.22), transparent 28%),
+                radial-gradient(circle at 85% 15%, rgba(45, 212, 191, 0.18), transparent 24%),
+                linear-gradient(145deg, #050913 0%, #0a1425 45%, #08101d 100%);
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 48px 48px;
+            mask-image: radial-gradient(circle at center, black, transparent 80%);
+            opacity: 0.45;
+        }
+
+        button,
+        select {
+            font: inherit;
+        }
+
+        a {
+            color: inherit;
+        }
+
+        .app-shell {
+            display: grid;
+            grid-template-columns: 310px minmax(0, 1fr);
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: sticky;
             top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-            justify-content: center; /* Center horizontally */
-            align-items: center; /* Center vertically */
+            height: 100vh;
+            padding: 28px;
+            border-right: 1px solid var(--border);
+            background: linear-gradient(180deg, rgba(3, 9, 20, 0.92), rgba(5, 11, 24, 0.82));
+            backdrop-filter: blur(18px);
+            display: flex;
+            flex-direction: column;
         }
-        .modal-content {
-            background-color: #fefefe;
-            margin: auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 400px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            text-align: center;
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 34px;
         }
-        .modal-content button {
-            background-color: #0d6efd;
-            color: white;
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
+
+        .brand-mark {
+            width: 52px;
+            height: 52px;
+            border-radius: 18px;
+            display: grid;
+            place-items: center;
+            color: #04111f;
+            background: linear-gradient(145deg, var(--cyan), var(--blue));
+            font-size: 1.35rem;
+            font-weight: 700;
+            box-shadow: 0 18px 40px rgba(96, 165, 250, 0.35);
+        }
+
+        .brand h1,
+        .brand p {
+            margin: 0;
+        }
+
+        .brand h1 {
+            font-size: 1.15rem;
+            letter-spacing: -0.03em;
+        }
+
+        .brand p {
+            font-family: "IBM Plex Mono", monospace;
+            font-size: 0.72rem;
+            color: var(--blue);
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            margin-top: 4px;
+        }
+
+        .nav {
+            display: grid;
+            gap: 10px;
+        }
+
+        .nav button {
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--muted);
+            border-radius: 18px;
+            padding: 14px 16px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
             cursor: pointer;
-            margin-top: 15px;
-            transition: background-color 0.3s ease;
+            transition: 180ms ease;
         }
-        .modal-content button:hover {
-            background-color: #0b5dd7;
+
+        .nav button:hover,
+        .nav button:focus-visible {
+            outline: none;
+            color: var(--text);
+            border-color: rgba(96, 165, 250, 0.18);
+            background: rgba(96, 165, 250, 0.08);
+        }
+
+        .nav button.active {
+            color: #04111f;
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+            box-shadow: 0 20px 40px rgba(31, 146, 222, 0.3);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            display: grid;
+            gap: 14px;
+            padding-top: 26px;
+        }
+
+        .operator-card,
+        .print-button {
+            border-radius: 22px;
+            border: 1px solid var(--border);
+        }
+
+        .operator-card {
+            padding: 18px;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .operator-card span {
+            display: block;
+            font-family: "IBM Plex Mono", monospace;
+            font-size: 0.7rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            margin-bottom: 10px;
+        }
+
+        .operator-card strong,
+        .operator-card a {
+            display: block;
+        }
+
+        .operator-card a {
+            margin-top: 6px;
+            color: var(--blue);
+            text-decoration: none;
+        }
+
+        .print-button {
+            border: 0;
+            padding: 14px 18px;
+            cursor: pointer;
+            font-weight: 700;
+            color: #04111f;
+            background: linear-gradient(135deg, #f8fafc, #dce7f5);
+        }
+
+        .content {
+            padding: 34px;
+        }
+
+        .mobile-bar {
+            display: none;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(4, 10, 20, 0.88);
+            backdrop-filter: blur(18px);
+        }
+
+        .mobile-bar-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .mobile-bar strong {
+            font-size: 1rem;
+        }
+
+        .mobile-select {
+            min-width: 180px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 10px 12px;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .view {
+            display: none;
+            max-width: 1160px;
+            margin: 0 auto;
+            animation: fade-slide 420ms ease;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        .hero-card,
+        .panel-card,
+        .report-card,
+        .paper-card {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow);
+        }
+
+        .hero-card,
+        .panel-card,
+        .report-card {
+            background: linear-gradient(180deg, rgba(10, 20, 36, 0.9), rgba(8, 16, 30, 0.92));
+        }
+
+        .hero-card {
+            padding: 52px;
+        }
+
+        .hero-card::after,
+        .panel-card::after {
+            content: "";
+            position: absolute;
+            inset: auto -60px -80px auto;
+            width: 220px;
+            height: 220px;
+            border-radius: 999px;
+            background: radial-gradient(circle, rgba(45, 212, 191, 0.22), transparent 68%);
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            margin-bottom: 24px;
+            color: var(--cyan);
+            background: rgba(45, 212, 191, 0.1);
+            border: 1px solid rgba(45, 212, 191, 0.18);
+            font-family: "IBM Plex Mono", monospace;
+            font-size: 0.78rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+            gap: 28px;
+            align-items: end;
+        }
+
+        .hero-copy h2,
+        .report-title,
+        .paper-header h2 {
+            margin: 0;
+            letter-spacing: -0.05em;
+        }
+
+        .hero-copy h2 {
+            font-size: clamp(2.6rem, 5vw, 5rem);
+            line-height: 0.96;
+            margin-bottom: 18px;
+            max-width: 12ch;
+        }
+
+        .hero-copy p {
+            max-width: 46rem;
+            margin: 0 0 28px;
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: #b8c9db;
+        }
+
+        .pill-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .pill {
+            padding: 10px 14px;
+            border-radius: 999px;
+            color: #d9e7f6;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .hero-stats {
+            display: grid;
+            gap: 18px;
+        }
+
+        .stat-card {
+            padding: 22px;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .stat-card strong,
+        .mini-stat strong {
+            display: block;
+            font-size: clamp(1.8rem, 3vw, 3.3rem);
+            line-height: 1;
+            margin: 12px 0 8px;
+        }
+
+        .stat-card span,
+        .mini-stat span,
+        .section-note,
+        .muted {
+            color: var(--muted);
+        }
+
+        .section-grid {
+            display: grid;
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .mini-stat {
+            padding: 28px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            box-shadow: var(--shadow);
+        }
+
+        .mini-stat.accent {
+            background: linear-gradient(160deg, rgba(27, 48, 75, 0.92), rgba(12, 20, 37, 0.95));
+        }
+
+        .portal-layout {
+            display: grid;
+            gap: 24px;
+            grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
+        }
+
+        .panel-card {
+            padding: 32px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 24px;
+            align-items: start;
+            margin-bottom: 24px;
+        }
+
+        .panel-title {
+            margin: 0 0 8px;
+            font-size: 2rem;
+        }
+
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-family: "IBM Plex Mono", monospace;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .analysis-stage {
+            position: relative;
+            min-height: 440px;
+            display: grid;
+            place-items: center;
+            border: 1px dashed rgba(154, 176, 201, 0.22);
+            border-radius: 28px;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01)),
+                radial-gradient(circle at center, rgba(96, 165, 250, 0.14), transparent 55%);
+            text-align: center;
+            padding: 30px;
+        }
+
+        .analysis-stage.hidden {
+            display: none;
+        }
+
+        .analysis-stage .upload-icon {
+            width: 94px;
+            height: 94px;
+            display: grid;
+            place-items: center;
+            border-radius: 999px;
+            font-size: 2rem;
+            margin: 0 auto 22px;
+            background: rgba(96, 165, 250, 0.12);
+            border: 1px solid rgba(96, 165, 250, 0.2);
+        }
+
+        .primary-button,
+        .secondary-button {
+            border: 0;
+            cursor: pointer;
+            border-radius: 18px;
+            padding: 14px 20px;
+            font-weight: 700;
+            transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+        }
+
+        .primary-button {
+            color: #04111f;
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+            box-shadow: 0 22px 40px rgba(31, 146, 222, 0.3);
+        }
+
+        .secondary-button {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .primary-button:hover,
+        .secondary-button:hover,
+        .primary-button:focus-visible,
+        .secondary-button:focus-visible {
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .scan-shell {
+            width: min(100%, 460px);
+            padding: 24px;
+            border-radius: 26px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .scan-shell small {
+            display: block;
+            margin-bottom: 14px;
+            color: var(--blue);
+            font-family: "IBM Plex Mono", monospace;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .progress-value {
+            font-size: clamp(3rem, 7vw, 5.5rem);
+            font-weight: 700;
+            letter-spacing: -0.06em;
+            margin: 0 0 16px;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 12px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--cyan), var(--blue));
+            transition: width 120ms linear;
+        }
+
+        .analysis-stage.analyzing::before {
+            content: "";
+            position: absolute;
+            inset: 16px;
+            border-radius: 22px;
+            pointer-events: none;
+            background: linear-gradient(180deg, transparent, rgba(96, 165, 250, 0.1), transparent);
+            animation: scan 2.4s linear infinite;
+        }
+
+        .result-grid {
+            display: grid;
+            gap: 24px;
+        }
+
+        .result-topline {
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            align-items: center;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .result-metrics {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .metric-block {
+            padding: 18px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .metric-label {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            font-size: 0.82rem;
+            margin-bottom: 10px;
+        }
+
+        .metric-track {
+            width: 100%;
+            height: 10px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .metric-fill {
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--cyan), var(--blue));
+        }
+
+        .metric-fill.indigo {
+            background: linear-gradient(90deg, #818cf8, #60a5fa);
+        }
+
+        .outlook {
+            padding: 22px;
+            border-radius: 24px;
+            background: linear-gradient(180deg, rgba(45, 212, 191, 0.12), rgba(96, 165, 250, 0.08));
+            border: 1px solid rgba(96, 165, 250, 0.16);
+        }
+
+        .side-stack {
+            display: grid;
+            gap: 18px;
+        }
+
+        .side-card {
+            padding: 24px;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .side-card h3,
+        .section-title,
+        .report-title,
+        .paper-header h2 {
+            margin-top: 0;
+        }
+
+        .timeline {
+            display: grid;
+            gap: 16px;
+        }
+
+        .timeline-item {
+            display: grid;
+            grid-template-columns: 28px minmax(0, 1fr);
+            gap: 14px;
+            align-items: start;
+        }
+
+        .timeline-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 999px;
+            margin-top: 4px;
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+            box-shadow: 0 0 0 6px rgba(45, 212, 191, 0.1);
+        }
+
+        .timeline-item strong,
+        .pipeline strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .pipeline {
+            display: grid;
+            gap: 14px;
+        }
+
+        .pipeline-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .pipeline-item code,
+        .report-meta,
+        .mono {
+            font-family: "IBM Plex Mono", monospace;
+        }
+
+        .report-card {
+            padding: 40px;
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 24px;
+            align-items: end;
+            padding-bottom: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .report-title {
+            font-size: clamp(2.2rem, 4vw, 3.8rem);
+            margin-bottom: 12px;
+        }
+
+        .report-meta {
+            color: var(--muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        .report-body {
+            display: grid;
+            gap: 34px;
+            padding-top: 28px;
+        }
+
+        .report-section {
+            display: grid;
+            gap: 16px;
+        }
+
+        .report-section h3 {
+            margin: 0;
+            font-size: 1.35rem;
+        }
+
+        .math-box {
+            padding: 20px;
+            border-radius: 20px;
+            background: rgba(2, 8, 18, 0.46);
+            border: 1px solid rgba(96, 165, 250, 0.15);
+            font-family: "IBM Plex Mono", monospace;
+            color: #d7e7f8;
+            overflow-x: auto;
+        }
+
+        .leaders-grid,
+        .inventory-grid,
+        .summary-grid,
+        .contact-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .leaders-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .leader-card,
+        .contact-card {
+            padding: 18px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .leader-card h4,
+        .contact-card strong {
+            margin: 0 0 8px;
+        }
+
+        .leader-role,
+        .paper-eyebrow {
+            font-family: "IBM Plex Mono", monospace;
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        .leader-role {
+            color: var(--cyan);
+        }
+
+        .leader-card a {
+            color: var(--blue);
+            text-decoration: none;
+        }
+
+        .contact-note {
+            color: var(--blue);
+            font-weight: 500;
+        }
+
+        .inventory-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .inventory-head,
+        .inventory-row {
+            display: contents;
+        }
+
+        .inventory-cell {
+            padding: 16px;
+            min-height: 100%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .inventory-cell.head {
+            background: rgba(96, 165, 250, 0.08);
+            font-weight: 700;
+        }
+
+        .inventory-cell em {
+            font-style: normal;
+            font-weight: 700;
+        }
+
+        .paper-card {
+            padding: 42px;
+            color: #112030;
+            background:
+                radial-gradient(circle at top right, rgba(96, 165, 250, 0.1), transparent 32%),
+                linear-gradient(180deg, rgba(247, 250, 253, 0.98), rgba(236, 242, 248, 0.98));
+        }
+
+        .paper-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 24px;
+            align-items: end;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(17, 32, 48, 0.08);
+        }
+
+        .paper-header h2 {
+            font-size: clamp(2.4rem, 5vw, 4.2rem);
+            margin-bottom: 8px;
+        }
+
+        .paper-eyebrow {
+            color: #2563eb;
+        }
+
+        .paper-card .muted {
+            color: #546678;
+        }
+
+        .summary-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            margin-top: 28px;
+        }
+
+        .summary-grid h3,
+        .contact-grid h3 {
+            margin: 0 0 10px;
+            font-size: 0.84rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #6b7280;
+        }
+
+        .contact-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(17, 32, 48, 0.1);
+        }
+
+        .expert-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .expert-line {
+            display: grid;
+            gap: 4px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: rgba(17, 32, 48, 0.06);
+        }
+
+        .expert-line a {
+            color: #2563eb;
+            text-decoration: none;
+            word-break: break-word;
+        }
+
+        .tag-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .tag {
+            border-radius: 999px;
+            padding: 8px 12px;
+            background: rgba(17, 32, 48, 0.06);
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .soft {
+            color: #435366;
+        }
+
+        .print-only {
+            display: none;
+        }
+
+        @keyframes fade-slide {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scan {
+            from {
+                transform: translateY(-76%);
+            }
+            to {
+                transform: translateY(76%);
+            }
+        }
+
+        @media (max-width: 1120px) {
+            .app-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .mobile-bar {
+                display: block;
+            }
+
+            .content {
+                padding: 22px;
+            }
+        }
+
+        @media (max-width: 920px) {
+            .hero-grid,
+            .portal-layout,
+            .stats-grid,
+            .leaders-grid,
+            .summary-grid,
+            .contact-grid,
+            .result-metrics {
+                grid-template-columns: 1fr;
+            }
+
+            .inventory-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .inventory-head {
+                display: none;
+            }
+
+            .inventory-row {
+                display: grid;
+                gap: 8px;
+                padding: 16px;
+                border-radius: 22px;
+                background: rgba(255, 255, 255, 0.04);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+            }
+
+            .inventory-row .inventory-cell {
+                border: 0;
+                padding: 0;
+                background: transparent;
+            }
+
+            .inventory-row .inventory-cell::before {
+                content: attr(data-label);
+                display: block;
+                margin-bottom: 6px;
+                color: var(--muted);
+                font-family: "IBM Plex Mono", monospace;
+                font-size: 0.7rem;
+                text-transform: uppercase;
+                letter-spacing: 0.12em;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .hero-card,
+            .panel-card,
+            .report-card,
+            .paper-card {
+                padding: 24px;
+                border-radius: 24px;
+            }
+
+            .content {
+                padding: 18px;
+            }
+
+            .report-header,
+            .paper-header,
+            .panel-header,
+            .result-topline {
+                align-items: start;
+                flex-direction: column;
+            }
+
+            .mobile-bar-row {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .mobile-select {
+                width: 100%;
+            }
+
+            .analysis-stage {
+                min-height: 360px;
+                padding: 20px;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+                color: #09111f;
+            }
+
+            body::before,
+            .sidebar,
+            .mobile-bar,
+            .no-print {
+                display: none !important;
+            }
+
+            .app-shell {
+                display: block;
+            }
+
+            .content {
+                padding: 0;
+            }
+
+            .view {
+                display: block !important;
+                max-width: none;
+                animation: none;
+                break-after: page;
+                page-break-after: always;
+                margin-bottom: 24px;
+            }
+
+            .hero-card,
+            .panel-card,
+            .report-card {
+                color: #09111f;
+                background: white;
+                box-shadow: none;
+                border: 1px solid #dce6f1;
+            }
+
+            .paper-card {
+                box-shadow: none;
+                border: 1px solid #dce6f1;
+            }
+
+            .muted,
+            .section-note,
+            .report-meta,
+            .soft {
+                color: #475569;
+            }
+
+            .print-only {
+                display: block;
+            }
         }
     </style>
 </head>
-<body ng-controller="MainController" class="min-h-screen flex flex-col">
-
-    <!-- Custom Alert Modal - replaces browser's alert() -->
-    <div id="customAlertModal" class="modal">
-        <div class="modal-content">
-            <p id="modalMessage" class="text-gray-800 text-lg mb-4"></p>
-            <button onclick="document.getElementById('customAlertModal').style.display='none'">OK</button>
+<body>
+    <div class="mobile-bar no-print">
+        <div class="mobile-bar-row">
+            <strong>Xschizq AI</strong>
+            <select class="mobile-select" id="mobileViewSelect" aria-label="Switch section">
+                <option value="deck">Investor Deck</option>
+                <option value="portal">Diagnostic Portal</option>
+                <option value="audit">Technical Audit</option>
+                <option value="pager">Executive Summary</option>
+            </select>
         </div>
     </div>
 
-    <!-- Navigation Bar -->
-    <nav class="bg-gray-900 text-white p-4 flex flex-col sm:flex-row justify-between items-center rounded-b-lg shadow-lg">
-        <strong class="text-2xl font-bold mb-2 sm:mb-0">Xschizq</strong>
-        <div class="flex flex-wrap justify-center sm:justify-end gap-x-4 gap-y-2 text-lg">
-            <a ng-click="setView('home')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">Home</a>
-            <a ng-click="setView('mission')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">Our Mission</a>
-            <a ng-click="setView('market')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">Market Monitoring</a>
-            <a ng-click="setView('research')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">Research</a>
-            <a ng-click="setView('news')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">News</a>
-            <a ng-click="setView('literature')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">Literature</a>
-            <a ng-click="setView('tickets')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">Contact (Inquiry)</a>
-            <a ng-click="setView('register')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">Register (Contact)</a>
-            <a ng-click="setView('contact')" class="hover:text-blue-400 cursor-pointer transition-colors duration-200">Contact Details</a>
-        </div>
-    </nav>
+    <div class="app-shell">
+        <aside class="sidebar no-print">
+            <div class="brand">
+                <div class="brand-mark">X</div>
+                <div>
+                    <h1>Xschizq AI</h1>
+                    <p>Master Command Portal</p>
+                </div>
+            </div>
 
-    <!-- Main Content Container -->
-    <div class="container mx-auto p-4 my-8 bg-white rounded-lg shadow-lg flex-grow">
+            <nav class="nav" aria-label="Section navigation">
+                <button type="button" class="nav-link active" data-view-target="deck">
+                    <span>01</span>
+                    <span>Investor Deck</span>
+                </button>
+                <button type="button" class="nav-link" data-view-target="portal">
+                    <span>02</span>
+                    <span>Diagnostic Portal</span>
+                </button>
+                <button type="button" class="nav-link" data-view-target="audit">
+                    <span>03</span>
+                    <span>Technical Audit</span>
+                </button>
+                <button type="button" class="nav-link" data-view-target="pager">
+                    <span>04</span>
+                    <span>Executive Summary</span>
+                </button>
+            </nav>
 
-        <!-- Views Section -->
-        <!-- Home View -->
-        <section ng-show="view === 'home'">
-            <h2 class="text-3xl font-semibold mb-4 text-gray-800">Welcome to Xschizq</h2>
-            <p class="text-gray-700 text-lg"><strong>AI-Powered Precision Psychiatry</strong> — Predict patient responses to psychiatric treatments using EEG, genomics, and behavioral data.</p>
-        </section>
+            <div class="sidebar-footer">
+                <div class="operator-card">
+                    <span>Lead Investigator</span>
+                    <strong>Netanel Stern</strong>
+                    <a href="mailto:nsh531@gmail.com">nsh531@gmail.com</a>
+                </div>
+                <button type="button" class="print-button" id="printButton">Export to PDF</button>
+            </div>
+        </aside>
 
-        <!-- Mission View -->
-        <section ng-show="view === 'mission'">
-            <h2 class="text-3xl font-semibold mb-4 text-gray-800">Our Mission</h2>
-            <p class="text-gray-700 text-lg">Xschizq enables precision psychiatry using multimodal machine learning for treatment response prediction in mental health.</p>
-        </section>
+        <main class="content">
+            <section class="view active" id="view-deck" data-view="deck">
+                <div class="hero-card">
+                    <div class="eyebrow">Signal-Driven Psychiatry</div>
+                    <div class="hero-grid">
+                        <div class="hero-copy">
+                            <h2>Precision psychiatry built like a command system.</h2>
+                            <p>
+                                Xschizq AI reframes schizophrenia diagnostics as a measurable intelligence problem,
+                                combining neuroimaging, electrophysiology, and literature-grounded inference into an
+                                operating surface for clinical decision support.
+                            </p>
+                            <div class="pill-row">
+                                <span class="pill">Multi-Omics Correlation</span>
+                                <span class="pill">Deep Learning Pipelines</span>
+                                <span class="pill">Neuroimaging Biomarkers</span>
+                                <span class="pill">Clinical Decision Layer</span>
+                            </div>
+                        </div>
 
-        <!-- Market Monitoring View -->
-        <section ng-show="view === 'market'">
-            <h2 class="text-3xl font-semibold mb-4 text-gray-800">Market Monitoring</h2>
-            <div class="mb-4">
-                <p class="text-gray-600 mb-2">Projected market growth for AI in Psychiatry:</p>
-                <div ng-repeat="point in marketGrowth" class="mb-2">
-                    <div class="text-lg font-medium">{{point.year}}: <span class="text-green-600">${{point.value}}B</span></div>
-                    <div class="chart-bar bg-blue-600 rounded-md" style="width:{{point.value*5}}%; min-width: 50px;">
-                        <span class="text-xs px-1">{{point.value}}B</span>
+                        <div class="hero-stats">
+                            <div class="stat-card">
+                                <span class="section-note">Projected opportunity</span>
+                                <strong>$14.0B</strong>
+                                <span>Projected serviceable market for AI-enabled precision psychiatry by 2033.</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="section-note">Treatment efficiency target</span>
+                                <strong>70%</strong>
+                                <span>Reduction in clinical trial-and-error prescribing cycles through response prediction.</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
 
-        <!-- Research Section -->
-        <section ng-show="view === 'research'">
-            <h2 class="text-3xl font-semibold mb-4 text-gray-800">Our Research & Innovation</h2>
-            <p class="text-gray-700 text-lg mb-6">At Xschizq, we are at the forefront of applying cutting-edge Artificial Intelligence to transform precision psychiatry. Our research focuses on leveraging advanced computational methods and diverse data modalities to predict and optimize treatment outcomes for mental health disorders.</p>
-
-            <h3 class="text-2xl font-semibold mb-3 text-gray-700">AI/ML Methodologies</h3>
-            <p class="text-gray-700 mb-4">We utilize a range of powerful AI and Machine Learning algorithms, including **Support Vector Machines (SVM)**, **Random Forests (RF)**, **Gradient Boosting Machines (GBM)**, and **Deep Learning (DL) models** like Convolutional Neural Networks (CNNs) and Recurrent Neural Networks (RNNs). These methods are crucial for processing complex, high-dimensional datasets and uncovering subtle patterns indicative of treatment response.</p>
-
-            <h3 class="text-2xl font-semibold mb-3 text-gray-700">Multimodal Data Integration</h3>
-            <p class="text-gray-700 mb-4">Our approach integrates diverse data sources to create a comprehensive "digital twin" of each patient, enabling a holistic understanding of their unique profile:</p>
-            <ul class="list-disc list-inside text-gray-700 mb-4 ml-4">
-                <li><strong>Clinical Data:</strong> Electronic Health Records (EHRs), symptom severity scales, medication history, and clinical notes (analyzed with NLP).</li>
-                <li><strong>Genetic Data:</strong> Pharmacogenomic markers and genetic predispositions influencing drug metabolism and response.</li>
-                <li><strong>Neuroimaging Data:</strong> Insights from MRI, PET, fMRI, and especially **EEG-based biomarkers**, which show high predictive utility for treatment response.</li>
-                <li><strong>Digital Phenotyping:</strong> Continuous, real-time behavioral and physiological data collected passively from smartphones, providing insights into mood, activity, and sleep patterns.</li>
-            </ul>
-
-            <h3 class="text-2xl font-semibold mb-3 text-gray-700">Specific Applications & Predictive Biomarkers</h3>
-            <p class="text-gray-700 mb-4">Our research specifically applies these methods to predict efficacy for D2 receptor partial agonist antipsychotics such as **Aripiprazole, Brexpiprazole, and Cariprazine**. We identify critical predictive biomarkers, including **gamma power in EEG for non-response in bipolar disorder** and **extracellular vesicle proteomics for schizophrenia diagnosis and antipsychotic response**, moving beyond traditional trial-and-error.</p>
-
-            <h3 class="text-2xl font-semibold mb-3 text-gray-700">Accelerating Novel Drug Discovery</h3>
-            <p class="text-gray-700 mb-6">AI plays a transformative role in accelerating the entire drug discovery and development lifecycle. We utilize AI-enabled platforms for *de novo* drug design, identifying novel therapeutic targets (e.g., TAAR1 agonists like Ulotaront, M4 selective agonists like NBI-1117568), optimizing dose regimens, and designing more effective combination therapies. This significantly reduces the time and cost associated with bringing new treatments to patients.</p>
-
-            <p class="text-gray-700 text-lg mt-6">For research collaborations or inquiries into our methodologies, please <a ng-click="setView('contact')" class="text-blue-600 hover:underline cursor-pointer">contact us</a>.</p>
-        </section>
-
-        <!-- News Section -->
-        <section ng-show="view === 'news'">
-            <h2 class="text-3xl font-semibold mb-6 text-gray-800">Latest News & Updates</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div ng-repeat="article in newsArticles" class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">{{ article.title }}</h3>
-                    <p class="text-sm text-gray-500 mb-3">{{ article.date }}</p>
-                    <p class="text-gray-700 text-base mb-4">{{ article.summary }}</p>
-                    <a ng-href="{{ article.link }}" target="_blank" class="text-blue-600 hover:underline font-medium">Read More →</a>
+                <div class="section-grid stats-grid">
+                    <div class="mini-stat">
+                        <span class="section-note">Why now</span>
+                        <strong>Objective inputs</strong>
+                        <span>
+                            Psychiatry still leans heavily on interviews and delayed behavioral observations. The platform
+                            aims to introduce signal-rich evidence into that workflow.
+                        </span>
+                    </div>
+                    <div class="mini-stat accent">
+                        <span class="section-note">Commercial wedge</span>
+                        <strong>Clinical + Pharma</strong>
+                        <span>
+                            Dual motion across hospital decision support and compound efficacy assessment creates
+                            multiple routes to revenue and validation.
+                        </span>
+                    </div>
                 </div>
-            </div>
-            <p class="text-center text-gray-600 mt-8" ng-if="!newsArticles || newsArticles.length === 0">No news articles to display at the moment.</p>
-        </section>
+            </section>
 
-        <!-- Professional Literature Section -->
-        <section ng-show="view === 'literature'">
-            <h2 class="text-3xl font-semibold mb-6 text-gray-800">Relevant Professional Literature</h2>
-            <p class="text-gray-700 text-lg mb-6">Explore key publications and research papers that underpin our AI-powered approach to precision psychiatry.</p>
+            <section class="view" id="view-portal" data-view="portal">
+                <div class="portal-layout">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <div>
+                                <div class="eyebrow">Neural Analysis Engine</div>
+                                <h2 class="panel-title">HIPAA-oriented diagnostic simulation</h2>
+                                <p class="muted">
+                                    Designed as a high-confidence intake surface for qEEG and neurobiological features.
+                                </p>
+                            </div>
+                            <div class="status-chip" id="portalStatusChip">Idle / Awaiting stream</div>
+                        </div>
 
-            <div class="space-y-6">
-                <div ng-repeat="paper in literature" class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">{{ paper.title }}</h3>
-                    <p class="text-gray-600 mb-1">
-                        <span class="font-medium">{{ paper.authors }}</span>. ({{ paper.year }}).
-                        <span class="italic">{{ paper.journal }}</span>.
-                    </p>
-                    <p class="text-gray-700 text-base mb-4" ng-if="paper.summary">{{ paper.summary }}</p>
-                    <a ng-href="{{ paper.link }}" target="_blank" class="text-blue-600 hover:underline font-medium" ng-if="paper.link">
-                        View Paper →
-                    </a>
-                    <span ng-if="!paper.link" class="text-gray-500 text-sm">Link not available</span>
+                        <div class="analysis-stage" id="idleStage">
+                            <div>
+                                <div class="upload-icon">+</div>
+                                <h3>Upload EEG raw stream</h3>
+                                <p class="muted">
+                                    Supports `.EDF`, `.CSV`, and BrainVision exports. This demo simulates an inference run
+                                    without sending patient data anywhere.
+                                </p>
+                                <button type="button" class="primary-button" id="startAnalysisButton">Initialize decoding</button>
+                            </div>
+                        </div>
+
+                        <div class="analysis-stage hidden analyzing" id="analyzingStage" aria-live="polite">
+                            <div class="scan-shell">
+                                <small>Running FFT decomposition</small>
+                                <p class="progress-value" id="progressValue">0%</p>
+                                <div class="progress-track">
+                                    <div class="progress-bar" id="progressBar"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="analysis-stage hidden" id="resultStage">
+                            <div class="result-grid">
+                                <div class="result-topline">
+                                    <div>
+                                        <strong>Patient ID: X-8812</strong>
+                                        <div class="report-meta">Analysis bundle v4.2 / high-confidence readout</div>
+                                    </div>
+                                    <div class="status-chip" style="background: rgba(52, 211, 153, 0.12); border-color: rgba(52, 211, 153, 0.22); color: var(--success);">
+                                        High reliability
+                                    </div>
+                                </div>
+
+                                <div class="result-metrics">
+                                    <div class="metric-block">
+                                        <div class="metric-label">
+                                            <span>Gamma Oscillations</span>
+                                            <span>82%</span>
+                                        </div>
+                                        <div class="metric-track">
+                                            <div class="metric-fill" style="width: 82%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="metric-block">
+                                        <div class="metric-label">
+                                            <span>D2 Receptor Affinity (Pred)</span>
+                                            <span>High</span>
+                                        </div>
+                                        <div class="metric-track">
+                                            <div class="metric-fill indigo" style="width: 65%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="outlook">
+                                    <strong>Clinical outlook</strong>
+                                    <p class="muted">
+                                        Biomarkers suggest higher sensitivity to partial agonists. Simulated pathway:
+                                        aripiprazole or brexpiprazole review before risperidone escalation.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <button type="button" class="secondary-button" id="resetAnalysisButton">Reset dashboard</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="side-stack">
+                        <div class="side-card">
+                            <h3>Pipeline checkpoints</h3>
+                            <div class="pipeline">
+                                <div class="pipeline-item">
+                                    <span>Signal ingest</span>
+                                    <code>qEEG / EDF</code>
+                                </div>
+                                <div class="pipeline-item">
+                                    <span>Feature extraction</span>
+                                    <code>FFT / coherence</code>
+                                </div>
+                                <div class="pipeline-item">
+                                    <span>Model layer</span>
+                                    <code>CNN + rules</code>
+                                </div>
+                                <div class="pipeline-item">
+                                    <span>Clinician brief</span>
+                                    <code>Evidence summary</code>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="side-card">
+                            <h3>Why this interface</h3>
+                            <div class="timeline">
+                                <div class="timeline-item">
+                                    <div class="timeline-dot"></div>
+                                    <div>
+                                        <strong>Structured evidence</strong>
+                                        <span class="muted">Turns raw streams into readable, auditable intermediate steps.</span>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-dot"></div>
+                                    <div>
+                                        <strong>Faster review loop</strong>
+                                        <span class="muted">Simulates the kind of handoff a psychiatrist or reviewer would need.</span>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-dot"></div>
+                                    <div>
+                                        <strong>Presentation-ready</strong>
+                                        <span class="muted">Investor and technical audiences can both trace the workflow.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <p class="text-center text-gray-600 mt-8" ng-if="!literature || literature.length === 0">No literature entries to display at the moment.</p>
-        </section>
+            </section>
+ 
+            <section class="view" id="view-audit" data-view="audit">
+                <div class="report-card">
+                    <div class="report-header">
+                        <div>
+                            <div class="eyebrow">Strategic Assessment Report</div>
+                            <h2 class="report-title">Verification of leadership, infrastructure, and computational paradigms.</h2>
+                        </div>
+                        <div class="report-meta">Prepared for diligence review / 2026</div>
+                    </div>
 
+                    <div class="report-body">
+                        <section class="report-section">
+                            <h3>1. Technical framework</h3>
+                            <p class="muted">
+                                Xschizq AI targets the limits of subjective symptom reporting by modeling neurobiological
+                                biomarkers across volumetric imaging and electrophysiological data. The proposed system
+                                references 3D convolutional analysis for fMRI studies such as COBRE and MCIC, then routes
+                                outputs into clinician-readable summaries.
+                            </p>
+                            <div class="math-box">
+                                <div>H_in = X * W_input + b_input</div>
+                                <div>H_out = ReLU(H_in)</div>
+                                <div>O_out = softmax(H_out * W_output + b_output)</div>
+                            </div>
+                        </section>
 
-        <!-- "Contact (Inquiry)" section - now a simple mailto form -->
-        <section ng-show="view === 'tickets'">
-            <h2 class="text-3xl font-semibold mb-4 text-gray-800">Send an Inquiry or Report</h2>
-            <form action="mailto:nsh531@gmail.com" method="post" enctype="text/plain" class="bg-gray-50 p-6 rounded-lg shadow-md mb-6">
-                <input type="text" name="subject" placeholder="Subject of your message" required
-                       class="w-full p-3 mb-4 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                <textarea name="body" placeholder="Describe your inquiry/report..." required
-                          class="w-full p-3 mb-4 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 min-h-[100px]"></textarea>
-                
-                <button type="submit"
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105">
-                    Send Email
-                </button>
-            </form>
-            <p class="text-center text-gray-600">This action will open your default email client.</p>
-        </section>
+                        <section class="report-section">
+                            <h3>2. Core leadership matrix</h3>
+                            <div class="leaders-grid" id="leadersGrid"></div>
+                        </section>
 
-        <!-- "Register (Contact)" section - now a simple mailto form -->
-        <section ng-show="view === 'register'">
-            <h2 class="text-3xl font-semibold mb-4 text-gray-800">Register for Contact</h2>
-            <form action="mailto:nsh531@gmail.com" method="post" enctype="text/plain" class="bg-gray-50 p-6 rounded-lg shadow-md">
-                <input type="text" name="name" placeholder="Full Name" required
-                       class="w-full p-3 mb-4 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                <input type="email" name="email" placeholder="Email" required
-                       class="w-full p-3 mb-4 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                <input type="text" name="organization" placeholder="Organization (Optional)"
-                       class="w-full p-3 mb-4 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                <input type="hidden" name="subject" value="New Client Contact Registration for Xschizq">
-                <!-- Using Angular's ng-model for dynamic value in mailto body (may require user interaction to confirm) -->
-                <input type="hidden" name="body" ng-value="'Client Details: Name - ' + client.name + ', Email - ' + client.email + ', Organization - ' + client.organization">
-                
-                <button type="submit"
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105">
-                    Register and Send Email
-                </button>
-            </form>
-             <p class="text-center text-gray-600 mt-4">This action will open your default email client with your details pre-filled.</p>
-        </section>
+                        <section class="report-section">
+                            <h3>3. Infrastructure inventory</h3>
+                            <div class="inventory-grid">
+                                <div class="inventory-head">
+                                    <div class="inventory-cell head">Asset</div>
+                                    <div class="inventory-cell head">Tech stack</div>
+                                    <div class="inventory-cell head">Clinical focus</div>
+                                </div>
 
-        <!-- Contact Details section -->
-        <section ng-show="view === 'contact'">
-            <h2 class="text-3xl font-semibold mb-4 text-gray-800">Contact Details</h2>
-            <p class="text-gray-700 text-lg">Netanel Stern – Founder</p>
-            <p class="text-gray-700 text-lg">Email: <a href="mailto:nsh531@gmail.com" class="text-blue-600 hover:underline">nsh531@gmail.com</a></p>
-            <p class="text-gray-700 text-lg">
-                <a href="https://linkedin.com" target="_blank" class="text-blue-600 hover:underline">LinkedIn</a> |
-                <a href="https://twitter.com" target="_blank" class="text-blue-600 hover:underline">Twitter</a>
-            </p>
-        </section>
+                                <div class="inventory-row">
+                                    <div class="inventory-cell" data-label="Asset"><em>xschizo</em></div>
+                                    <div class="inventory-cell" data-label="Tech stack">Python, PLSQL, COBRE</div>
+                                    <div class="inventory-cell" data-label="Clinical focus">fMRI biomarker identification</div>
+                                </div>
+
+                                <div class="inventory-row">
+                                    <div class="inventory-cell" data-label="Asset"><em>gammau-crwd</em></div>
+                                    <div class="inventory-cell" data-label="Tech stack">Django, FalconPy</div>
+                                    <div class="inventory-cell" data-label="Clinical focus">Secure remote diagnoses</div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </section>
+
+            <section class="view" id="view-pager" data-view="pager">
+                <div class="paper-card">
+                    <div class="paper-header">
+                        <div>
+                            <div class="paper-eyebrow">Strategic One-Pager 2026</div>
+                            <h2>Xschizq</h2>
+                        </div>
+                        <div class="mono soft">CONFIDENTIAL // N. STERN</div>
+                    </div>
+
+                    <div class="summary-grid">
+                        <div>
+                            <h3>Mission</h3>
+                            <p>
+                                "Bridging the gap between neuroimaging engineering and clinical psychiatry through
+                                multi-omics AI."
+                            </p>
+                            <div class="tag-row">
+                                <span class="tag">RAG-assisted literature synthesis</span>
+                                <span class="tag">qEEG spectral feature fusion</span>
+                                <span class="tag">Case-study generation</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3>Revenue strategy</h3>
+                            <p>
+                                Dual licensing motion: clinical SaaS for psychiatric wards and pharma R&amp;D partnerships
+                                for compound efficacy assessment.
+                            </p>
+                            <p class="muted">
+                                The positioning emphasizes decision support and translational research rather than a
+                                consumer-facing mental health product.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="contact-grid">
+                        <div class="contact-card">
+                            <h3>Validated Contact Node</h3>
+                            <strong>Netanel Stern</strong>
+                            <div class="soft">Penn Medicine Affiliated</div>
+                            <a href="mailto:nsh531@gmail.com">nsh531@gmail.com</a>
+                        </div>
+                        <div class="contact-card">
+                            <h3>Israel Lab</h3>
+                            <strong>Sifan 5, Rosh Haayin</strong>
+                            <div class="soft">+972 55 970 8708</div>
+                        </div>
+                        <div class="contact-card">
+                            <h3>Digital Presence</h3>
+                            <strong>GitHub: NSH531</strong>
+                            <div class="soft">Domain intentionally omitted</div>
+                        </div>
+                        <div class="contact-card">
+                            <h3>Expert Contacts</h3>
+                            <div class="expert-list" id="expertsContactList"></div>
+                        </div>
+                    </div>
+
+                    <div class="print-only">
+                        <p class="mono soft">End of report</p>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
 
-    <!-- Footer -->
-    <footer class="text-center p-4 mt-8 bg-gray-900 text-gray-400 text-sm rounded-t-lg shadow-lg">
-        © 2025 Xschizq. All rights reserved.
-    </footer>
-
-    <!-- AngularJS Library -->
     <script>
-        // Function to show custom alert modal, replacing native alert()
-        window.showAlert = function(message) {
-            document.getElementById('modalMessage').innerText = message;
-            document.getElementById('customAlertModal').style.display = 'flex';
+        const leaders = [
+            {
+                name: "Netanel Stern",
+                role: "Technical Architect & PI",
+                email: "nsh531@gmail.com",
+                desc: "Expert in clinical AI workflows and radiology systems. Penn Medicine (University City) & L.H.V Properties."
+            },
+            {
+                name: "Dr. Elena Volkov",
+                role: "EHR Integration Advisor",
+                contactLabel: "No public email verified; request intro via nsh531@gmail.com",
+                contactHref: "mailto:nsh531@gmail.com?subject=Introduction%20request%20for%20Dr.%20Elena%20Volkov",
+                desc: "Specializing in the transition of unstructured patient data into predictive clinical insights."
+            },
+            {
+                name: "Prof. Isaac Stern",
+                role: "Clinical & Humanistic Lead",
+                contactLabel: "No public email verified; request intro via nsh531@gmail.com",
+                contactHref: "mailto:nsh531@gmail.com?subject=Introduction%20request%20for%20Prof.%20Isaac%20Stern",
+                desc: "Translating neurobiological abstraction into human-centered psychiatric interfaces."
+            },
+            {
+                name: "Dr. Alex Murphy",
+                role: "Multi-Omics Specialist",
+                contactLabel: "No public UCSF email found; request intro via nsh531@gmail.com",
+                contactHref: "mailto:nsh531@gmail.com?subject=Introduction%20request%20for%20Dr.%20Alex%20Murphy",
+                desc: "UCSF Postdoctoral Fellow specializing in genomic regulation and chromosome folding."
+            }
+        ];
+
+        const navButtons = Array.from(document.querySelectorAll("[data-view-target]"));
+        const viewSections = Array.from(document.querySelectorAll("[data-view]"));
+        const mobileViewSelect = document.getElementById("mobileViewSelect");
+        const printButton = document.getElementById("printButton");
+        const leadersGrid = document.getElementById("leadersGrid");
+        const expertsContactList = document.getElementById("expertsContactList");
+
+        const idleStage = document.getElementById("idleStage");
+        const analyzingStage = document.getElementById("analyzingStage");
+        const resultStage = document.getElementById("resultStage");
+        const statusChip = document.getElementById("portalStatusChip");
+        const startAnalysisButton = document.getElementById("startAnalysisButton");
+        const resetAnalysisButton = document.getElementById("resetAnalysisButton");
+        const progressValue = document.getElementById("progressValue");
+        const progressBar = document.getElementById("progressBar");
+
+        let activeView = "deck";
+        let analysisProgress = 0;
+        let analysisTimer = null;
+
+        function renderLeadContact(lead, fallbackText = "Contact available on request") {
+            if (lead.email) {
+                return `<a href="mailto:${lead.email}">${lead.email}</a>`;
+            }
+
+            if (lead.contactHref && lead.contactLabel) {
+                return `<a href="${lead.contactHref}">${lead.contactLabel}</a>`;
+            }
+
+            return `<span class="contact-note">${lead.contactLabel || fallbackText}</span>`;
         }
 
-        // Define the main AngularJS module and its dependencies
-        angular.module('xschiqApp', [])
-            // Main Controller: Manages global view state and market monitoring data.
-            .controller('MainController', ['$scope', function($scope) {
-                // Initialize scope variables for view management
-                $scope.view = 'home';
-                // Add 'literature' to the possible views
-                $scope.setView = view => $scope.view = view; 
-                
-                // Sample market growth data for the Market Monitoring section
-                $scope.marketGrowth = [
-                    { year: 2024, value: 1.3 },
-                    { year: 2026, value: 3.5 },
-                    { year: 2028, value: 6.8 },
-                    { year: 2030, value: 10.1 },
-                    { year: 2033, value: 14.0 }
-                ];
+        function renderLeaders() {
+            leadersGrid.innerHTML = leaders.map((lead) => `
+                <article class="leader-card">
+                    <h4>${lead.name}</h4>
+                    <div class="leader-role">${lead.role}</div>
+                    <p class="muted">${lead.desc}</p>
+                    ${renderLeadContact(lead)}
+                </article>
+            `).join("");
+        }
 
-                // Sample news articles data for the News section
-                $scope.newsArticles = [ ];
+        function renderExpertContacts() {
+            const experts = leaders.filter((lead) => lead.name !== "Netanel Stern");
+            expertsContactList.innerHTML = experts.map((lead) => `
+                <div class="expert-line">
+                    <strong>${lead.name}</strong>
+                    <div class="soft">${lead.role}</div>
+                    ${renderLeadContact(lead, "Contact via lead investigator")}
+                </div>
+            `).join("");
+        }
 
-                // Sample professional literature data with actual example links
-                $scope.literature = [
-                    {
-                        title: "Predicting response to olanzapine treatment in first-episode schizophrenia using machine learning and resting-state EEG data",
-                        authors: "Luo, Y., Li, M., He, Y. et al.",
-                        journal: "Translational Psychiatry",
-                        year: "2021",
-                        summary: "This study demonstrates the efficacy of machine learning models integrating EEG signals for predicting response to antipsychotic medication in first-episode schizophrenia.",
-                        link: "https://www.nature.com/articles/s41398-021-01297-3"
-                    },
-                    {
-                        title: "Pharmacogenomics in Psychiatry: A Review of the Evidence and Clinical Implementation",
-                        authors: "Fabbri, C., Zohar, J., Serretti, A.",
-                        journal: "Journal of Personalized Medicine",
-                        year: "2019",
-                        summary: "A comprehensive review of genetic markers influencing drug metabolism and treatment outcomes in various psychiatric disorders, discussing clinical implementation.",
-                        link: "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6494200/"
-                    },
-                    {
-                        title: "Smartphone-based digital phenotyping in bipolar disorder: A systematic review",
-                        authors: "Zulueta, J., Piscitello, A., Meca, J. et al.",
-                        journal: "Journal of Affective Disorders",
-                        year: "2021",
-                        summary: "A systematic review exploring the use of smartphone-collected data for continuous monitoring and understanding of bipolar disorder patients.",
-                        link: "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8423377/"
-                    },
-                    {
-                        title: "Artificial intelligence in drug discovery for psychiatric disorders",
-                        authors: "Zhu, H., Li, X., Liu, Y. et al.",
-                        journal: "Translational Psychiatry",
-                        year: "2023",
-                        summary: "Discusses advancements in AI techniques for identifying new therapeutic targets and accelerating drug development in mental health.",
-                        link: "https://www.nature.com/articles/s41398-023-02430-y"
-                    },
-                    {
-                        title: "EEG-based biomarkers for predicting antipsychotic treatment response in schizophrenia: a systematic review",
-                        authors: "Re R., Howes O., Lally J.",
-                        journal: "NPJ Schizophrenia",
-                        year: "2021",
-                        summary: "A systematic review of EEG biomarkers and their utility in predicting response to antipsychotic treatments in schizophrenia.",
-                        link: "https://www.nature.com/articles/s41537-020-00133-w"
-                    }
-                ];
+        function setActiveView(viewName) {
+            activeView = viewName;
 
-                // Models for the "Register for Contact" form
-                $scope.client = {}; 
+            navButtons.forEach((button) => {
+                const isActive = button.dataset.viewTarget === viewName;
+                button.classList.toggle("active", isActive);
+            });
 
-            }]);
+            viewSections.forEach((section) => {
+                section.classList.toggle("active", section.dataset.view === viewName);
+            });
+
+            if (mobileViewSelect.value !== viewName) {
+                mobileViewSelect.value = viewName;
+            }
+
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        function setPortalState(state) {
+            idleStage.classList.toggle("hidden", state !== "idle");
+            analyzingStage.classList.toggle("hidden", state !== "analyzing");
+            resultStage.classList.toggle("hidden", state !== "result");
+
+            if (state === "idle") {
+                statusChip.textContent = "Idle / Awaiting stream";
+            } else if (state === "analyzing") {
+                statusChip.textContent = "Processing / FFT + feature scan";
+            } else {
+                statusChip.textContent = "Complete / Summary ready";
+            }
+        }
+
+        function resetAnalysis() {
+            window.clearInterval(analysisTimer);
+            analysisTimer = null;
+            analysisProgress = 0;
+            progressValue.textContent = "0%";
+            progressBar.style.width = "0%";
+            setPortalState("idle");
+        }
+
+        function runAnalysis() {
+            window.clearInterval(analysisTimer);
+            analysisTimer = null;
+            analysisProgress = 0;
+            progressValue.textContent = "0%";
+            progressBar.style.width = "0%";
+            setPortalState("analyzing");
+
+            analysisTimer = window.setInterval(() => {
+                analysisProgress += 4;
+                if (analysisProgress > 100) {
+                    analysisProgress = 100;
+                }
+
+                progressValue.textContent = `${analysisProgress}%`;
+                progressBar.style.width = `${analysisProgress}%`;
+
+                if (analysisProgress >= 100) {
+                    window.clearInterval(analysisTimer);
+                    analysisTimer = null;
+                    window.setTimeout(() => {
+                        setPortalState("result");
+                    }, 320);
+                }
+            }, 80);
+        }
+
+        navButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+                setActiveView(button.dataset.viewTarget);
+            });
+        });
+
+        mobileViewSelect.addEventListener("change", (event) => {
+            setActiveView(event.target.value);
+        });
+
+        startAnalysisButton.addEventListener("click", runAnalysis);
+        resetAnalysisButton.addEventListener("click", resetAnalysis);
+        printButton.addEventListener("click", () => window.print());
+
+        renderLeaders();
+        renderExpertContacts();
+        resetAnalysis();
+        setActiveView(activeView);
     </script>
 </body>
 </html>
