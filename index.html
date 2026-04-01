@@ -430,6 +430,124 @@
             border-top: 1px solid rgba(17, 32, 48, 0.08);
         }
 
+        .detail-grid {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            margin-top: 24px;
+        }
+
+        .detail-card {
+            padding: 22px;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .detail-card h3 {
+            margin: 0 0 10px;
+            font-size: 1rem;
+        }
+
+        .kpi-strip {
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            margin-top: 24px;
+        }
+
+        .kpi {
+            padding: 18px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .kpi strong {
+            display: block;
+            margin-top: 8px;
+            font-size: 1.5rem;
+        }
+
+        .signal-list {
+            display: grid;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .signal-item {
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .signal-item strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .audience-grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            margin-top: 24px;
+        }
+
+        .audience-card {
+            padding: 24px;
+            border-radius: 26px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: var(--shadow);
+        }
+
+        .audience-card.research {
+            background: linear-gradient(180deg, rgba(96, 165, 250, 0.08), rgba(255, 255, 255, 0.04));
+        }
+
+        .audience-card.clinical {
+            background: linear-gradient(180deg, rgba(45, 212, 191, 0.08), rgba(255, 255, 255, 0.04));
+        }
+
+        .audience-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-family: "IBM Plex Mono", monospace;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--cyan);
+            background: rgba(45, 212, 191, 0.08);
+            border: 1px solid rgba(45, 212, 191, 0.16);
+        }
+
+        .audience-card h3 {
+            margin: 16px 0 10px;
+            font-size: 1.15rem;
+        }
+
+        .audience-list {
+            display: grid;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .audience-item {
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .audience-item strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
         .stats-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
@@ -986,6 +1104,9 @@
             .portal-layout,
             .stats-grid,
             .project-grid,
+            .detail-grid,
+            .kpi-strip,
+            .audience-grid,
             .leaders-grid,
             .summary-grid,
             .contact-grid,
@@ -1129,6 +1250,7 @@
                 <option value="deck">Investor Deck</option>
                 <option value="portal">Diagnostic Portal</option>
                 <option value="audit">Technical Audit</option>
+                <option value="penux">penuX Subsite</option>
                 <option value="pager">Executive Summary</option>
             </select>
         </div>
@@ -1157,8 +1279,12 @@
                     <span>03</span>
                     <span>Technical Audit</span>
                 </button>
-                <button type="button" class="nav-link" data-view-target="pager">
+                <button type="button" class="nav-link" data-view-target="penux">
                     <span>04</span>
+                    <span>penuX Subsite</span>
+                </button>
+                <button type="button" class="nav-link" data-view-target="pager">
+                    <span>05</span>
                     <span>Executive Summary</span>
                 </button>
             </nav>
@@ -1384,8 +1510,74 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="panel-card" style="padding: 32px; margin-top: 24px;">
+                    <h3 class="section-title">Researcher and clinician interface</h3>
+                    <p class="muted">
+                        The primary site now separates a research workflow from a clinician workflow so the same
+                        analysis engine can support technical validation, bilingual document intake, and decision-ready
+                        clinical summaries.
+                    </p>
+                    <div class="audience-grid">
+                        <article class="audience-card research">
+                            <span class="audience-label">Research Interface</span>
+                            <h3>Research workspace</h3>
+                            <p class="muted">
+                                Built for EEG investigators, validation teams, and computational reviewers who need
+                                direct visibility into anomaly windows, latent patterns, and reproducible exports.
+                            </p>
+                            <div class="audience-list">
+                                <div class="audience-item">
+                                    <strong>Cohort and protocol review</strong>
+                                    <span class="muted">Compare acquisition settings, cohorts, channel layouts, and sampling assumptions before interpretation.</span>
+                                </div>
+                                <div class="audience-item">
+                                    <strong>Anomaly and latent inspection</strong>
+                                    <span class="muted">Inspect window-level anomalies, channel importance, and the deep model's compressed representation.</span>
+                                </div>
+                                <div class="audience-item">
+                                    <strong>Research export surface</strong>
+                                    <span class="muted">Carry forward JSON outputs for notebooks, audit trails, reproducibility checks, and follow-on studies.</span>
+                                </div>
+                            </div>
+                            <div class="pill-row" style="margin-top: 18px;">
+                                <span class="pill">Protocol QA</span>
+                                <span class="pill">Anomaly Maps</span>
+                                <span class="pill">JSON Export</span>
+                            </div>
+                        </article>
+
+                        <article class="audience-card clinical">
+                            <span class="audience-label">Clinical Interface</span>
+                            <h3>Clinician workspace</h3>
+                            <p class="muted">
+                                Designed for psychiatrists, neurologists, and diagnostic teams who need a fast handoff
+                                from raw signal and written reports to a readable clinical brief.
+                            </p>
+                            <div class="audience-list">
+                                <div class="audience-item">
+                                    <strong>Bilingual intake</strong>
+                                    <span class="muted">Accept EEG files alongside diagnostic reports written in Hebrew or English from the same screen.</span>
+                                </div>
+                                <div class="audience-item">
+                                    <strong>Patient-ready summary</strong>
+                                    <span class="muted">Highlight confidence, notable signal changes, and a concise interpretation path for case review.</span>
+                                </div>
+                                <div class="audience-item">
+                                    <strong>Decision support handoff</strong>
+                                    <span class="muted">Prepare a compact packet for multidisciplinary discussion, chart review, and next-step planning.</span>
+                                </div>
+                            </div>
+                            <div class="pill-row" style="margin-top: 18px;">
+                                <span class="pill">Hebrew / English</span>
+                                <span class="pill">Clinical Brief</span>
+                                <span class="pill">Case Handoff</span>
+                            </div>
+                        </article>
+                    </div>
+                </div>
             </section>
- 
+
             <section class="view" id="view-audit" data-view="audit">
                 <div class="report-card">
                     <div class="report-header">
@@ -1428,6 +1620,284 @@
                                 <div id="inventoryRows"></div>
                             </div>
                         </section>
+                    </div>
+                </div>
+
+                <div class="panel-card" style="padding: 32px; margin-top: 24px;">
+                    <h3 class="section-title">ממשק חוקרים וממשק קלינאים</h3>
+                    <p class="muted">
+                        האתר הראשי כולל עכשיו שני מסלולי עבודה ייעודיים: סביבת חקירה למחקר חישובי וסביבת תרגום
+                        לקלינאים שצריכים סיכום מהיר, בטוח וקריא בעברית או באנגלית.
+                    </p>
+                    <div class="audience-grid">
+                        <article class="audience-card research">
+                            <span class="audience-label">Research Interface</span>
+                            <h3>מרחב עבודה לחוקרים</h3>
+                            <p class="muted">
+                                מיועד לחוקרי EEG, data scientists וצוותי ולידציה שרוצים לראות את שכבות הפענוח,
+                                חלונות החריגה והחיבורים בין אות גולמי, embedding ותוצרים בני יצוא.
+                            </p>
+                            <div class="audience-list">
+                                <div class="audience-item">
+                                    <strong>Cohort and protocol review</strong>
+                                    <span class="muted">השוואת פרוטוקולים, תיוגי cohort, ובקרה על קצב דגימה ופורמט הקלט.</span>
+                                </div>
+                                <div class="audience-item">
+                                    <strong>Anomaly and latent inspection</strong>
+                                    <span class="muted">בדיקת חלונות חריגים, channel importance ווקטורי latent ישירות מתוך המנוע.</span>
+                                </div>
+                                <div class="audience-item">
+                                    <strong>Export surface</strong>
+                                    <span class="muted">ייצוא JSON למחקר המשך, audit trail ותיעוד לצורכי שיחזור ותיקוף.</span>
+                                </div>
+                            </div>
+                            <div class="pill-row" style="margin-top: 18px;">
+                                <span class="pill">Protocol QA</span>
+                                <span class="pill">Anomaly Maps</span>
+                                <span class="pill">JSON Export</span>
+                            </div>
+                        </article>
+
+                        <article class="audience-card clinical">
+                            <span class="audience-label">Clinical Interface</span>
+                            <h3>מרחב עבודה לקלינאים</h3>
+                            <p class="muted">
+                                מותאם לפסיכיאטרים, נוירולוגים וצוותי אבחון שצריכים תרגום מהיר מהמודל לשפה קלינית,
+                                כולל מסמכים בעברית או באנגלית והמלצות פעולה ברמת מקרה.
+                            </p>
+                            <div class="audience-list">
+                                <div class="audience-item">
+                                    <strong>Bilingual intake</strong>
+                                    <span class="muted">קליטת EEG לצד דוחות אבחון כתובים בעברית או באנגלית באותו מסך עבודה.</span>
+                                </div>
+                                <div class="audience-item">
+                                    <strong>Patient-ready summaries</strong>
+                                    <span class="muted">הפקת תמצית קלינית ברורה עם דגלי אמינות, חריגות בולטות ונתיב טיפולי מוצע.</span>
+                                </div>
+                                <div class="audience-item">
+                                    <strong>Decision support handoff</strong>
+                                    <span class="muted">מבנה מסירה שנועד לוועדות, שיחות case review ותיעוד במערכות המשך.</span>
+                                </div>
+                            </div>
+                            <div class="pill-row" style="margin-top: 18px;">
+                                <span class="pill">Hebrew / English</span>
+                                <span class="pill">Clinical Summary</span>
+                                <span class="pill">Case Handoff</span>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </section>
+
+            <section class="view" id="view-penux" data-view="penux">
+                <div class="hero-card">
+                    <div class="eyebrow">penuX / MIMIC Demo</div>
+                    <div class="hero-grid">
+                        <div class="hero-copy">
+                            <h2>Pathogen class prediction from hospital data.</h2>
+                            <p>
+                                penuX is a research/demo pipeline built around <code>mimic3.py</code>, designed to auto-discover
+                                MIMIC-III and MIMIC-IV roots, build mixed text + medication + early-vitals features,
+                                and train a PyTorch multiclass classifier with calibration-aware evaluation.
+                            </p>
+                            <div class="pill-row">
+                                <span class="pill">MIMIC-III / MIMIC-IV</span>
+                                <span class="pill">PyTorch-first</span>
+                                <span class="pill">One-file pipeline</span>
+                                <span class="pill">Calibration outputs</span>
+                            </div>
+                        </div>
+                        <div class="hero-stats">
+                            <div class="stat-card">
+                                <span class="section-note">Primary script</span>
+                                <strong>mimic3.py</strong>
+                                <span>Single-file demo pipeline for data discovery, ETL, training, and evaluation.</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="section-note">Intended use</span>
+                                <strong>Research only</strong>
+                                <span>Explicitly framed in the repo as research/education, not clinical deployment.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-strip">
+                    <div class="kpi">
+                        <span class="section-note">Model shape</span>
+                        <strong>Hybrid NN</strong>
+                    </div>
+                    <div class="kpi">
+                        <span class="section-note">Signal types</span>
+                        <strong>3 feature groups</strong>
+                    </div>
+                    <div class="kpi">
+                        <span class="section-note">Outputs</span>
+                        <strong>ROC / PR / ECE</strong>
+                    </div>
+                    <div class="kpi">
+                        <span class="section-note">Repo</span>
+                        <strong><a href="https://github.com/netanelcyber/penuX" class="contact-note">netanelcyber/penuX</a></strong>
+                    </div>
+                </div>
+
+                <div class="detail-grid">
+                    <article class="detail-card">
+                        <h3>What the model learns</h3>
+                        <p class="muted">
+                            The README describes a fixed-order multiclass pathogen prediction task using microbiology text,
+                            antibiotic exposures, and an early-hour vitals/labs window extracted from MIMIC.
+                        </p>
+                        <div class="signal-list">
+                            <div class="signal-item">
+                                <strong>Short categorical text</strong>
+                                <span class="muted">Microbiology descriptors and interpretations mapped into token sequences.</span>
+                            </div>
+                            <div class="signal-item">
+                                <strong>Antibiotic exposure</strong>
+                                <span class="muted">One-hot medication signals summarized at the admission level.</span>
+                            </div>
+                            <div class="signal-item">
+                                <strong>Early vitals / labs</strong>
+                                <span class="muted">A configurable clinical window used for numeric feature construction.</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="detail-card">
+                        <h3>Deep-learning architecture</h3>
+                        <p class="muted">
+                            The repo frames penuX as a PyTorch-first model using Embedding, Conv1d, and LSTM components,
+                            fused with numeric features before a multiclass prediction head.
+                        </p>
+                        <div class="signal-list">
+                            <div class="signal-item">
+                                <strong>ONE FILE</strong>
+                                <span class="muted">Discovery, ETL, training, evaluation, and plotting live in one script.</span>
+                            </div>
+                            <div class="signal-item">
+                                <strong>No pandas</strong>
+                                <span class="muted">Streaming CSV and gzip parsing keeps the pipeline light for demo use.</span>
+                            </div>
+                            <div class="signal-item">
+                                <strong>Calibration-aware</strong>
+                                <span class="muted">The README explicitly calls out Brier/ECE-style evaluation and reliability plots.</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="detail-card">
+                        <h3>Bilingual research surface</h3>
+                        <p class="muted">
+                            The repository README is structured in both Hebrew and English, which makes penuX a strong fit
+                            for a dedicated sub-site rather than a one-line portfolio mention.
+                        </p>
+                        <div class="signal-list">
+                            <div class="signal-item">
+                                <strong>Hebrew + English</strong>
+                                <span class="muted">The project narrative, warnings, and documentation are presented bilingually.</span>
+                            </div>
+                            <div class="signal-item">
+                                <strong>MIMIC positioning</strong>
+                                <span class="muted">Anchored around PhysioNet-hosted MIMIC-III/MIMIC-IV datasets and demo subsets.</span>
+                            </div>
+                            <div class="signal-item">
+                                <strong>Responsible use</strong>
+                                <span class="muted">The README explicitly warns that this is not for clinical decision-making.</span>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="panel-card" style="padding: 32px; margin-top: 24px;">
+                    <h3 class="section-title">penuX Runtime Story</h3>
+                    <p class="muted">
+                        Based on the public README, the sub-site centers on an auto-discovery pipeline for MIMIC roots,
+                        mixed feature building, PyTorch training, and rich evaluation that includes calibration artifacts.
+                    </p>
+                    <div class="pipeline" style="margin-top: 18px;">
+                        <div class="pipeline-item">
+                            <span>1. Discover data roots</span>
+                            <code>MIMIC-III / IV</code>
+                        </div>
+                        <div class="pipeline-item">
+                            <span>2. Stream ETL without pandas</span>
+                            <code>CSV / CSV.GZ</code>
+                        </div>
+                        <div class="pipeline-item">
+                            <span>3. Train hybrid PyTorch model</span>
+                            <code>Embedding + Conv1d + LSTM</code>
+                        </div>
+                        <div class="pipeline-item">
+                            <span>4. Evaluate and calibrate</span>
+                            <code>ROC / PR / Brier / ECE</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-card" style="padding: 32px; margin-top: 24px;">
+                    <h3 class="section-title">penuX interfaces for researchers and clinicians</h3>
+                    <p class="muted">
+                        The secondary site now carries its own dual-surface design: one interface for research teams
+                        working with MIMIC-derived data and one interface for clinicians who need a concise, safety-first
+                        translation of the model story.
+                    </p>
+                    <div class="audience-grid">
+                        <article class="audience-card research">
+                            <span class="audience-label">Research Interface</span>
+                            <h3>penuX research workspace</h3>
+                            <p class="muted">
+                                Built for bioinformatics researchers, clinical ML teams, and data engineers tracing how
+                                the pipeline configures data roots, assembles features, and evaluates calibration.
+                            </p>
+                            <div class="audience-list">
+                                <div class="audience-item">
+                                    <strong>Dataset configuration</strong>
+                                    <span class="muted">Review MIMIC-III and MIMIC-IV path assumptions, early-hour windows, and filtering choices.</span>
+                                </div>
+                                <div class="audience-item">
+                                    <strong>Model diagnostics</strong>
+                                    <span class="muted">Inspect the hybrid Embedding, Conv1d, and LSTM stack together with ROC, PR, and calibration outputs.</span>
+                                </div>
+                                <div class="audience-item">
+                                    <strong>Artifact review</strong>
+                                    <span class="muted">Track plots, tables, and intermediate artifacts needed for reproducibility and peer review.</span>
+                                </div>
+                            </div>
+                            <div class="pill-row" style="margin-top: 18px;">
+                                <span class="pill">MIMIC Roots</span>
+                                <span class="pill">Model Diagnostics</span>
+                                <span class="pill">Calibration</span>
+                            </div>
+                        </article>
+
+                        <article class="audience-card clinical">
+                            <span class="audience-label">Clinical Interface</span>
+                            <h3>Clinician translation layer</h3>
+                            <p class="muted">
+                                Designed for clinical stakeholders who need to understand the project intent, the research-only
+                                safety boundaries, and the bilingual framing without stepping through the codebase.
+                            </p>
+                            <div class="audience-list">
+                                <div class="audience-item">
+                                    <strong>Case translation layer</strong>
+                                    <span class="muted">Translate model outputs into plain-language descriptions suitable for team review and stakeholder briefings.</span>
+                                </div>
+                                <div class="audience-item">
+                                    <strong>Safety framing</strong>
+                                    <span class="muted">Keep the research-only positioning visible so the sub-site does not overstate clinical readiness.</span>
+                                </div>
+                                <div class="audience-item">
+                                    <strong>Bilingual reporting</strong>
+                                    <span class="muted">Surface summaries, caveats, and collaboration notes in Hebrew and English for mixed teams.</span>
+                                </div>
+                            </div>
+                            <div class="pill-row" style="margin-top: 18px;">
+                                <span class="pill">Case Translation</span>
+                                <span class="pill">Research Safety</span>
+                                <span class="pill">Bilingual Reports</span>
+                            </div>
+                        </article>
                     </div>
                 </div>
             </section>
