@@ -379,6 +379,57 @@
             margin-top: 24px;
         }
 
+        .project-grid {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            margin-top: 24px;
+        }
+
+        .project-card {
+            padding: 20px;
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .project-card h3 {
+            margin: 10px 0 8px;
+            font-size: 1rem;
+        }
+
+        .repo-label {
+            font-family: "IBM Plex Mono", monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--cyan);
+        }
+
+        .project-card p,
+        .repo-note {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .project-card a,
+        .contact-repos a {
+            color: var(--blue);
+            text-decoration: none;
+        }
+
+        .contact-repos {
+            display: grid;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .contact-repo-item {
+            padding: 10px 0;
+            border-top: 1px solid rgba(17, 32, 48, 0.08);
+        }
+
         .stats-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
@@ -778,6 +829,10 @@
             display: contents;
         }
 
+        #inventoryRows {
+            display: contents;
+        }
+
         .inventory-cell {
             padding: 16px;
             min-height: 100%;
@@ -930,6 +985,7 @@
             .hero-grid,
             .portal-layout,
             .stats-grid,
+            .project-grid,
             .leaders-grid,
             .summary-grid,
             .contact-grid,
@@ -1170,6 +1226,14 @@
                         </span>
                     </div>
                 </div>
+
+                <div class="panel-card" style="padding: 32px; margin-top: 24px;">
+                    <h3 class="section-title">Public Project Footprint</h3>
+                    <p class="muted">
+                        Selected repository mentions tied to the `nsh531` and `netanelcyber` public GitHub footprint.
+                    </p>
+                    <div class="project-grid" id="projectMentionsGrid"></div>
+                </div>
             </section>
 
             <section class="view" id="view-portal" data-view="portal">
@@ -1178,29 +1242,42 @@
                         <div class="panel-header">
                             <div>
                                 <div class="eyebrow">Neural Analysis Engine</div>
-                                <h2 class="panel-title">HIPAA-oriented diagnostic simulation</h2>
+                                <h2 class="panel-title">Deep learning–backed EEG decoding</h2>
                                 <p class="muted">
-                                    Designed as a high-confidence intake surface for qEEG and neurobiological features.
+                                    Server-side inference (1D conv autoencoder + FFT) runs in the FastAPI service
+                                    at <code>/analyze</code>. Upload raw EEG streams to get bandpower, anomaly windows, and
+                                    channel importance in one JSON response.
                                 </p>
                             </div>
                             <div class="status-chip" id="portalStatusChip">Idle / Awaiting stream</div>
                         </div>
 
                         <div class="analysis-stage" id="idleStage">
-                            <div>
+                            <div class="space-y-4">
                                 <div class="upload-icon">+</div>
-                                <h3>Upload EEG raw stream</h3>
+                                <h3>Upload EEG stream or diagnostic PDF</h3>
                                 <p class="muted">
-                                    Supports `.EDF`, `.CSV`, and BrainVision exports. This demo simulates an inference run
-                                    without sending patient data anywhere.
+                                    EEG: CSV (rows=samples, cols=channels) or JSON <code>{"samples": [[...], ...]}</code>. Sampling rate defaults to 256 Hz.
+                                    Reports: upload PDF/TXT in Hebrew or English; the server will embed and attach a diagnostics note to the response.
                                 </p>
-                                <button type="button" class="primary-button" id="startAnalysisButton">Initialize decoding</button>
+                                <div class="flex flex-col gap-3">
+                                    <label class="secondary-button" style="display:inline-block; text-align:center; cursor:pointer;">
+                                        Select EEG CSV / JSON
+                                        <input type="file" id="eegFileInput" accept=".csv,application/json" style="display:none;">
+                                    </label>
+                                    <label class="secondary-button" style="display:inline-block; text-align:center; cursor:pointer;">
+                                        Select Diagnostic PDF/TXT (Hebrew/English)
+                                        <input type="file" id="reportFileInput" accept=".pdf,.txt" style="display:none;">
+                                    </label>
+                                </div>
+                                <button type="button" class="primary-button" id="startAnalysisButton">Run deep analysis</button>
+                                <p class="muted" id="uploadSummary" style="margin-top:6px;"></p>
                             </div>
                         </div>
 
                         <div class="analysis-stage hidden analyzing" id="analyzingStage" aria-live="polite">
                             <div class="scan-shell">
-                                <small>Running FFT decomposition</small>
+                                <small>Running deep + FFT analysis</small>
                                 <p class="progress-value" id="progressValue">0%</p>
                                 <div class="progress-track">
                                     <div class="progress-bar" id="progressBar"></div>
@@ -1213,7 +1290,7 @@
                                 <div class="result-topline">
                                     <div>
                                         <strong>Patient ID: X-8812</strong>
-                                        <div class="report-meta">Analysis bundle v4.2 / high-confidence readout</div>
+                                        <div class="report-meta">Analysis bundle v0.2 / deep autoencoder readout</div>
                                     </div>
                                     <div class="status-chip" style="background: rgba(52, 211, 153, 0.12); border-color: rgba(52, 211, 153, 0.22); color: var(--success);">
                                         High reliability
@@ -1348,18 +1425,7 @@
                                     <div class="inventory-cell head">Tech stack</div>
                                     <div class="inventory-cell head">Clinical focus</div>
                                 </div>
-
-                                <div class="inventory-row">
-                                    <div class="inventory-cell" data-label="Asset"><em>xschizo</em></div>
-                                    <div class="inventory-cell" data-label="Tech stack">Python, PLSQL, COBRE</div>
-                                    <div class="inventory-cell" data-label="Clinical focus">fMRI biomarker identification</div>
-                                </div>
-
-                                <div class="inventory-row">
-                                    <div class="inventory-cell" data-label="Asset"><em>gammau-crwd</em></div>
-                                    <div class="inventory-cell" data-label="Tech stack">Django, FalconPy</div>
-                                    <div class="inventory-cell" data-label="Clinical focus">Secure remote diagnoses</div>
-                                </div>
+                                <div id="inventoryRows"></div>
                             </div>
                         </section>
                     </div>
@@ -1417,8 +1483,11 @@
                         </div>
                         <div class="contact-card">
                             <h3>Digital Presence</h3>
-                            <strong>GitHub: NSH531</strong>
-                            <div class="soft">Domain intentionally omitted</div>
+                            <strong>GitHub: <a href="https://github.com/nsh531" class="contact-note">nsh531</a></strong>
+                            <div class="soft">Security/AI workstreams</div>
+                            <strong style="margin-top:8px; display:block;">GitHub: <a href="https://github.com/netanelcyber" class="contact-note">netanelcyber</a></strong>
+                            <div class="soft">Clinical data pipelines</div>
+                            <div class="contact-repos" id="githubMentionsList"></div>
                         </div>
                         <div class="contact-card">
                             <h3>Expert Contacts</h3>
@@ -1465,12 +1534,129 @@
             }
         ];
 
+        const projectMentions = [
+            {
+                handle: "nsh531",
+                repo: "xschizo",
+                href: "https://github.com/nsh531/xschizo",
+                stack: "Clinical AI / neuroimaging",
+                focus: "Schizophrenia imaging exploration referenced publicly in community collaboration posts."
+            },
+            {
+                handle: "nsh531",
+                repo: "EncryptVC",
+                href: "https://github.com/nsh531",
+                stack: "Security tooling",
+                focus: "Encrypted version-control concept referenced in the public portfolio footprint."
+            },
+            {
+                handle: "nsh531",
+                repo: "xcovid",
+                href: "https://github.com/nsh531",
+                stack: "Public health interface",
+                focus: "COVID-facing data and web interface exploration across multiple languages."
+            },
+            {
+                handle: "netanelcyber",
+                repo: "penuX",
+                href: "https://github.com/netanelcyber/penuX",
+                stack: "Python / PyTorch / MIMIC",
+                focus: "Pathogen prediction using MIMIC-III and MIMIC-IV EHR data."
+            },
+            {
+                handle: "netanelcyber",
+                repo: "sqlmap",
+                href: "https://github.com/netanelcyber/sqlmap",
+                stack: "Python / security tooling",
+                focus: "Fork of sqlmapproject/sqlmap for SQL injection testing and database takeover workflows."
+            },
+            {
+                handle: "netanelcyber",
+                repo: "kroger-price-alert",
+                href: "https://github.com/netanelcyber/kroger-price-alert",
+                stack: "Python / alerting",
+                focus: "Fork of a retail price-alert workflow adapted for automated monitoring."
+            },
+            {
+                handle: "netanelcyber",
+                repo: "xschiq-website",
+                href: "https://github.com/netanelcyber/xschiq-website",
+                stack: "HTML / Python / EEG",
+                focus: "Website and EEG-facing presentation layer around the Xschiq project surface."
+            },
+            {
+                handle: "netanelcyber",
+                repo: "FLIGHT-PREDICTIONS",
+                href: "https://github.com/netanelcyber/FLIGHT-PREDICTIONS",
+                stack: "Python / forecasting",
+                focus: "Forecasting-oriented repository mention surfaced on the public profile."
+            },
+            {
+                handle: "netanelcyber",
+                repo: "zenday1",
+                href: "https://github.com/netanelcyber/zenday1",
+                stack: "Python",
+                focus: "Additional Python project surfaced in the public repository list."
+            }
+        ];
+
+        const infrastructureAssets = [
+            {
+                asset: "xschizo",
+                stack: "Python, CNN, imaging workflows",
+                focus: "Schizophrenia imaging exploration"
+            },
+            {
+                asset: "gammau-crwd",
+                stack: "Django, FalconPy",
+                focus: "Secure remote diagnoses"
+            },
+            {
+                asset: "penuX",
+                stack: "Python, PyTorch, MIMIC-III/IV",
+                focus: "Pathogen prediction and EHR modeling"
+            },
+            {
+                asset: "sqlmap",
+                stack: "Python, offensive security tooling",
+                focus: "Forked SQL injection testing workflow"
+            },
+            {
+                asset: "kroger-price-alert",
+                stack: "Python, automation, alerts",
+                focus: "Retail monitoring and alert automation"
+            },
+            {
+                asset: "xschiq-website",
+                stack: "HTML, Python, EEG assets",
+                focus: "Product surface and presentation layer"
+            },
+            {
+                asset: "EncryptVC",
+                stack: "Security workflow concept",
+                focus: "Encrypted collaboration and version control"
+            },
+            {
+                asset: "xcovid",
+                stack: "HTML, CSS, JS, Python, PHP",
+                focus: "COVID-facing data and web interface exploration"
+            },
+            {
+                asset: "zenday1",
+                stack: "Python",
+                focus: "Additional Python utility/project footprint"
+            }
+        ];
+
         const navButtons = Array.from(document.querySelectorAll("[data-view-target]"));
         const viewSections = Array.from(document.querySelectorAll("[data-view]"));
         const mobileViewSelect = document.getElementById("mobileViewSelect");
         const printButton = document.getElementById("printButton");
         const leadersGrid = document.getElementById("leadersGrid");
         const expertsContactList = document.getElementById("expertsContactList");
+        const projectMentionsGrid = document.getElementById("projectMentionsGrid");
+        const inventoryRows = document.getElementById("inventoryRows");
+        const githubMentionsList = document.getElementById("githubMentionsList");
 
         const idleStage = document.getElementById("idleStage");
         const analyzingStage = document.getElementById("analyzingStage");
@@ -1480,10 +1666,15 @@
         const resetAnalysisButton = document.getElementById("resetAnalysisButton");
         const progressValue = document.getElementById("progressValue");
         const progressBar = document.getElementById("progressBar");
+        const eegFileInput = document.getElementById("eegFileInput");
+        const reportFileInput = document.getElementById("reportFileInput");
+        const uploadSummary = document.getElementById("uploadSummary");
 
         let activeView = "deck";
         let analysisProgress = 0;
         let analysisTimer = null;
+        let eegFile = null;
+        let reportFile = null;
 
         function renderLeadContact(lead, fallbackText = "Contact available on request") {
             if (lead.email) {
@@ -1495,6 +1686,46 @@
             }
 
             return `<span class="contact-note">${lead.contactLabel || fallbackText}</span>`;
+        }
+
+        function renderProjectMentions() {
+            projectMentionsGrid.innerHTML = projectMentions.map((project) => `
+                <article class="project-card">
+                    <div class="repo-label">${project.handle}</div>
+                    <h3><a href="${project.href}">${project.repo}</a></h3>
+                    <p>${project.focus}</p>
+                    <p class="repo-note" style="margin-top: 10px;">${project.stack}</p>
+                </article>
+            `).join("");
+        }
+
+        function renderInventory() {
+            inventoryRows.innerHTML = infrastructureAssets.map((item) => `
+                <div class="inventory-row">
+                    <div class="inventory-cell" data-label="Asset"><em>${item.asset}</em></div>
+                    <div class="inventory-cell" data-label="Tech stack">${item.stack}</div>
+                    <div class="inventory-cell" data-label="Clinical focus">${item.focus}</div>
+                </div>
+            `).join("");
+        }
+
+        function renderGitHubMentions() {
+            githubMentionsList.innerHTML = projectMentions
+                .filter((project) =>
+                    project.repo === "xschizo" ||
+                    project.repo === "penuX" ||
+                    project.repo === "xschiq-website" ||
+                    project.repo === "EncryptVC" ||
+                    project.repo === "sqlmap" ||
+                    project.repo === "kroger-price-alert" ||
+                    project.repo === "zenday1"
+                )
+                .map((project) => `
+                    <div class="contact-repo-item">
+                        <a href="${project.href}">${project.handle}/${project.repo}</a>
+                        <div class="soft">${project.focus}</div>
+                    </div>
+                `).join("");
         }
 
         function renderLeaders() {
@@ -1546,7 +1777,7 @@
             if (state === "idle") {
                 statusChip.textContent = "Idle / Awaiting stream";
             } else if (state === "analyzing") {
-                statusChip.textContent = "Processing / FFT + feature scan";
+                statusChip.textContent = "Processing / Deep + FFT pipeline";
             } else {
                 statusChip.textContent = "Complete / Summary ready";
             }
@@ -1559,9 +1790,18 @@
             progressValue.textContent = "0%";
             progressBar.style.width = "0%";
             setPortalState("idle");
+            eegFile = null;
+            reportFile = null;
+            if (eegFileInput) eegFileInput.value = "";
+            if (reportFileInput) reportFileInput.value = "";
+            if (uploadSummary) uploadSummary.textContent = "";
         }
 
-        function runAnalysis() {
+        async function runAnalysis() {
+            if (!eegFile && !reportFile) {
+                uploadSummary.textContent = "Please add an EEG CSV/JSON and/or a report PDF/TXT before running.";
+                return;
+            }
             window.clearInterval(analysisTimer);
             analysisTimer = null;
             analysisProgress = 0;
@@ -1569,23 +1809,37 @@
             progressBar.style.width = "0%";
             setPortalState("analyzing");
 
-            analysisTimer = window.setInterval(() => {
-                analysisProgress += 4;
-                if (analysisProgress > 100) {
-                    analysisProgress = 100;
-                }
+            const formData = new FormData();
+            if (eegFile) formData.append("eeg", eegFile);
+            if (reportFile) formData.append("report", reportFile);
 
+            // Kick off optimistic progress
+            analysisTimer = window.setInterval(() => {
+                analysisProgress = Math.min(analysisProgress + 6, 92);
                 progressValue.textContent = `${analysisProgress}%`;
                 progressBar.style.width = `${analysisProgress}%`;
-
-                if (analysisProgress >= 100) {
-                    window.clearInterval(analysisTimer);
-                    analysisTimer = null;
-                    window.setTimeout(() => {
-                        setPortalState("result");
-                    }, 320);
-                }
             }, 80);
+
+            try {
+                const response = await fetch("http://localhost:8000/analyze", {
+                    method: "POST",
+                    body: formData,
+                });
+                const json = await response.json();
+                window.clearInterval(analysisTimer);
+                analysisTimer = null;
+                analysisProgress = 100;
+                progressValue.textContent = "100%";
+                progressBar.style.width = "100%";
+                // Bind returned data into the result view as needed; for now, flip state.
+                setPortalState("result");
+                uploadSummary.textContent = `Analysis complete. Deep mode: ${json?.deep_learning_analysis?.analysis_mode || "n/a"}`;
+            } catch (err) {
+                window.clearInterval(analysisTimer);
+                analysisTimer = null;
+                uploadSummary.textContent = "Upload failed — check server at http://localhost:8000.";
+                setPortalState("idle");
+            }
         }
 
         navButtons.forEach((button) => {
@@ -1602,6 +1856,31 @@
         resetAnalysisButton.addEventListener("click", resetAnalysis);
         printButton.addEventListener("click", () => window.print());
 
+        if (eegFileInput) {
+            eegFileInput.addEventListener("change", (event) => {
+                const file = event.target.files?.[0];
+                eegFile = file || null;
+                uploadSummary.textContent = [
+                    eegFile ? `EEG: ${eegFile.name}` : "",
+                    reportFile ? `Report: ${reportFile.name}` : "",
+                ].filter(Boolean).join(" | ");
+            });
+        }
+
+        if (reportFileInput) {
+            reportFileInput.addEventListener("change", (event) => {
+                const file = event.target.files?.[0];
+                reportFile = file || null;
+                uploadSummary.textContent = [
+                    eegFile ? `EEG: ${eegFile.name}` : "",
+                    reportFile ? `Report: ${reportFile.name}` : "",
+                ].filter(Boolean).join(" | ");
+            });
+        }
+
+        renderProjectMentions();
+        renderInventory();
+        renderGitHubMentions();
         renderLeaders();
         renderExpertContacts();
         resetAnalysis();
