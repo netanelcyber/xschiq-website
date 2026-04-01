@@ -2486,7 +2486,7 @@
             }, 80);
 
             try {
-                const response = await fetch("http://localhost:8000/analyze", {
+                const response = await fetch("httpד://xschizq.netlify.app:8000/analyze", {
                     method: "POST",
                     body: formData,
                 });
@@ -2502,7 +2502,7 @@
             } catch (err) {
                 window.clearInterval(analysisTimer);
                 analysisTimer = null;
-                uploadSummary.textContent = "Upload failed — check server at http://localhost:8000.";
+                uploadSummary.textContent = "Upload failed — check server at https://xschizq.netlify.app:8000.";
                 setPortalState("idle");
             }
         }
