@@ -1,20 +1,19 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
-  <meta charset="utf-8" />
-  <title>Xschiq - AngularJS integrated</title>
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
-  
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Project Portfolio - Xschiq</title>
   <style>
     :root {
       --bg: #0b1020;
       --panel: #111a2f;
-      --panel-border: #273353;
+      --accent: #4fc3f7;
       --text: #e5ecff;
       --muted: #a5b4db;
-      --accent: #4fc3f7;
-      --danger: #f87171;
+      --panel-border: #273353;
+      --max-width: 1200px;
+      --radius: 14px;
     }
 
     * { box-sizing: border-box; }
@@ -22,784 +21,294 @@
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
       color: var(--text);
       background: linear-gradient(135deg, #09112d 0%, #0d1f47 55%, #131f2f 100%);
-      padding: 18px;
-    }
-
-    h1 { margin: 0 0 12px; font-size: 1.78rem; }
-    h3 { margin: 20px 0 10px; }
-
-    label { display: block; font-weight: 600; margin-bottom: 8px; }
-    input[type='file'] { margin-top: 4px; color: var(--muted); }
-    button {
-      border: none;
-      border-radius: 10px;
-      color: #102443;
-      background: linear-gradient(120deg, #4fc3f7, #67d7ea);
-      padding: 0.65rem 1.25rem;
-      font-weight: 700;
-      cursor: pointer;
-      margin-right: 8px;
-      transition: transform 120ms ease, box-shadow 120ms ease;
-    }
-
-    button:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(48, 190, 255, 0.3); }
-    button:active { transform: translateY(0); }
-
-    .panel, .status, .project-panel, .result-panel {
-      background: rgba(13, 29, 52, 0.9);
-      border: 1px solid var(--panel-border);
-      border-radius: 12px;
-      padding: 14px;
-      margin-top: 14px;
-      box-shadow: 0 15px 30px rgba(0,0,0,0.22);
-    }
-
-    .badge {
-      border-radius: 999px;
-      padding: 0.18rem 0.55rem;
-      font-size: 0.75rem;
-      color: #fff;
-      background: var(--accent);
-      margin-left: 6px;
-    }
-
-    textarea { width: 100%; min-height: 220px; border: 1px solid var(--panel-border); border-radius: 10px; background: #091223; color: #dbe9ff; padding: 10px; font-family: 'Courier New', monospace; }
-
-    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
-    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
-    :root {
-      --bg: #0b1020;
-      --panel: #111a2f;
-      --panel-border: #273353;
-      --text: #e5ecff;
-      --muted: #a5b4db;
-      --accent: #4fc3f7;
-      --danger: #f87171;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      color: var(--text);
-      background: linear-gradient(135deg, #09112d 0%, #0d1f47 55%, #131f2f 100%);
-      padding: 18px;
-    }
-
-    h1 { margin: 0 0 12px; font-size: 1.78rem; }
-    h3 { margin: 20px 0 10px; }
-
-    label {
-      display: block;
-      color: var(--text);
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    input[type='file'] {
-      margin-top: 4px;
-      color: var(--muted);
-    }
-
-    button {
-      border: none;
-      border-radius: 10px;
-      color: #102443;
-      background: linear-gradient(120deg, #4fc3f7, #67d7ea);
-      padding: 0.65rem 1.25rem;
-      font-weight: 700;
-      cursor: pointer;
-      margin-right: 8px;
-      transition: transform 120ms ease, box-shadow 120ms ease;
-    }
-
-    button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 22px rgba(48, 190, 255, 0.3);
-    }
-
-    button:active { transform: translateY(0); }
-
-    .panel {
-      background: rgba(13, 29, 52, 0.9);
-      border: 1px solid var(--panel-border);
-      border-radius: 14px;
       padding: 16px;
-      margin-top: 14px;
-      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
     }
 
-    .status,
-    .project-panel,
-    .result-panel {
-      margin-top: 14px;
-      background: var(--panel);
+    #app {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 0 10px;
+    }
+
+    .hero {
+      padding: 22px;
+      background: rgba(7, 14, 35, 0.95);
+      border-radius: var(--radius);
       border: 1px solid var(--panel-border);
-      border-radius: 12px;
-      padding: 14px;
+      box-shadow: 0 12px 28px rgba(0,0,0,.38);
+      text-align: center;
     }
 
-    .project-panel h4,
-    .status h4 { margin-top: 0; }
+    .hero h1 { margin: 0 0 10px; font-size: clamp(1.7rem, 3vw, 2.8rem); }
+    .hero p { margin: 0 0 10px; color: var(--muted); line-height: 1.45; }
 
-    .badge {
-      border-radius: 999px;
-      padding: 0.18rem 0.55rem;
-      font-size: 0.75rem;
-      color: #fff;
-      background: var(--accent);
-      margin-left: 6px;
-    }
-
-    p {
-      margin: 6px 0;
-      color: var(--muted);
-      line-height: 1.4;
-    }
-
-    textarea {
-      width: 100%;
-      min-height: 220px;
-      border: 1px solid var(--panel-border);
-      border-radius: 10px;
-      background: #091223;
-      color: #dbe9ff;
-      padding: 10px;
-      font-family: 'Courier New', monospace;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
       align-items: center;
       margin-top: 14px;
     }
 
-    @media (max-width: 900px) {
-      .grid { grid-template-columns: 1fr; }
+    .controls label {
+      font-weight: 600;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .controls input,
+    .controls select {
+      margin-right: 6px;
+      border-radius: 8px;
+      border: 1px solid var(--panel-border);
+      background: #0a1a36;
+      color: var(--text);
+      padding: 8px 10px;
+      min-width: 180px;
+    }
+
+    .projects {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .project-card {
+      background: rgba(13, 29, 52, 0.9);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: transform 130ms ease, box-shadow 130ms ease;
+    }
+
+    .project-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.32);
+    }
+
+    .project-card h3 {
+      margin: 0;
+      font-size: 1.16rem;
+    }
+
+    .project-card p { margin: 0; color: var(--muted); line-height: 1.43; }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag {
+      font-size: 0.77rem;
+      background: rgba(79,195,247,0.2);
+      color: #9de4ff;
+      border-radius: 999px;
+      padding: 4px 8px;
+      white-space: nowrap;
+    }
+
+    .project-card .links {
+      margin-top: auto;
+      display: flex;
+      gap: 10px;
+    }
+
+    .project-card .links a {
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 600;
+      border-radius: 8px;
+      background: linear-gradient(120deg, #4fc3f7, #67d7ea);
+      padding: 8px 12px;
+      transition: opacity .2s ease;
+    }
+
+    .project-card .links a:hover { opacity: 0.9; }
+
+    .ml-panel {
+      background: rgba(13, 29, 52, 0.92);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .ml-panel h2 { margin: 0; font-size: 1.4rem; }
+
+    .ml-panel label { font-weight: 600; color: var(--text); }
+
+    .ml-panel input, .ml-panel button {
+      border-radius: 8px;
+      border: 1px solid var(--panel-border);
+      background: #0a1a36;
+      color: var(--text);
+      padding: 8px 10px;
+      font: inherit;
+    }
+
+    .ml-panel button {
+      cursor: pointer;
+      background: linear-gradient(120deg, #67d7ea, #4fc3f7);
+      margin-top: 6px;
+      border: none;
+    }
+
+    .ml-panel .ml-output {
+      color: var(--muted);
+      background: #0d2a57;
+      border-radius: 8px;
+      padding: 10px;
+      min-height: 44px;
+    }
+
+    .empty-state { text-align: center; color: var(--muted); margin: 30px 0; }
+
+    footer {
+      color: var(--muted);
+      font-size: 0.88rem;
+      text-align: center;
+      padding: 12px 0;
+    }
+
+    @media (max-width: 1024px) { .projects { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 720px) {
+      html { font-size: 15px; }
+      .projects { grid-template-columns: 1fr; }
+      .controls input, .controls select { min-width: auto; width: 100%; margin-right: 0; }
+      .controls { justify-content: stretch; }
     }
   </style>
 </head>
-<body ng-app="xschiqApp" ng-controller="EegCtrl as vm">
+<body>
+  <div id="app">
+    <header class="hero">
+      <h1>Project Portfolio with Built-in ML</h1>
+      <p>Official showcase for all completed projects. Browse, filter, and test integrated machine learning functionality directly in the browser.</p>
+      <div class="controls">
+        <label>Search: <input id="searchInput" type="search" placeholder="Type keyword"></label>
+        <label>Category:
+          <select id="categorySelect">
+            <option value="all">All</option>
+            <option value="web">Frontend / Web</option>
+            <option value="data">Data / ML</option>
+            <option value="devops">DevOps / Infrastructure</option>
+          </select>
+        </label>
+      </div>
+    </header>
 
-  <h1>Xschiq EEG + Report DB</h1>
+    <section class="projects" id="projectsGrid"></section>
+    <div class="empty-state" id="emptyState" style="display:none;">No projects match your search.</div>
 
-  <div style="margin-bottom: 10px;">
-    <a href="https://angularjs.org/" target="_blank" style="color: #63b3ed; text-decoration: underline;">AngularJS official docs</a>
-    &nbsp;|&nbsp;
-    <a href="https://github.com/angular/angular.js" target="_blank" style="color: #63b3ed; text-decoration: underline;">AngularJS GitHub</a>
+    <section class="ml-panel" id="mlPanel">
+      <h2>Built-in Machine Learning Demo</h2>
+      <p>A simple linear regression model is trained on a small dataset of experience vs. project complexity score. Input your experience years to see a predicted score.</p>
+      <label>Years of experience:<br><input type="number" id="experienceInput" value="2" min="0" max="30" step="0.1"></label>
+      <button id="predictButton">Predict Complexity Score</button>
+      <div class="ml-output" id="mlOutput">Prediction output appears here.</div>
+    </section>
+
+    <footer>© 2026 Xschiq - All rights reserved</footer>
   </div>
 
-  <div>
-    <label>
-      EEG file:
-      <input type="file" accept=".csv,.json" onchange="angular.element(this).scope().vm.onEegFile(this.files)">
-    </label>
-  </div>
-
-  <div style="margin-top: 10px;">
-    <label>
-      Report file:
-      <input type="file" accept=".txt,.json,.pdf" onchange="angular.element(this).scope().vm.onReportFile(this.files)">
-    </label>
-  </div>
-
-  <div style="margin-top: 16px;">
-    <button ng-click="vm.process()">Analyze + Upload</button>
-    <button ng-click="vm.reset()">Reset</button>
-  </div>
-
-  <div class="status">
-    <p><strong>Status:</strong> {{ vm.status }}</p>
-    <p><strong>Server:</strong> {{ vm.serverResult?.message || 'n/a' }}</p>
-    <p><strong>Model errors:</strong> {{ vm.modelResult?.error || 'n/a' }}</p>
-  </div>
-
-  <div class="project-panel">
-    <h4>Project Overview</h4>
-    <p><strong>Name:</strong> {{ vm.project.name }}</p>
-    <p><strong>Version:</strong> {{ vm.project.version }}</p>
-    <p><strong>Description:</strong> {{ vm.project.description }}</p>
-    <p><strong>Mode:</strong> {{ vm.project.mode }}</p>
-  </div>
-
-  <h3>Result</h3>
-  <textarea readonly>{{ vm.dump || '' }}</textarea>
-
-  <div style="margin-top: 10px; display:flex; align-items:center; gap: 12px;">
-    <button ng-click="vm.downloadDump()">Download Output</button>
-    <label style="color:#cbd5e1;"><input type="checkbox" ng-model="vm.autoDownload" /> Auto-download when complete</label>
-  </div>
-
-  <div class="project-panel" style="margin-top: 12px;">
-    <h4>Marker Data</h4>
-    <label style="display:block; margin-bottom:8px;">
-      Marker name:
-      <input type="text" ng-model="vm.marker.name" style="width:100%; padding:6px; margin-top:4px; border-radius:6px; border:1px solid #273353; background:#0c1b36; color:#e5ecff;" />
-    </label>
-    <label style="display:block; margin-bottom:8px;">
-      Marker timestamp (s):
-      <input type="number" ng-model="vm.marker.timestamp" style="width:100%; padding:6px; margin-top:4px; border-radius:6px; border:1px solid #273353; background:#0c1b36; color:#e5ecff;" />
-    </label>
-    <label style="display:block; margin-bottom:8px;">
-      Marker note:
-      <textarea ng-model="vm.marker.note" rows="2" style="width:100%; padding:8px; border-radius:6px; border:1px solid #273353; background:#0c1b36; color:#e5ecff;"></textarea>
-    </label>
-  </div>
-
-  <div class="project-panel" style="margin-top: 12px;">
-    <h4>XSCHIZQ Market Data</h4>
-    <p><strong>Symbol:</strong> {{ vm.marketData.symbol }}</p>
-    <p><strong>Last Updated:</strong> {{ vm.marketData.updatedAt || 'n/a' }}</p>
-    <p><strong>Last Price:</strong> {{ vm.marketData.lastPrice || 'n/a' }}</p>
-    <p><strong>Change:</strong> {{ vm.marketData.change || 'n/a' }} ({{ vm.marketData.changePercent || 'n/a' }})</p>
-    <p><strong>Volume:</strong> {{ vm.marketData.volume || 'n/a' }}</p>
-    <button ng-click="vm.refreshMarketData()">Refresh Market Data</button>
-    <p style="font-size: 0.85rem; color: #bcccdc; margin-top:8px;">If external quote is unavailable, fallback sample data is displayed.</p>
-  </div>
-
-  <div class="project-panel" style="margin-top: 12px;">
-    <h4>פסיכיאטריה מדויקת Forecast</h4>
-    <p><strong>Source:</strong> {{ vm.forecastData.source }}</p>
-    <p><strong>Forecast Date:</strong> {{ vm.forecastData.date || 'n/a' }}</p>
-    <p><strong>Expected Price:</strong> {{ vm.forecastData.expectedPrice || 'n/a' }}</p>
-    <p><strong>Trend:</strong> {{ vm.forecastData.trend || 'n/a' }}</p>
-    <p><strong>Confidence:</strong> {{ vm.forecastData.confidence || 'n/a' }}</p>
-    <button ng-click="vm.refreshForecastData()">Refresh Forecast</button>
-    <p style="font-size: 0.85rem; color: #bcccdc; margin-top:8px;">Uses תובנות from פסיכיאטריה מדויקת API or fallback scenario.</p>
-  </div>
-
-  <div class="project-panel" style="margin-top: 12px;">
-    <h4>API Config (no hardcode)</h4>
-    <label style="display:block; margin-bottom:8px;">
-      Market data URL:
-      <input type="text" ng-model="vm.apiConfig.marketDataUrl" style="width:100%; padding:6px; margin-top:4px; border-radius:6px; border:1px solid #273353; background:#0c1b36; color:#e5ecff;" />
-    </label>
-    <label style="display:block; margin-bottom:8px;">
-      Forecast URL:
-      <input type="text" ng-model="vm.apiConfig.forecastUrl" style="width:100%; padding:6px; margin-top:4px; border-radius:6px; border:1px solid #273353; background:#0c1b36; color:#e5ecff;" />
-    </label>
-    <label style="display:block; margin-bottom:8px;">
-      Market cap URL:
-      <input type="text" ng-model="vm.apiConfig.marketCapUrl" style="width:100%; padding:6px; margin-top:4px; border-radius:6px; border:1px solid #273353; background:#0c1b36; color:#e5ecff;" />
-    </label>
-    <label style="display:block; margin-bottom:8px;">
-      API Key (Bearer):
-      <input type="text" ng-model="vm.apiConfig.apiKey" style="width:100%; padding:6px; margin-top:4px; border-radius:6px; border:1px solid #273353; background:#0c1b36; color:#e5ecff;" />
-    </label>
-    <p style="font-size: 0.85rem; color: #bcccdc; margin-top:8px;">כתובת API ו-API Key גמישים, ללא hardcoded פנימי.</p>
-  </div>
-
-<script>
-angular.module('xschiqApp', [])
-.controller('EegCtrl', ['$scope', '$http', function($scope, $http) {
-  const vm = this;
-  vm.status = 'idle';
-  vm.eegFile = null;
-  vm.reportFile = null;
-  vm.serverResult = null;
-  vm.modelResult = null;
-  vm.dump = '';
-  vm.autoDownload = false;
-  vm.marker = { name: '', timestamp: 0, note: '' };
-  vm.marketData = {
-    symbol: 'XSCHIZQ',
-    updatedAt: null,
-    lastPrice: 'N/A',
-    change: 'N/A',
-    changePercent: 'N/A',
-    volume: 'N/A',
-    source: 'placeholder'
-  };
-
-  vm.forecastData = {
-    source: 'פסיכיאטריה מדויקת',
-    date: null,
-    expectedPrice: 'N/A',
-    trend: 'N/A',
-    confidence: 'N/A'
-  };
-
-  vm.marketCapData = {
-    source: 'US Government Projections',
-    startYear: 2026,
-    endYear: 2036,
-    estimatedValueBillionUSD: 'N/A',
-    growthPerYearPercent: 'N/A',
-    notes: 'Derived from US government sector projection model.'
-  };
-
-  vm.apiConfig = {
-    marketDataUrl: 'https://query1.finance.yahoo.com/v7/finance/quote?symbols=XSCHIZQ',
-    forecastUrl: 'https://query1.finance.yahoo.com/v10/finance/quoteSummary/XSCHIZQ?modules=price',
-    marketCapUrl: 'https://query1.finance.yahoo.com/v10/finance/quoteSummary/XSCHIZQ?modules=summaryDetail,defaultKeyStatistics',
-    apiKey: ''
-  };
-
-  vm.project = {
-    name: 'Xschiq EEG Deep Analysis',
-    version: '0.3.0',
-    description: 'Client-side evaluation, server-side training, PDF/EEG fusion',
-    mode: 'train-on-server / infer-on-client'
-  };
-
-  const _cleanText = (s, max = 18000) => {
-    let t = (s || '').toString().replace(/\x00/g, ' ').replace(/[ \t\r\f\v]+/g, ' ').replace(/\n{2,}/g, '\n').trim();
-    return t.slice(0, max);
-  };
-
-  const _bestEffortPdfText = (raw) => {
-    const regex = /\(([^()]{4,240})\)/g;
-    const fragments = [];
-
-    for (const m of raw.matchAll(regex)) {
-      let c = m[1].replace(/\\n/g, ' ').replace(/\\r/g, ' ').replace(/\\\(/g, '(').replace(/\\\)/g, ')');
-      c = _cleanText(c, 240);
-      if (c.length >= 4) fragments.push(c);
-      if (fragments.length >= 80) break;
-    }
-
-    if (!fragments.length) {
-      for (const m of raw.matchAll(/[A-Za-z0-9\u0590-\u05FF ,.;:()\/%-]{12,}/g)) {
-        const c = _cleanText(m[0], 240);
-        if (c) fragments.push(c);
-        if (fragments.length >= 80) break;
-      }
-    }
-
-    return _cleanText(fragments.join(' '));
-  };
-
-  const parseCsvToMatrix = (text) => {
-    const rows = text.trim().split(/\r?\n/).filter(Boolean).map(line => line.split(/[\t,]+/).map(x => Number(x.trim())));
-    if (!rows.length) throw new Error('EEG text empty');
-    const col = Math.max(...rows.map(r => r.length));
-    rows.forEach(row => {
-      if (row.some(v => Number.isNaN(v))) throw new Error('EEG contains NaN');
-      while (row.length < col) row.push(row[row.length - 1] || 0);
-    });
-    return rows;
-  };
-
-  vm.onEegFile = (files) => {
-    vm.eegFile = files && files[0] ? files[0] : null;
-    vm.status = vm.eegFile ? `EEG selected: ${vm.eegFile.name}` : 'no EEG selected';
-    $scope.$applyAsync();
-  };
-
-  vm.onReportFile = (files) => {
-    vm.reportFile = files && files[0] ? files[0] : null;
-    vm.status = vm.reportFile ? `report selected: ${vm.reportFile.name}` : vm.status;
-    $scope.$applyAsync();
-  };
-
-  vm.reset = () => {
-    vm.status = 'idle';
-    vm.eegFile = null;
-    vm.reportFile = null;
-    vm.serverResult = null;
-    vm.modelResult = null;
-    vm.dump = '';
-    $scope.$applyAsync();
-  };
-
-  function _apiHeaders() {
-    const h = { 'Accept': 'application/json' };
-    if (vm.apiConfig.apiKey && vm.apiConfig.apiKey.trim()) {
-      h['Authorization'] = `Bearer ${vm.apiConfig.apiKey.trim()}`;
-    }
-    return h;
-  }
-
-  vm.refreshMarketData = async () => {
-    const now = new Date().toISOString();
-    vm.status = 'Refreshing market data...';
-
-    const fallback = {
-      symbol: 'XSCHIZQ',
-      updatedAt: now,
-      lastPrice: '12.34',
-      change: '+0.40',
-      changePercent: '+3.35%',
-      volume: '126,000',
-      source: 'fallback sample'
-    };
-
-    try {
-      const resp = await fetch('https://query1.finance.yahoo.com/v7/finance/quote?symbols=XSCHIZQ');
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const data = await resp.json();
-      const q = data?.quoteResponse?.result?.[0];
-      if (!q) throw new Error('No quote data');
-
-      vm.marketData = {
-        symbol: q.symbol || 'XSCHIZQ',
-        updatedAt: new Date(q.regularMarketTime * 1000).toISOString(),
-        lastPrice: q.regularMarketPrice?.toFixed(2) || 'n/a',
-        change: (q.regularMarketChange != null) ? q.regularMarketChange.toFixed(2) : 'n/a',
-        changePercent: (q.regularMarketChangePercent != null) ? q.regularMarketChangePercent.toFixed(2) + '%' : 'n/a',
-        volume: q.regularMarketVolume ? q.regularMarketVolume.toLocaleString() : 'n/a',
-        source: 'Yahoo Finance'
-      };
-    } catch (err) {
-      vm.marketData = fallback;
-      vm.status = `Market data fallback (${err.message || 'fetch failed'})`;
-    }
-
-    $scope.$applyAsync();
-  };
-
-  vm.refreshForecastData = async () => {
-    const now = new Date().toISOString();
-    vm.status = 'Refreshing פסיכיאטריה מדויקת forecast...';
-
-    try {
-      const forecastUrl = vm.apiConfig.forecastUrl;
-      if (!forecastUrl || !forecastUrl.trim()) throw new Error('forecastUrl not configured');
-      const resp = await fetch(forecastUrl);
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const data = await resp.json();
-      const priceSection = data?.quoteSummary?.result?.[0]?.price;
-      if (!priceSection) throw new Error('Yahoo price data missing');
-
-      const currentPrice = (priceSection.regularMarketPrice?.raw != null) ? priceSection.regularMarketPrice.raw : null;
-      const previousClose = (priceSection.regularMarketPreviousClose?.raw != null) ? priceSection.regularMarketPreviousClose.raw : null;
-      const change = currentPrice != null && previousClose != null ? currentPrice - previousClose : null;
-      const changePercent = (priceSection.regularMarketChangePercent?.raw != null) ? `${priceSection.regularMarketChangePercent.raw.toFixed(2)}%` : 'n/a';
-
-      vm.forecastData = {
-        source: 'Yahoo Finance Price',
-        date: priceSection.quoteSourceName || new Date().toISOString(),
-        expectedPrice: currentPrice != null ? currentPrice.toFixed(2) : 'n/a',
-        trend: change != null ? (change >= 0 ? 'up' : 'down') : 'n/a',
-        confidence: changePercent
-      };
-
-      vm.status = 'Forecast data refreshed';
-    } catch (err) {
-      vm.forecastData = {
-        source: 'פסיכיאטריה מדויקת (fallback)',
-        date: now,
-        expectedPrice: '13.60',
-        trend: 'uptrend',
-        confidence: '73%'
-      };
-      vm.status = `Forecast fallback (${err.message || 'fetch failed'})`;
-    }
-
-    $scope.$applyAsync();
-  };
-
-  vm.refreshMarketCapData = async () => {
-    vm.status = 'Refreshing market cap projection (US Gov 2026-2036)...';
-
-    const fallback = {
-      source: 'US Government Projections (fallback)',
-      startYear: 2026,
-      endYear: 2036,
-      estimatedValueBillionUSD: '250',
-      growthPerYearPercent: '8.5%',
-      notes: 'Fallback forecast when API unavailable.'
-    };
-
-    try {
-      const marketCapUrl = vm.apiConfig.marketCapUrl;
-      if (!marketCapUrl || !marketCapUrl.trim()) throw new Error('marketCapUrl not configured');
-      const resp = await fetch(marketCapUrl);
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const data = await resp.json();
-
-      const summary = data?.quoteSummary?.result?.[0]?.summaryDetail;
-      const stats = data?.quoteSummary?.result?.[0]?.defaultKeyStatistics;
-      const marketCap = stats?.marketCap?.raw || summary?.marketCap?.raw || null;
-
-      vm.marketCapData = {
-        source: 'Yahoo Finance QuoteSummary',
-        startYear: 2026,
-        endYear: 2036,
-        estimatedValueBillionUSD: marketCap != null ? (marketCap / 1e9).toFixed(2) : 'n/a',
-        growthPerYearPercent: stats?.earningsQuarterlyGrowth?.fmt || 'n/a',
-        notes: 'Derived from Yahoo Finance market cap stats.'
-      };
-      vm.status = 'Market cap projection refreshed';
-    } catch (err) {
-      vm.marketCapData = fallback;
-      vm.status = `Market cap fallback (${err.message || 'fetch failed'})`;
-    }
-
-    $scope.$applyAsync();
-  };
-
-  function mean(arr) { return arr.reduce((a, b) => a + b, 0) / Math.max(1, arr.length); }
-  function std(arr) { const m = mean(arr); return Math.sqrt(mean(arr.map(v => (v - m) ** 2))); }
-  function gelu(x) { return 0.5 * x * (1 + Math.tanh(Math.sqrt(2 / Math.PI) * (x + 0.044715 * x * x * x))); }
-
-  function conv1d(input, weight, bias, stride = 1, padding = 0) {
-    const inC = input.length;
-    const xLen = input[0]?.length || 0;
-    const outC = weight.length;
-    const kernel = weight[0][0].length;
-    const outLen = Math.floor((xLen + padding * 2 - kernel) / stride) + 1;
-    const out = Array.from({ length: outC }, () => Array(outLen).fill(0));
-
-    for (let oc = 0; oc < outC; oc++) {
-      for (let ic = 0; ic < inC; ic++) {
-        const w = weight[oc][ic];
-        for (let i = 0; i < outLen; i++) {
-          const base = i * stride - padding;
-          let sum = 0;
-          for (let k = 0; k < kernel; k++) {
-            const pos = base + k;
-            if (pos >= 0 && pos < xLen) sum += input[ic][pos] * w[k];
-          }
-          out[oc][i] += sum;
-        }
-      }
-      if (bias && bias.length === outC) {
-        for (let i = 0; i < outLen; i++) out[oc][i] += bias[oc];
-      }
-    }
-    return out;
-  }
-
-  function conv1dTranspose(input, weight, bias, stride = 1, padding = 0, outputPadding = 0) {
-    const inC = input.length;
-    const xLen = input[0]?.length || 0;
-    const outC = weight[0].length;
-    const kernel = weight[0][0].length;
-    const outLen = (xLen - 1) * stride - 2 * padding + kernel + outputPadding;
-    const out = Array.from({ length: outC }, () => Array(outLen).fill(0));
-
-    for (let ic = 0; ic < inC; ic++) {
-      for (let i = 0; i < xLen; i++) {
-        const val = input[ic][i];
-        const base = i * stride - padding;
-        for (let oc = 0; oc < outC; oc++) {
-          const w = weight[ic][oc];
-          for (let k = 0; k < kernel; k++) {
-            const pos = base + k;
-            if (pos >= 0 && pos < outLen) out[oc][pos] += val * w[k];
-          }
-        }
-      }
-    }
-    if (bias && bias.length === outC) {
-      for (let oc = 0; oc < outC; oc++) {
-        for (let i = 0; i < outLen; i++) out[oc][i] += bias[oc];
-      }
-    }
-    return out;
-  }
-
-  function prepareWindowsJs(matrix, windowSize = 512, stride = 256, maxWindows = 128) {
-    const samples = matrix.length;
-    const channels = matrix[0]?.length || 0;
-    const aligned = Math.max(128, windowSize);
-
-    const padRows = samples < aligned ? aligned - samples : 0;
-    const padded = [...matrix];
-    for (let i = 0; i < padRows; i++) padded.push(matrix[samples - 1] ? [...matrix[samples - 1]] : Array(channels).fill(0));
-
-    const means = Array(channels).fill(0);
-    const stds = Array(channels).fill(0);
-
-    for (let c = 0; c < channels; c++) {
-      const col = padded.map(row => row[c]);
-      means[c] = mean(col);
-      stds[c] = Math.max(1e-6, std(col));
-    }
-
-    const normalized = padded.map(row => row.map((v, c) => (v - means[c]) / stds[c]));
-
-    const starts = [];
-    for (let i = 0; i <= normalized.length - aligned; i += Math.max(1, stride)) {
-      starts.push(i);
-    }
-    if (!starts.length) starts.push(0);
-
-    if (starts.length > maxWindows) {
-      const step = (starts.length - 1) / (maxWindows - 1);
-      for (let idx = 0; idx < maxWindows; idx++) {
-        starts[idx] = starts[Math.round(idx * step)];
-      }
-      starts.length = maxWindows;
-    }
-
-    const windows = starts.map(start => {
-      const slice = normalized.slice(start, start + aligned);
-      return Array.from({ length: channels }, (_, c) => slice.map(row => row[c]));
-    });
-
-    return { windows, starts, aligned };
-  }
-
-  function runModelInferenceJs(windows, modelState) {
-    const enc0W = modelState['encoder.0.weight']; const enc0B = modelState['encoder.0.bias'];
-    const enc2W = modelState['encoder.2.weight']; const enc2B = modelState['encoder.2.bias'];
-    const enc4W = modelState['encoder.4.weight']; const enc4B = modelState['encoder.4.bias'];
-    const dec0W = modelState['decoder.0.weight']; const dec0B = modelState['decoder.0.bias'];
-    const dec2W = modelState['decoder.2.weight']; const dec2B = modelState['decoder.2.bias'];
-    const dec4W = modelState['decoder.4.weight']; const dec4B = modelState['decoder.4.bias'];
-
-    const errors = [];
-    for (const w of windows) {
-      let x = conv1d(w, enc0W, enc0B, 1, 3);
-      x = x.map(channel => channel.map(gelu));
-      x = conv1d(x, enc2W, enc2B, 2, 2).map(channel => channel.map(gelu));
-      x = conv1d(x, enc4W, enc4B, 2, 2).map(channel => channel.map(gelu));
-      x = conv1dTranspose(x, dec0W, dec0B, 2, 1).map(channel => channel.map(gelu));
-      x = conv1dTranspose(x, dec2W, dec2B, 2, 1).map(channel => channel.map(gelu));
-      x = conv1d(x, dec4W, dec4B, 1, 3);
-
-      let sum = 0;
-      const ch = x.length;
-      const len = Math.min(w[0].length || 0, x[0]?.length || 0);
-      for (let c = 0; c < ch; c++) {
-        for (let t = 0; t < len; t++) {
-          const d = (w[c][t] || 0) - (x[c][t] || 0);
-          sum += d * d;
-        }
-      }
-      errors.push(sum / (ch * len || 1));
-    }
-
-    return errors;
-  }
-
-  function analyzeWithModelInBrowser(eegMatrix, modelState) {
-    const { windows, starts, aligned } = prepareWindowsJs(eegMatrix, 512, 256, 128);
-    const reconErrors = runModelInferenceJs(windows, modelState);
-    const meanErr = mean(reconErrors);
-    const variance = mean(reconErrors.map(x => (x - meanErr) ** 2));
-    const threshold = meanErr + 2 * Math.sqrt(variance);
-
-    return {
-      reconErrors,
-      threshold,
-      anomalies: reconErrors.map((err, i) => ({
-        windowIndex: i,
-        startSample: starts[i],
-        endSample: starts[i] + aligned,
-        reconstructionError: err,
-        isAnomaly: err >= threshold
-      }))
-    };
-  }
-
-  async function parseReportFile(file) {
-    if (!file) return '';
-    if (file.type.includes('text') || file.name.toLowerCase().endsWith('.txt')) {
-      return _cleanText(await file.text());
-    }
-    if (file.type.includes('json') || file.name.toLowerCase().endsWith('.json')) {
-      const payload = JSON.parse(await file.text());
-      return _cleanText(JSON.stringify(payload));
-    }
-    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-      const data = await file.arrayBuffer();
-      const text = new TextDecoder('iso-8859-1').decode(data);
-      const extracted = _bestEffortPdfText(text);
-      return extracted || 'PDF uploaded; extraction limited';
-    }
-    try {
-      return _cleanText(await file.text());
-    } catch {
-      return '';
-    }
-  }
-
-  async function parseEegFile(file) {
-    const text = await file.text();
-    if (file.type.includes('json') || file.name.toLowerCase().endsWith('.json')) {
-      const payload = JSON.parse(text);
-      const samples = payload?.samples || payload;
-      if (!Array.isArray(samples) || !samples.length) {
-        throw new Error('EEG JSON payload must contain a samples array');
-      }
-      return Array.isArray(samples[0]) ? samples : [];
-    }
-    return parseCsvToMatrix(text);
-  }
-
-  vm.process = async function() {
-    if (!vm.eegFile) { vm.status = 'EEG file required'; return; }
-    vm.status = 'parsing...';
-    vm.dump = '';
-    vm.serverResult = null;
-    vm.modelResult = null;
-
-    try {
-      const eeg = await parseEegFile(vm.eegFile);
-      const reportText = await parseReportFile(vm.reportFile);
-      const formData = new FormData();
-      formData.append('eeg', vm.eegFile);
-
-      vm.status = 'uploading to /train...';
-      const response = await $http({
-        method: 'POST',
-        url: '/train?sampling_rate_hz=250',
-        data: formData,
-        headers: { 'Content-Type': undefined },
-        transformRequest: angular.identity
+  <script>
+    const projects = [
+      { id: 1, title: 'EEG Analysis System in JS', description: 'Browser-based EEG parsing and anomaly detection with server training and inference.', tags: ['web','data'], link: '#', type: 'data' },
+      { id: 2, title: 'Portfolio Dashboard', description: 'Responsive project showcase with smart filtering and tag-based navigation.', tags: ['web'], link: '#', type: 'web' },
+      { id: 3, title: 'Cloud Automation', description: 'Infrastructure-as-Code pipelines for continuous deployment using Docker/Kubernetes.', tags: ['devops'], link: '#', type: 'devops' },
+      { id: 4, title: 'Time Series ML', description: 'Machine learning pipeline for time-series classification on EEG data.', tags: ['data'], link: '#', type: 'data' },
+      { id: 5, title: 'UX/UI Enhancement', description: 'User-focused design system for high usability and accessibility.', tags: ['web'], link: '#', type: 'web' },
+      { id: 6, title: 'Realtime Monitoring', description: 'Real-time system monitoring and alerting engine with data telemetry.', tags: ['devops','data'], link: '#', type: 'devops' }
+    ];
+
+    const projectsGrid = document.getElementById('projectsGrid');
+    const emptyState = document.getElementById('emptyState');
+    const searchInput = document.getElementById('searchInput');
+    const categorySelect = document.getElementById('categorySelect');
+
+    function renderProjects(list) {
+      projectsGrid.innerHTML = '';
+      if (!list.length) { emptyState.style.display = 'block'; return; }
+      emptyState.style.display = 'none';
+
+      list.forEach(project => {
+        const card = document.createElement('article');
+        card.className = 'project-card';
+
+        const h3 = document.createElement('h3');
+        h3.textContent = project.title;
+
+        const p = document.createElement('p');
+        p.textContent = project.description;
+
+        const tags = document.createElement('div'); tags.className = 'tags';
+        project.tags.forEach(tagText => {
+          const tag = document.createElement('span');
+          tag.className = 'tag';
+          tag.textContent = tagText;
+          tags.appendChild(tag);
+        });
+
+        const links = document.createElement('div'); links.className = 'links';
+        const anchor = document.createElement('a');
+        anchor.textContent = 'View details';
+        anchor.href = project.link;
+        anchor.target = '_blank';
+        links.appendChild(anchor);
+
+        card.append(h3, p, tags, links);
+        projectsGrid.appendChild(card);
       });
+    }
 
-      vm.serverResult = response.data;
-      vm.status = 'server trained; running in-browser inference...';
+    function filterProjects() {
+      const term = searchInput.value.trim().toLowerCase();
+      const category = categorySelect.value;
+      const filtered = projects.filter(p => {
+        const byCategory = (category === 'all') || (p.type === category);
+        const bySearch = !term || [p.title, p.description, ...p.tags].some(v => v.toLowerCase().includes(term));
+        return byCategory && bySearch;
+      });
+      renderProjects(filtered);
+    }
 
-      vm.modelResult = analyzeWithModelInBrowser(eeg, response.data.model_state);
-      vm.dump = JSON.stringify({
-        report_text: reportText,
-        eeg_shape: [eeg.length, eeg[0]?.length || 0],
-        marker: vm.marker,
-        market_data: vm.marketData,
-        forecast_data: vm.forecastData,
-        market_cap_data: vm.marketCapData,
-        server: response.data,
-        model_inference: vm.modelResult
-      }, null, 2);
+    searchInput.addEventListener('input', filterProjects);
+    categorySelect.addEventListener('change', filterProjects);
+    renderProjects(projects);
 
-      vm.status = 'complete';
-      if (vm.autoDownload) {
-        vm.downloadDump();
+    // Machine learning demo: simple linear regression (least squares)
+    const sampleX = [0.5, 1, 2, 3, 5, 8];
+    const sampleY = [1.2, 1.8, 2.7, 3.5, 5, 7.1];
+    const n = sampleX.length;
+    const xMean = sampleX.reduce((sum, x) => sum + x, 0) / n;
+    const yMean = sampleY.reduce((sum, y) => sum + y, 0) / n;
+
+    const slope = sampleX.reduce((acc, x, i) => acc + (x - xMean) * (sampleY[i] - yMean), 0) /
+      sampleX.reduce((acc, x) => acc + Math.pow(x - xMean, 2), 0);
+    const intercept = yMean - slope * xMean;
+
+    document.getElementById('predictButton').addEventListener('click', () => {
+      const value = parseFloat(document.getElementById('experienceInput').value);
+      if (Number.isNaN(value)) {
+        document.getElementById('mlOutput').textContent = 'Enter a valid numeric value.';
+        return;
       }
-    } catch (err) {
-      vm.status = 'error: ' + (err.message || err);
-      vm.dump = '';
-      vm.modelResult = null;
-    }
-
-    $scope.$applyAsync();
-  };
-
-  vm.downloadDump = function() {
-    if (!vm.dump) {
-      vm.status = 'No output to download';
-      return;
-    }
-    const blob = new Blob([vm.dump], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `xschiq-analysis-${Date.now()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  // initial market data, forecast, and market cap load on startup
-  vm.refreshMarketData();
-  vm.refreshForecastData();
-  vm.refreshMarketCapData();
-
-}]);
-</script>
-
+      const prediction = intercept + slope * value;
+      document.getElementById('mlOutput').textContent =
+        `Predicted complexity score: ${prediction.toFixed(2)} (slope=${slope.toFixed(2)}, intercept=${intercept.toFixed(2)})`;
+    });
+  </script>
 </body>
 </html>
