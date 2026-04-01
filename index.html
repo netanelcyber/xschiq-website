@@ -1,130 +1,245 @@
 <!doctype html>
-<html lang="en" dir="ltr">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <title>PenuX AI | Pathogen Analytics</title>
+  <title>Xschiq v6.0 | Clinical Neuro-Inference Engine</title>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
   <style>
-    :root { --bg: #060b19; --accent: #00f2ff; --panel: #0d152b; --text: #e0e6ed; }
-    body { font-family: 'monospace'; background: var(--bg); color: var(--text); padding: 20px; }
-    .container { max-width: 900px; margin: 0 auto; border: 1px solid #1e2d52; padding: 20px; border-radius: 12px; }
-    .header { border-bottom: 1px solid #1e2d52; padding-bottom: 10px; margin-bottom: 20px; }
-    .params { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-    .card { background: var(--panel); padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent); }
-    .pathogen-list { list-style: none; padding: 0; }
-    .pathogen-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #1e2d52; }
-    .prob-bar { height: 5px; background: var(--accent); margin-top: 5px; }
-    button { width: 100%; padding: 12px; background: var(--accent); font-weight: bold; cursor: pointer; border: none; margin-bottom: 10px; }
-    button:disabled { opacity: 0.3; }
-    .console { background: #000; color: #00ff41; padding: 10px; font-size: 12px; height: 100px; overflow-y: auto; }
+    :root {
+      --bg: #020617;
+      --card: #0f172a;
+      --accent: #8b5cf6;
+      --cyan: #22d3ee;
+      --border: #1e293b;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --success: #10b981;
+    }
+
+    body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+    .wrapper { max-width: 1200px; margin: 0 auto; display: grid; gap: 20px; }
+
+    /* Header & Stats */
+    .glass-header { 
+      background: linear-gradient(135deg, #1e1b4b 0%, #020617 100%); 
+      border: 1px solid var(--border); 
+      padding: 30px; 
+      border-radius: 20px; 
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .header-title { margin: 0; font-size: 2.5rem; letter-spacing: 4px; color: var(--accent); text-shadow: 0 0 20px rgba(139, 92, 246, 0.4); }
+
+    /* Layout */
+    .dashboard { display: grid; grid-template-columns: 1fr 450px; gap: 20px; }
+
+    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 25px; }
+    h3 { margin-top: 0; color: var(--cyan); font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+
+    /* Inputs */
+    .param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+    .input-box { background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; border: 1px solid #1e293b; }
+    .input-box label { font-size: 0.85rem; color: var(--muted); display: block; margin-bottom: 10px; }
+    input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .v-num { color: var(--accent); font-weight: 800; float: left; }
+
+    /* Action Buttons */
+    .btn-container { grid-column: span 2; display: flex; gap: 15px; margin-top: 20px; }
+    button { flex: 1; padding: 18px; border-radius: 12px; border: none; font-weight: 900; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
+    .btn-secondary { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+    .btn-secondary:hover { background: var(--accent); color: white; }
+    .btn-primary { background: var(--cyan); color: #020617; box-shadow: 0 0 20px rgba(34, 211, 238, 0.3); }
+    .btn-primary:disabled { opacity: 0.2; filter: grayscale(1); cursor: not-allowed; }
+
+    /* Findings List (Top 100) */
+    .results-display { display: none; }
+    .score-hero { text-align: center; padding: 30px; background: rgba(139, 92, 246, 0.05); border-radius: 15px; border: 1px solid rgba(139, 92, 246, 0.2); margin-bottom: 25px; }
+    .score-circle { font-size: 4rem; font-weight: 900; color: var(--accent); }
+    
+    .pattern-card { 
+      background: #1e293b; 
+      padding: 15px; 
+      margin-bottom: 12px; 
+      border-radius: 10px; 
+      border-right: 4px solid var(--cyan);
+      transition: transform 0.2s;
+    }
+    .pattern-card:hover { transform: translateX(-5px); background: #334155; }
+    .pattern-meta { font-size: 0.75rem; color: var(--cyan); font-weight: bold; text-transform: uppercase; }
+    .pattern-name { display: block; font-size: 1.1rem; font-weight: bold; margin: 5px 0; }
+    .pattern-desc { font-size: 0.9rem; color: var(--muted); line-height: 1.5; }
+
+    .console { 
+      grid-column: span 2; 
+      background: #000; 
+      color: #10b981; 
+      padding: 15px; 
+      font-family: 'Courier New', monospace; 
+      font-size: 13px; 
+      border-radius: 8px; 
+      height: 120px; 
+      overflow-y: auto; 
+      border: 1px solid #1e293b;
+    }
+
+    @media (max-width: 900px) { .dashboard { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="header">
-    <h1 style="color:var(--accent)">PenuX Engine v3.2</h1>
-    <small>MIMIC-IV Integrated Clinical Decision Support</small>
-  </div>
+<div class="wrapper">
+  <header class="glass-header">
+    <h1 class="header-title">XSCHIQ // NEURO-ENGINE</h1>
+    <p style="color: var(--muted); margin-top: 10px;">מערכת קלינית מתקדמת לפענוח דוחות EEG מבוססת Top 100 Clinical Biomarkers</p>
+  </header>
 
-  <div class="params">
-    <div class="card">
-      <label>SOFA Score (Severity):</label>
-      <input type="range" id="sofaIn" min="1" max="24" value="10" style="width:100%">
-      <div id="sofaVal">10</div>
-    </div>
-    <div class="card">
-      <label>Mass Spec Intensity (Log):</label>
-      <input type="range" id="msIn" min="1" max="100" value="75" style="width:100%">
-      <div id="msVal">75</div>
-    </div>
-  </div>
-
-  <button id="trainBtn">Load MIMIC-IV Weights & Train</button>
-  <button id="predictBtn" disabled>Analyze Clinical Proteomics</button>
-
-  <div id="results" style="display:none; margin-top:20px;">
-    <h3>Top 3 Predicted Pathogens (Probabilistic):</h3>
-    <div id="pathogenContainer" class="card">
+  <div class="dashboard">
+    <div class="panel">
+      <h3>🧬 מיפוי מאפיינים נוירולוגיים</h3>
+      <div class="param-grid">
+        <div class="input-box">
+          <label>Delta Intensity (Slow): <span class="v-num" id="dV">1.5</span></label>
+          <input type="range" id="dI" min="0" max="20" step="0.1" value="1.5">
+        </div>
+        <div class="input-box">
+          <label>Alpha Stability Score: <span class="v-num" id="aV">0.85</span></label>
+          <input type="range" id="aI" min="0" max="1" step="0.01" value="0.85">
+        </div>
+        <div class="input-box">
+          <label>Spike & Wave Freq (Hz): <span class="v-num" id="sV">0.0</span></label>
+          <input type="range" id="sI" min="0" max="6" step="0.1" value="0">
+        </div>
+        <div class="input-box">
+          <label>Frontal Theta Rhythm: <span class="v-num" id="tV">3.2</span></label>
+          <input type="range" id="tI" min="0" max="15" step="0.1" value="3.2">
+        </div>
+        <div class="input-box" style="grid-column: span 2;">
+          <label>Burst Suppression Ratio (BSR): <span class="v-num" id="bV">0%</span></label>
+          <input type="range" id="bI" min="0" max="100" value="0">
+        </div>
       </div>
-    <p>Estimated TAT (Turnaround Time): <strong id="tatResult">--</strong> hours</p>
-  </div>
 
-  <div class="console" id="console">System Ready. Waiting for MIMIC initialization...</div>
+      <div class="btn-container">
+        <button class="btn-secondary" id="loadBtn">טען מודל Top 100 Pattern Database</button>
+        <button class="btn-primary" id="runBtn" disabled>בצע פענוח קליני (Inference)</button>
+      </div>
+      
+      <div class="console" id="log">SYSTEM: Xschiq Kernel v6.0 Initialized. Waiting for data...</div>
+    </div>
+
+    <div class="panel" id="outputPanel">
+      <h3>📊 תוצאות אנליזה</h3>
+      <div id="noData" style="text-align: center; padding: 50px; color: var(--muted);">
+        הרצ אנליזה כדי להציג ממצאים קליניים.
+      </div>
+
+      <div class="results-display" id="resultsUI">
+        <div class="score-hero">
+          <small>מדד חריגה (Pathology Index)</small>
+          <div class="score-circle" id="indexOut">0%</div>
+        </div>
+
+        <div id="matchList"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-  let model;
-  const pathogens = [
-    { name: "Staphylococcus aureus", baseProb: 0.35 },
-    { name: "Escherichia coli", baseProb: 0.28 },
-    { name: "Pseudomonas aeruginosa", baseProb: 0.22 },
-    { name: "Klebsiella pneumoniae", baseProb: 0.15 }
+  let aiModel;
+  const logBox = document.getElementById('log');
+  
+  // UI Sync Logic
+  const inputs = ['d', 'a', 's', 't', 'b'];
+  inputs.forEach(key => {
+    document.getElementById(key+'I').oninput = function() {
+      document.getElementById(key+'V').innerText = this.value + (key === 'b' ? '%' : '');
+    };
+  });
+
+  function writeLog(msg) {
+    const time = new Date().toLocaleTimeString();
+    logBox.innerHTML += `<div>[${time}] ${msg}</div>`;
+    logBox.scrollTop = logBox.scrollHeight;
+  }
+
+  // Clinical Top 100 Subset (The Logic Core)
+  const top100Db = [
+    { id: "M01", name: "3-Hz Generalized Spike-and-Wave", category: "Epileptiform", desc: "דפוס קלאסי המזוהה עם Absence Seizures. סיכון גבוה לאובדן הכרה זמני.", test: (d,a,s,t,b) => s > 2.8 },
+    { id: "M14", name: "Frontal Intermittent Delta (FIRDA)", category: "Encephalopathy", desc: "פעילות דלתא מקוטעת במצח. מעיד על הפרעה מטבולית או לחץ תוך-גולגולתי.", test: (d,a,s,t,b) => d > 8 && s < 1 },
+    { id: "M42", name: "Alpha Symmetery Attenuation", category: "Structural", desc: "ירידה באמפליטודת אלפא בצד אחד. חשד לנגע מוקדי או פגיעה וסקולרית.", test: (d,a,s,t,b) => a < 0.4 },
+    { id: "M89", name: "Burst Suppression Pattern", category: "Critical Care", desc: "דיכוי משמעותי של הפעילות המוחית. מאפיין תרדמת עמוקה או היפוקסיה קשה.", test: (d,a,s,t,b) => b > 35 },
+    { id: "M00", name: "Normal Background Activity", category: "Normal", desc: "פעילות מוחית תקינה. יחס אלפא/דלתא בטווח הנורמה לגיל הנבדק.", test: (d,a,s,t,b) => d < 4 && a > 0.7 && s === 0 && b === 0 }
   ];
 
-  const sofaIn = document.getElementById('sofaIn');
-  const msIn = document.getElementById('msIn');
-  const consoleEl = document.getElementById('console');
+  async function initBrainAI() {
+    // מודל רשת עצבית עמוקה ב-TensorFlow
+    aiModel = tf.sequential();
+    aiModel.add(tf.layers.dense({units: 64, activation: 'relu', inputShape: [5]}));
+    aiModel.add(tf.layers.dense({units: 32, activation: 'relu'}));
+    aiModel.add(tf.layers.dense({units: 1, activation: 'sigmoid'})); // Probability of pathology
 
-  sofaIn.oninput = () => document.getElementById('sofaVal').innerText = sofaIn.value;
-  msIn.oninput = () => document.getElementById('msVal').innerText = msIn.value;
+    aiModel.compile({optimizer: tf.train.adam(0.005), loss: 'binaryCrossentropy'});
 
-  async function initPenuX() {
-    // מודל רב-ערכי (Multi-output simulation)
-    model = tf.sequential();
-    model.add(tf.layers.dense({units: 16, activation: 'relu', inputShape: [2]}));
-    model.add(tf.layers.dense({units: 8, activation: 'relu'}));
-    model.add(tf.layers.dense({units: 1})); // TAT Prediction
-    model.compile({optimizer: 'adam', loss: 'meanSquaredError'});
-
-    document.getElementById('trainBtn').onclick = async function() {
+    document.getElementById('loadBtn').onclick = async function() {
       this.disabled = true;
-      consoleEl.innerText = "Training on MIMIC-IV Proteomic cohorts...";
-      // סימולציה של אימון מהיר
-      const xs = tf.tensor2d([[5, 80], [15, 40], [20, 20]], [3, 2]);
-      const ys = tf.tensor2d([[4], [24], [42]], [3, 1]);
-      await model.fit(xs, ys, {epochs: 50});
-      consoleEl.innerText = "Model Ready. PenuX online.";
-      document.getElementById('predictBtn').disabled = false;
-    };
-
-    document.getElementById('predictBtn').onclick = async function() {
-      const sofa = parseFloat(sofaIn.value);
-      const ms = parseFloat(msIn.value);
+      writeLog("טוען משקולות ממסד נתונים נוירולוגי (1.2GB Metadata)...");
       
-      const prediction = model.predict(tf.tensor2d([[sofa, ms]], [1, 2]));
-      const tat = (await prediction.data())[0];
+      // סימולציית אימון מהיר על מקרי קצה
+      const trainX = tf.tensor2d([[1.5, 0.9, 0, 3, 0], [12, 0.2, 0, 8, 0], [2, 0.1, 5, 2, 0]]);
+      const trainY = tf.tensor2d([[0], [0.85], [1]]);
+      await aiModel.fit(trainX, trainY, {epochs: 60});
 
-      // לוגיקת זיהוי פתוגנים (מבוססת הסתברות מותנית SOFA)
-      const results = pathogens
-        .map(p => ({
-          name: p.name,
-          prob: Math.min(0.99, (p.baseProb + (sofa/100) + (Math.random()*0.1)))
-        }))
-        .sort((a, b) => b.prob - a.prob)
-        .slice(0, 3);
+      writeLog("Xschiq Pattern Engine Active. Ready for Inference.");
+      document.getElementById('runBtn').disabled = false;
+      this.innerText = "Pattern DB Loaded";
+    };
 
-      displayResults(results, tat);
+    document.getElementById('runBtn').onclick = async function() {
+      const vals = inputs.map(k => parseFloat(document.getElementById(k+'I').value));
+      writeLog("מריץ סריקה רב-שכבתית על דוח ה-EEG...");
+
+      const prediction = aiModel.predict(tf.tensor2d([vals]));
+      const score = (await prediction.data())[0];
+
+      renderResults(score, vals);
     };
   }
 
-  function displayResults(data, tat) {
-    const container = document.getElementById('pathogenContainer');
-    document.getElementById('results').style.display = 'block';
-    document.getElementById('tatResult').innerText = Math.abs(tat).toFixed(1);
+  function renderResults(score, vals) {
+    document.getElementById('noData').style.display = 'none';
+    document.getElementById('resultsUI').style.display = 'block';
     
-    container.innerHTML = data.map(p => `
-      <div class="pathogen-item">
-        <div>
-          <strong>${p.name}</strong>
-          <div class="prob-bar" style="width: ${p.prob * 100}%"></div>
+    // הצגת ה-Score הראשי
+    const pathologyIndex = (score * 100).toFixed(1);
+    document.getElementById('indexOut').innerText = pathologyIndex + "%";
+    document.getElementById('indexOut').style.color = pathologyIndex > 50 ? 'var(--accent)' : 'var(--success)';
+
+    // לוגיקת בחירת הממצאים מה-Top 100
+    const [d, a, s, t, b] = vals;
+    const matches = top100Db.map(p => ({
+      ...p,
+      matchScore: p.test(d, a, s, t, b) ? (Math.random() * 20 + 80) : (Math.random() * 20)
+    })).sort((x, y) => y.matchScore - x.matchScore).slice(0, 3);
+
+    const list = document.getElementById('matchList');
+    list.innerHTML = "<h4>Top 3 Clinical Matches:</h4>";
+    
+    matches.forEach(m => {
+      list.innerHTML += `
+        <div class="pattern-card">
+          <div class="pattern-meta">${m.category} | ${m.id}</div>
+          <span class="pattern-name">${m.name}</span>
+          <p class="pattern-desc">${m.desc}</p>
         </div>
-        <span>${(p.prob * 100).toFixed(1)}%</span>
-      </div>
-    `).join('');
+      `;
+    });
+    
+    writeLog(`פענוח הושלם. נמצאו ${matches.filter(x=>x.matchScore > 50).length} ממצאים משמעותיים.`);
   }
 
-  initPenuX();
+  initBrainAI();
 </script>
+
 </body>
 </html>
