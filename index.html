@@ -1565,6 +1565,20 @@
             },
             {
                 handle: "netanelcyber",
+                repo: "sqlmap",
+                href: "https://github.com/netanelcyber/sqlmap",
+                stack: "Python / security tooling",
+                focus: "Fork of sqlmapproject/sqlmap for SQL injection testing and database takeover workflows."
+            },
+            {
+                handle: "netanelcyber",
+                repo: "kroger-price-alert",
+                href: "https://github.com/netanelcyber/kroger-price-alert",
+                stack: "Python / alerting",
+                focus: "Fork of a retail price-alert workflow adapted for automated monitoring."
+            },
+            {
+                handle: "netanelcyber",
                 repo: "xschiq-website",
                 href: "https://github.com/netanelcyber/xschiq-website",
                 stack: "HTML / Python / EEG",
@@ -1573,9 +1587,16 @@
             {
                 handle: "netanelcyber",
                 repo: "FLIGHT-PREDICTIONS",
-                href: "https://github.com/netanelcyber",
+                href: "https://github.com/netanelcyber/FLIGHT-PREDICTIONS",
                 stack: "Python / forecasting",
                 focus: "Forecasting-oriented repository mention surfaced on the public profile."
+            },
+            {
+                handle: "netanelcyber",
+                repo: "zenday1",
+                href: "https://github.com/netanelcyber/zenday1",
+                stack: "Python",
+                focus: "Additional Python project surfaced in the public repository list."
             }
         ];
 
@@ -1596,6 +1617,16 @@
                 focus: "Pathogen prediction and EHR modeling"
             },
             {
+                asset: "sqlmap",
+                stack: "Python, offensive security tooling",
+                focus: "Forked SQL injection testing workflow"
+            },
+            {
+                asset: "kroger-price-alert",
+                stack: "Python, automation, alerts",
+                focus: "Retail monitoring and alert automation"
+            },
+            {
                 asset: "xschiq-website",
                 stack: "HTML, Python, EEG assets",
                 focus: "Product surface and presentation layer"
@@ -1609,6 +1640,11 @@
                 asset: "xcovid",
                 stack: "HTML, CSS, JS, Python, PHP",
                 focus: "COVID-facing data and web interface exploration"
+            },
+            {
+                asset: "zenday1",
+                stack: "Python",
+                focus: "Additional Python utility/project footprint"
             }
         ];
 
@@ -1675,7 +1711,15 @@
 
         function renderGitHubMentions() {
             githubMentionsList.innerHTML = projectMentions
-                .filter((project) => project.repo === "xschizo" || project.repo === "penuX" || project.repo === "xschiq-website" || project.repo === "EncryptVC")
+                .filter((project) =>
+                    project.repo === "xschizo" ||
+                    project.repo === "penuX" ||
+                    project.repo === "xschiq-website" ||
+                    project.repo === "EncryptVC" ||
+                    project.repo === "sqlmap" ||
+                    project.repo === "kroger-price-alert" ||
+                    project.repo === "zenday1"
+                )
                 .map((project) => `
                     <div class="contact-repo-item">
                         <a href="${project.href}">${project.handle}/${project.repo}</a>
