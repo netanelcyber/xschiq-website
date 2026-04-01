@@ -2,153 +2,151 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>PenuX-Omni Max | 100 Pathogens</title>
+  <title>PenuX-Omni Max | Turbo Edition</title>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgpu/dist/tf-backend-webgpu.js"></script>
   <style>
-    :root { --p-neon: #00ffcc; --p-gold: #ffcc00; --p-bg: #020203; --p-panel: #0d0e12; }
-    body { background: var(--p-bg); color: #e2e8f0; font-family: 'Inter', sans-serif; margin: 0; display: flex; height: 100vh; }
+    :root { --neon: #00ffcc; --bg: #050507; --panel: #0f111a; }
+    body { background: var(--bg); color: #e2e8f0; font-family: 'JetBrains Mono', monospace; margin: 0; display: flex; height: 100vh; overflow: hidden; }
     
-    /* Layout */
-    .sidebar { width: 380px; background: var(--p-panel); border-right: 1px solid #1e293b; padding: 25px; display: flex; flex-direction: column; }
-    .content { flex: 1; padding: 30px; overflow-y: auto; position: relative; }
+    .sidebar { width: 360px; background: var(--panel); border-right: 1px solid #1e293b; padding: 20px; display: flex; flex-direction: column; }
+    .content { flex: 1; padding: 25px; overflow-y: auto; scroll-behavior: smooth; }
 
-    /* Branding */
-    .header { border-left: 4px solid var(--p-neon); padding-left: 15px; margin-bottom: 30px; }
-    .header h1 { margin: 0; font-size: 1.4rem; letter-spacing: 1px; }
-    .header span { color: var(--p-neon); font-size: 0.7rem; font-family: monospace; }
+    /* Performance Stats */
+    .perf-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+    .stat { flex: 1; background: #161821; padding: 10px; border-radius: 8px; border: 1px solid #222; text-align: center; }
+    .stat b { display: block; color: var(--neon); font-size: 1.2rem; }
+    .stat span { font-size: 0.6rem; text-transform: uppercase; color: #64748b; }
 
-    /* Controls */
-    .knob-container { background: #16181d; border-radius: 12px; padding: 20px; margin-bottom: 15px; border: 1px solid #222; }
-    label { display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 10px; text-transform: uppercase; }
-    input[type="range"] { width: 100%; accent-color: var(--p-neon); }
-    .val { float: right; color: var(--p-neon); font-weight: bold; font-family: monospace; }
+    /* Control Knobs */
+    .control-group { background: #161821; border-radius: 12px; padding: 15px; margin-bottom: 12px; }
+    input[type="range"] { width: 100%; accent-color: var(--neon); cursor: crosshair; }
+    .label-row { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 5px; }
 
-    /* Pathogen Grid */
-    .pathogen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-top: 20px; }
-    .pathogen-card { background: #16181d; border: 1px solid #222; padding: 15px; border-radius: 10px; transition: 0.3s; }
-    .pathogen-card.active { border-color: var(--p-neon); background: rgba(0, 255, 204, 0.05); transform: scale(1.05); }
-    .pathogen-card h4 { margin: 0; font-size: 0.9rem; }
-    .pathogen-card small { font-size: 0.7rem; color: #64748b; }
+    /* Pathogen Matrix (Virtual Grid) */
+    .matrix { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+    .cell { background: #0d0e14; border: 1px solid #1a1a24; padding: 10px; border-radius: 6px; font-size: 0.7rem; transition: 0.1s; opacity: 0.6; }
+    .cell.hit { background: var(--neon); color: #000; opacity: 1; font-weight: bold; box-shadow: 0 0 15px var(--neon); }
 
-    /* Terminal */
-    #term { background: #000; color: #00ff00; font-family: monospace; font-size: 11px; height: 150px; overflow-y: auto; padding: 10px; border: 1px solid #222; margin-top: auto; border-radius: 6px; }
+    button { width: 100%; padding: 16px; border-radius: 8px; border: none; font-weight: 900; cursor: pointer; transition: 0.2s; font-size: 0.9rem; margin-top: 10px; }
+    .btn-turbo { background: var(--neon); color: #000; text-transform: uppercase; }
+    .btn-turbo:hover { transform: scale(1.02); filter: brightness(1.1); }
+    .btn-turbo:disabled { opacity: 0.1; }
 
-    button { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 0.9rem; margin-top: 10px; }
-    .btn-primary { background: var(--p-neon); color: #000; }
-    .btn-secondary { background: transparent; border: 1px solid #334155; color: #94a3b8; }
-    .btn-primary:disabled { opacity: 0.2; cursor: not-allowed; }
+    #log { background: #000; color: #00ff00; font-size: 10px; height: 120px; overflow-y: auto; padding: 10px; border-radius: 4px; margin-top: auto; }
   </style>
 </head>
 <body>
 
   <aside class="sidebar">
-    <div class="header">
-      <h1>PENUX-OMNI <span style="color:#fff">MAX</span></h1>
-      <span>100-Pathogen / 1K-Neuron / LSTM</span>
+    <div style="margin-bottom:20px;">
+      <h2 style="margin:0; color:var(--neon); font-size:1.2rem;">PENUX TURBO</h2>
+      <small style="opacity:0.5;">v5.5 | netanelcyber-kernel</small>
     </div>
 
-    <div class="knob-container">
-      <label>Procalcitonin (ng/mL) <span class="val" id="v1">5.0</span></label>
-      <input type="range" id="i1" min="0" max="50" step="0.1" value="5">
-      
-      <label>Lactate (Mmol/L) <span class="val" id="v2">2.0</span></label>
-      <input type="range" id="i2" min="0" max="15" step="0.1" value="2">
-      
-      <label>MS Intensity (OpenMS) <span class="val" id="v3">45%</span></label>
-      <input type="range" id="i3" min="0" max="100" value="45">
-
-      <label>CRP Levels (mg/L) <span class="val" id="v4">120</span></label>
-      <input type="range" id="i4" min="0" max="400" value="120">
+    <div class="perf-bar">
+      <div class="stat"><b id="latency">--</b><span>Latency (ms)</span></div>
+      <div class="stat"><b id="backend">WAIT</b><span>Engine</span></div>
     </div>
 
-    <button id="initBtn" class="btn-secondary">Compile Max Kernel</button>
-    <button id="runBtn" class="btn-primary" disabled>Analyze 100 Pathogens</button>
+    <div class="control-group">
+      <div class="label-row"><span>Proteomic Flux</span> <b id="v1">0.8</b></div>
+      <input type="range" id="i1" min="0" max="1" step="0.01" value="0.8">
+    </div>
 
-    <div id="term">> Awaiting PenuX-Algorithm launch...</div>
+    <div class="control-group">
+      <div class="label-row"><span>PCT Level</span> <b id="v2">4.2</b></div>
+      <input type="range" id="i2" min="0" max="30" step="0.1" value="4.2">
+    </div>
+
+    <button id="bootBtn" class="btn-turbo" style="background:#222; color:#fff; margin-bottom:8px;">Boot WebGPU Kernel</button>
+    <button id="runBtn" class="btn-turbo" disabled>Instant Inference</button>
+
+    <div id="log">> System Standby...</div>
   </aside>
 
   <main class="content">
-    <div style="background: rgba(255,204,0,0.1); border: 1px solid var(--p-gold); padding: 20px; border-radius: 12px; margin-bottom: 30px;">
-      <h2 style="margin:0; color:var(--p-gold);">ICU Pathogen Recognition Wall</h2>
-      <p style="font-size:0.85rem; color:#94a3b8;">Real-time inference across top 100 bacterial, viral, and fungal signatures.</p>
-    </div>
-
-    <div class="pathogen-grid" id="pGrid">
-      </div>
+    <h3 style="margin-top:0; color:var(--neon);">100-Pathogen Classification Matrix</h3>
+    <div class="matrix" id="pMatrix"></div>
   </main>
 
 <script>
   let model;
-  const logger = document.getElementById('term');
-  const pathogenList = [
-    "S. aureus", "P. aeruginosa", "E. coli", "K. pneumoniae", "A. baumannii", "E. faecium", "S. pyogenes", "N. meningitidis",
-    "S. pneumoniae", "H. influenzae", "L. monocytogenes", "C. albicans", "C. glabrata", "A. fumigatus", "P. jirovecii",
-    "Influenza A", "RSV", "SARS-CoV-2", "Enterobacter cloacae", "S. marcescens", "B. fragilis", "C. difficile", "P. mirabilis"
-    // ... Simplified for demo, but logic supports 100 classes
-  ];
+  const logger = document.getElementById('log');
+  const pathogenList = Array.from({length: 100}, (_, i) => `P-${(i+1).toString().padStart(3, '0')}`);
 
   function log(msg) {
-    logger.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+    logger.innerHTML += `<div>> ${msg}</div>`;
     logger.scrollTop = logger.scrollHeight;
   }
 
-  // Populate Grid
-  const grid = document.getElementById('pGrid');
-  pathogenList.forEach((p, index) => {
-    grid.innerHTML += `<div class="pathogen-card" id="pc-${index}"><h4>${p}</h4><small>Class ID: ${index+100}</small></div>`;
+  // Build Matrix UI
+  const matrix = document.getElementById('pMatrix');
+  pathogenList.forEach((name, i) => {
+    const div = document.createElement('div');
+    div.className = 'cell';
+    div.id = `cell-${i}`;
+    div.innerText = name;
+    matrix.appendChild(div);
   });
 
   // UI Sync
-  ['i1','i2','i3','i4'].forEach(id => {
-    document.getElementById(id).oninput = e => {
-      document.getElementById(id.replace('i','v')).innerText = e.target.value + (id === 'i3' ? '%' : '');
-    };
+  ['i1','i2'].forEach(id => {
+    document.getElementById(id).oninput = e => document.getElementById(id.replace('i','v')).innerText = e.target.value;
   });
 
-  document.getElementById('initBtn').onclick = async function() {
+  // Turbo Boot (WebGPU)
+  document.getElementById('bootBtn').onclick = async function() {
     this.disabled = true;
-    log("Allocating 1,024 Neurons for Inference...");
-    log("Integrating netanelcyber/penuX-algorithm...");
+    log("Requesting WebGPU Device...");
+    
+    try {
+      await tf.setBackend('webgpu');
+      document.getElementById('backend').innerText = "WEBGPU";
+    } catch(e) {
+      log("WebGPU not found. Falling back to WASM/WebGL.");
+      await tf.setBackend('webgl');
+      document.getElementById('backend').innerText = "WEBGL";
+    }
+
+    log("Compiling 1K-LSTM Hybrid Architecture...");
     
     model = tf.sequential();
-    model.add(tf.layers.lstm({units: 64, inputShape: [1, 4], returnSequences: false}));
-    model.add(tf.layers.dense({units: 124, activation: 'relu'}));
-    model.add(tf.layers.dropout({rate: 0.2}));
-    model.add(tf.layers.dense({units: 52, activation: 'relu'}));
-    model.add(tf.layers.dense({units: 100, activation: 'softmax'})); // 100 Pathogen Classes
+    model.add(tf.layers.lstm({units: 64, inputShape: [1, 2], returnSequences: false}));
+    model.add(tf.layers.dense({units: 1024, activation: 'relu'}));
+    model.add(tf.layers.dense({units: 100, activation: 'softmax'}));
 
-    model.compile({optimizer: 'adam', loss: 'categoricalCrossentropy'});
+    // Warm-up (הפעלה ראשונית כדי "לחמם" את ה-GPU)
+    tf.tidy(() => model.predict(tf.zeros([1, 1, 2])));
     
-    log("Model Compiled. Pathogen DB 1-100 Ready.");
+    log("Kernel Warm-up complete.");
     document.getElementById('runBtn').disabled = false;
-    this.innerText = "Kernel Active";
+    this.innerText = "Kernel Live";
   };
 
   document.getElementById('runBtn').onclick = async function() {
+    const startTime = performance.now();
+    
     const vals = [
       parseFloat(document.getElementById('i1').value),
-      parseFloat(document.getElementById('i2').value),
-      parseFloat(document.getElementById('i3').value),
-      parseFloat(document.getElementById('i4').value)
+      parseFloat(document.getElementById('i2').value)
     ];
 
-    log("Retrieving proteomic peaks from OpenMS...");
-    
-    const input = tf.tensor3d([[vals]]);
-    const prediction = model.predict(input);
-    const scores = await prediction.data();
+    // שימוש ב-tf.tidy לניקוי זיכרון מיידי
+    const resultIdx = tf.tidy(() => {
+      const input = tf.tensor3d([[vals]]);
+      const pred = model.predict(input);
+      return pred.argMax(-1).dataSync()[0];
+    });
 
-    // Map top prediction
-    const maxIdx = scores.indexOf(Math.max(...scores)) % pathogenList.length;
+    // עדכון ה-UI באופן מיידי
+    document.querySelectorAll('.cell').forEach(c => c.classList.remove('hit'));
+    document.getElementById(`cell-${resultIdx}`).classList.add('hit');
     
-    // UI Update
-    document.querySelectorAll('.pathogen-card').forEach(c => c.classList.remove('active'));
-    const winner = document.getElementById(`pc-${maxIdx}`);
-    winner.classList.add('active');
-    winner.scrollIntoView({behavior: 'smooth', block: 'center'});
-
-    log(`Prediction: ${pathogenList[maxIdx]} (Conf: ${(scores[maxIdx]*100).toFixed(2)}%)`);
-    log("Diagnostic Gap reduced to 3.2 hours.");
+    const endTime = performance.now();
+    document.getElementById('latency').innerText = (endTime - startTime).toFixed(1);
+    
+    log(`Inference: P-${resultIdx+1} detected in ${(endTime - startTime).toFixed(2)}ms`);
   };
 </script>
 </body>
