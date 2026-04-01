@@ -1,383 +1,599 @@
-const DAYS = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
-const MONTHS = ["ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"];
-const STORAGE_KEY = "adl-secure-session-v1";
-const TARGETS = { "מקלחת": 13, "סידור חדר": 4, "כביסה": 7 };
+const STORAGE_KEY = "adl-planner-state-v2";
+const SIGNATURES_KEY = "adl-planner-signatures-v2";
 
-const TASK_META = {
-  "מקלחת": {
-    steps: ["להכין מגבת ובגדים", "להתקלח", "להתנגב ולהתלבש"],
-  },
-  "סידור חדר": {
-    steps: ["לסדר מיטה", "לפנות משטח מרכזי", "להחזיר חפצים למקום"],
-  },
-  "כביסה": {
-    steps: ["לאסוף בגדים לסל", "להפעיל מכונה", "לייבש או לתלות"],
-  },
-};
-
-const WEEKLY_TEMPLATES = [
-  { id: "sun-a", dayIndex: 0, task: "מקלחת", slot: "בוקר", note: "מקלחת קצרה לפתיחת היום." },
-  { id: "sun-b", dayIndex: 0, task: "מקלחת", slot: "ערב", note: "מקלחת ערב עם סיום רגוע." },
-  { id: "sun-c", dayIndex: 0, task: "סידור חדר", slot: "גמיש", note: "שלושה צעדים קבועים בלבד." },
-  { id: "mon-a", dayIndex: 1, task: "מקלחת", slot: "בוקר", note: "שומרים על רצף קבוע." },
-  { id: "mon-b", dayIndex: 1, task: "מקלחת", slot: "ערב", note: "מקלחת קצרה לפני שינה." },
-  { id: "tue-a", dayIndex: 2, task: "מקלחת", slot: "בוקר", note: "התחלה ברורה של היום." },
-  { id: "tue-b", dayIndex: 2, task: "מקלחת", slot: "ערב", note: "שטיפה, ייבוש, סיום." },
-  { id: "tue-c", dayIndex: 2, task: "סידור חדר", slot: "אחה\"צ", note: "סדר בסיסי לפני הערב." },
-  { id: "wed-a", dayIndex: 3, task: "מקלחת", slot: "בוקר", note: "מקלחת בוקר רגילה." },
-  { id: "wed-b", dayIndex: 3, task: "מקלחת", slot: "ערב", note: "מקלחת קצרה לסגירת היום." },
-  { id: "thu-a", dayIndex: 4, task: "מקלחת", slot: "בוקר", note: "רצף קבוע ורגוע." },
-  { id: "thu-b", dayIndex: 4, task: "מקלחת", slot: "ערב", note: "מקלחת ערב קבועה." },
-  { id: "thu-c", dayIndex: 4, task: "סידור חדר", slot: "גמיש", note: "סדר קצר באזור שינה ועבודה." },
-  { id: "fri-a", dayIndex: 5, task: "מקלחת", slot: "בוקר", note: "מקלחת בוקר לקראת סוף השבוע." },
-  { id: "fri-b", dayIndex: 5, task: "מקלחת", slot: "ערב", note: "יש לבדוק אם צריך להקדים לפני שבת או חג." },
-  { id: "sat-a", dayIndex: 6, task: "מקלחת", slot: "ערב", note: "בדרך כלל מתבצע אחרי צאת שבת או חג." },
-  { id: "sat-b", dayIndex: 6, task: "סידור חדר", slot: "גמיש", note: "סגירת שבוע והכנה לשבוע הבא." },
-];
-
-const nodes = {
+const ui = {
   gregorianDate: document.getElementById("gregorianDate"),
   hebrewDate: document.getElementById("hebrewDate"),
   shabbatWindow: document.getElementById("shabbatWindow"),
   holidayList: document.getElementById("holidayList"),
   calendarAlert: document.getElementById("calendarAlert"),
   summaryShower: document.getElementById("summaryShower"),
-  summaryRoom: document.getElementById("summaryRoom"),
-  summaryLaundry: document.getElementById("summaryLaundry"),
   summaryShowerBar: document.getElementById("summaryShowerBar"),
+  summaryRoom: document.getElementById("summaryRoom"),
   summaryRoomBar: document.getElementById("summaryRoomBar"),
+  summaryLaundry: document.getElementById("summaryLaundry"),
   summaryLaundryBar: document.getElementById("summaryLaundryBar"),
   focusTitle: document.getElementById("focusTitle"),
   focusSubtitle: document.getElementById("focusSubtitle"),
   focusList: document.getElementById("focusList"),
   focusEmpty: document.getElementById("focusEmpty"),
-  weekRange: document.getElementById("weekRange"),
-  monthLabel: document.getElementById("monthLabel"),
+  breakdownTitle: document.getElementById("breakdownTitle"),
+  breakdownBadge: document.getElementById("breakdownBadge"),
+  breakdownSubtitle: document.getElementById("breakdownSubtitle"),
+  subtaskProgressText: document.getElementById("subtaskProgressText"),
+  subtaskProgressBar: document.getElementById("subtaskProgressBar"),
+  subtaskList: document.getElementById("subtaskList"),
+  signatureHint: document.getElementById("signatureHint"),
+  selfSignButton: document.getElementById("selfSignButton"),
+  caregiverSignButton: document.getElementById("caregiverSignButton"),
+  completeSubtasksButton: document.getElementById("completeSubtasksButton"),
+  clearSubtasksButton: document.getElementById("clearSubtasksButton"),
   weeklyGrid: document.getElementById("weeklyGrid"),
+  weekRange: document.getElementById("weekRange"),
   laundryGrid: document.getElementById("laundryGrid"),
+  monthLabel: document.getElementById("monthLabel"),
   printButton: document.getElementById("printButton"),
   resetWeekButton: document.getElementById("resetWeekButton"),
-  resetMonthButton: document.getElementById("resetMonthButton"),
+  resetMonthButton: document.getElementById("resetMonthButton")
 };
 
-function todayMidday() {
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0, 0);
+const DAY_LABELS = ["יום א'", "יום ב'", "יום ג'", "יום ד'", "יום ה'", "יום ו'", "שבת"];
+const SHOWER_PLAN = [
+  [
+    { title: "מקלחת בוקר", window: "07:00-09:00" },
+    { title: "מקלחת ערב", window: "19:30-21:00" }
+  ],
+  [
+    { title: "מקלחת בוקר", window: "07:00-09:00" },
+    { title: "מקלחת ערב", window: "19:30-21:00" }
+  ],
+  [
+    { title: "מקלחת בוקר", window: "07:00-09:00" },
+    { title: "מקלחת ערב", window: "19:30-21:00" }
+  ],
+  [
+    { title: "מקלחת בוקר", window: "07:00-09:00" },
+    { title: "מקלחת ערב", window: "19:30-21:00" }
+  ],
+  [
+    { title: "מקלחת בוקר", window: "07:00-09:00" },
+    { title: "מקלחת ערב", window: "19:30-21:00" }
+  ],
+  [
+    { title: "מקלחת בוקר", window: "07:30-09:30" },
+    { title: "מקלחת ערב", window: "18:30-20:00" }
+  ],
+  [
+    { title: "מקלחת יומית", window: "18:30-20:00" }
+  ]
+];
+
+const ROOM_DAYS = new Set([0, 2, 4, 6]);
+const LAUNDRY_DAYS = [2, 6, 10, 14, 18, 22, 26];
+
+const SUBTASKS = {
+  shower: [
+    "להכין מגבת, בגדים נקיים וכלי רחצה מראש.",
+    "להדליק מים בטמפרטורה נוחה ולהיכנס בלי דחייה נוספת.",
+    "לסבן ולשטוף את הגוף לפי הסדר הקבוע.",
+    "לחפוף או לשטוף את השיער לפי הצורך.",
+    "להתנגב, ללבוש בגדים נקיים ולהעביר כביסה לסל."
+  ],
+  room: [
+    "לאסוף אשפה, כלים ובגדים שלא במקום.",
+    "לסדר את המיטה או פינת המנוחה.",
+    "להחזיר חפצים למקום הקבוע שלהם.",
+    "לנגב או לאוורר אזור אחד מרכזי בחדר."
+  ],
+  laundry: [
+    "למיין כביסה לפי צבעים וסוגי בד.",
+    "להפעיל מכונה עם התוכנית הנכונה.",
+    "להעביר לייבוש או לתלייה בסיום.",
+    "לקפל את הפריטים היבשים.",
+    "להחזיר לארון או למקום אחסון מסודר."
+  ]
+};
+
+const planner = {
+  now: new Date(),
+  weekStart: null,
+  weekTasks: [],
+  laundryTasks: [],
+  allTasks: [],
+  selectedTaskId: null,
+  state: loadStore(localStorage, STORAGE_KEY),
+  signatures: loadStore(sessionStorage, SIGNATURES_KEY)
+};
+
+initialize();
+
+function initialize() {
+  planner.weekStart = startOfWeek(planner.now);
+  planner.weekTasks = buildWeekTasks(planner.weekStart);
+  planner.laundryTasks = buildLaundryTasks(planner.now);
+  planner.allTasks = [...planner.weekTasks, ...planner.laundryTasks];
+  planner.allTasks.forEach(ensureTaskState);
+  planner.selectedTaskId = pickInitialTaskId();
+  bindEvents();
+  renderAll();
+  void hydrateCalendarNotes();
 }
 
-function isoDate(date) {
-  return date.toISOString().slice(0, 10);
+function bindEvents() {
+  ui.printButton.addEventListener("click", () => window.print());
+  ui.resetWeekButton.addEventListener("click", resetWeekTasks);
+  ui.resetMonthButton.addEventListener("click", resetMonthTasks);
+
+  ui.focusList.addEventListener("click", handleTaskSelection);
+  ui.weeklyGrid.addEventListener("click", handleTaskSelection);
+  ui.laundryGrid.addEventListener("click", handleTaskSelection);
+
+  ui.subtaskList.addEventListener("change", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement)) {
+      return;
+    }
+
+    const index = Number.parseInt(target.dataset.subtaskIndex || "", 10);
+    if (Number.isNaN(index) || !planner.selectedTaskId) {
+      return;
+    }
+
+    const state = getTaskState(planner.selectedTaskId);
+    state.subtasks[index] = target.checked;
+    saveStore(localStorage, STORAGE_KEY, planner.state);
+    renderAll();
+  });
+
+  ui.selfSignButton.addEventListener("click", () => toggleSignature("self"));
+  ui.caregiverSignButton.addEventListener("click", () => toggleSignature("caregiver"));
+  ui.completeSubtasksButton.addEventListener("click", completeAllSubtasks);
+  ui.clearSubtasksButton.addEventListener("click", clearSelectedTaskProgress);
 }
 
-function formatDate(date) {
-  return `${DAYS[date.getDay()]} ${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
+function handleTaskSelection(event) {
+  const trigger = event.target.closest("[data-task-id]");
+  if (!trigger) {
+    return;
+  }
+
+  planner.selectedTaskId = trigger.dataset.taskId;
+  renderAll();
 }
 
-function escapeHtml(value) {
-  return String(value || "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
+function buildWeekTasks(weekStart) {
+  const tasks = [];
+
+  SHOWER_PLAN.forEach((slots, offset) => {
+    const date = addDays(weekStart, offset);
+    const dateKey = formatDateKey(date);
+
+    slots.forEach((slot, slotIndex) => {
+      tasks.push({
+        id: `week-${formatDateKey(weekStart)}-${dateKey}-shower-${slotIndex}`,
+        category: "shower",
+        group: "week",
+        date,
+        dateKey,
+        dayLabel: DAY_LABELS[offset],
+        title: slot.title,
+        window: slot.window,
+        description: "מקלחת עם רצף צעדים קבוע ואישור ביצוע כפול.",
+        subtasks: [...SUBTASKS.shower]
+      });
+    });
+
+    if (ROOM_DAYS.has(offset)) {
+      tasks.push({
+        id: `week-${formatDateKey(weekStart)}-${dateKey}-room`,
+        category: "room",
+        group: "week",
+        date,
+        dateKey,
+        dayLabel: DAY_LABELS[offset],
+        title: "סידור חדר",
+        window: "17:00-19:00",
+        description: "סידור קצר וממוקד של סביבת החדר.",
+        subtasks: [...SUBTASKS.room]
+      });
+    }
+  });
+
+  return tasks;
 }
 
-function weekStart(date) {
-  const copy = new Date(date);
-  copy.setDate(copy.getDate() - copy.getDay());
-  return copy;
+function buildLaundryTasks(now) {
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  return LAUNDRY_DAYS.filter((day) => day <= daysInMonth).map((day, index) => {
+    const date = new Date(year, month, day);
+    return {
+      id: `laundry-${year}-${month + 1}-${index + 1}`,
+      category: "laundry",
+      group: "month",
+      date,
+      dateKey: formatDateKey(date),
+      dayLabel: `סבב ${index + 1}`,
+      title: `כביסה ${index + 1}/7`,
+      window: "במהלך היום",
+      description: "מחזור כביסה חודשי עם פירוק לתתי-מטלות ואישור ביצוע.",
+      subtasks: [...SUBTASKS.laundry]
+    };
+  });
 }
 
-function loadState() {
+function pickInitialTaskId() {
+  const todayKey = formatDateKey(planner.now);
+  const todayTask = planner.allTasks.find((task) => task.dateKey === todayKey);
+  return todayTask ? todayTask.id : planner.allTasks[0]?.id || null;
+}
+
+function ensureTaskState(task) {
+  if (!planner.state[task.id]) {
+    planner.state[task.id] = {
+      subtasks: task.subtasks.map(() => false)
+    };
+  }
+
+  if (!planner.signatures[task.id]) {
+    planner.signatures[task.id] = { self: false, caregiver: false };
+  }
+}
+
+function getTaskState(taskId) {
+  return planner.state[taskId];
+}
+
+function getSignatureState(taskId) {
+  return planner.signatures[taskId];
+}
+
+function getTaskStatus(task) {
+  const state = getTaskState(task.id);
+  const signatures = getSignatureState(task.id);
+  const completedSubtasks = state.subtasks.filter(Boolean).length;
+  const totalSubtasks = task.subtasks.length;
+  const fullySigned = signatures.self && signatures.caregiver;
+  const completed = completedSubtasks === totalSubtasks && fullySigned;
+
+  return {
+    completedSubtasks,
+    totalSubtasks,
+    completed,
+    signatures,
+    progress: totalSubtasks ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0
+  };
+}
+
+function toggleSignature(type) {
+  if (!planner.selectedTaskId) {
+    return;
+  }
+
+  const signatures = getSignatureState(planner.selectedTaskId);
+  signatures[type] = !signatures[type];
+  saveStore(sessionStorage, SIGNATURES_KEY, planner.signatures);
+  renderAll();
+}
+
+function completeAllSubtasks() {
+  if (!planner.selectedTaskId) {
+    return;
+  }
+
+  const task = getTaskById(planner.selectedTaskId);
+  if (!task) {
+    return;
+  }
+
+  planner.state[planner.selectedTaskId].subtasks = task.subtasks.map(() => true);
+  saveStore(localStorage, STORAGE_KEY, planner.state);
+  renderAll();
+}
+
+function clearSelectedTaskProgress() {
+  if (!planner.selectedTaskId) {
+    return;
+  }
+
+  const task = getTaskById(planner.selectedTaskId);
+  if (!task) {
+    return;
+  }
+
+  planner.state[planner.selectedTaskId].subtasks = task.subtasks.map(() => false);
+  planner.signatures[planner.selectedTaskId] = { self: false, caregiver: false };
+  saveStore(localStorage, STORAGE_KEY, planner.state);
+  saveStore(sessionStorage, SIGNATURES_KEY, planner.signatures);
+  renderAll();
+}
+
+function resetWeekTasks() {
+  planner.weekTasks.forEach((task) => {
+    planner.state[task.id] = { subtasks: task.subtasks.map(() => false) };
+    planner.signatures[task.id] = { self: false, caregiver: false };
+  });
+  saveStore(localStorage, STORAGE_KEY, planner.state);
+  saveStore(sessionStorage, SIGNATURES_KEY, planner.signatures);
+  renderAll();
+}
+
+function resetMonthTasks() {
+  planner.laundryTasks.forEach((task) => {
+    planner.state[task.id] = { subtasks: task.subtasks.map(() => false) };
+    planner.signatures[task.id] = { self: false, caregiver: false };
+  });
+  saveStore(localStorage, STORAGE_KEY, planner.state);
+  saveStore(sessionStorage, SIGNATURES_KEY, planner.signatures);
+  renderAll();
+}
+
+function renderAll() {
+  renderDates();
+  renderSummaries();
+  renderFocus();
+  renderWeeklyGrid();
+  renderLaundryGrid();
+  renderBreakdown();
+}
+
+function renderDates() {
+  ui.gregorianDate.textContent = new Intl.DateTimeFormat("he-IL", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  }).format(planner.now);
+
+  ui.hebrewDate.textContent = new Intl.DateTimeFormat("he-IL-u-ca-hebrew", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  }).format(planner.now);
+
+  const weekEnd = addDays(planner.weekStart, 6);
+  ui.weekRange.textContent = `${formatShortDate(planner.weekStart)} - ${formatShortDate(weekEnd)}`;
+  ui.monthLabel.textContent = new Intl.DateTimeFormat("he-IL", {
+    month: "long",
+    year: "numeric"
+  }).format(planner.now);
+}
+
+function renderSummaries() {
+  const categories = [
+    { name: "shower", label: ui.summaryShower, bar: ui.summaryShowerBar, tasks: planner.weekTasks.filter((task) => task.category === "shower") },
+    { name: "room", label: ui.summaryRoom, bar: ui.summaryRoomBar, tasks: planner.weekTasks.filter((task) => task.category === "room") },
+    { name: "laundry", label: ui.summaryLaundry, bar: ui.summaryLaundryBar, tasks: planner.laundryTasks }
+  ];
+
+  categories.forEach(({ label, bar, tasks }) => {
+    const done = tasks.filter((task) => getTaskStatus(task).completed).length;
+    const total = tasks.length;
+    label.textContent = `${done}/${total}`;
+    bar.style.width = `${total ? (done / total) * 100 : 0}%`;
+  });
+}
+
+function renderFocus() {
+  const todayKey = formatDateKey(planner.now);
+  const todayTasks = planner.allTasks.filter((task) => task.dateKey === todayKey);
+
+  ui.focusList.innerHTML = "";
+  ui.focusEmpty.classList.toggle("hidden", todayTasks.length > 0);
+
+  if (todayTasks.length === 0) {
+    ui.focusTitle.textContent = "היום פנוי ממשימות קבועות";
+    ui.focusSubtitle.textContent = "אפשר להתכונן למטלות של מחר או להשלים סבב חודשי אם צריך.";
+    return;
+  }
+
+  ui.focusTitle.textContent = `היום יש ${todayTasks.length} מטלות פעילות`;
+  ui.focusSubtitle.textContent = "כל מטלה נפתחת לפירוק ברור לתת-מטלות כדי להוריד עומס ולהפוך ביצוע לתהליך קצר וברור.";
+
+  todayTasks.forEach((task) => {
+    const status = getTaskStatus(task);
+    const item = document.createElement("li");
+    item.innerHTML = `
+      <button type="button" class="focus-task-button" data-task-id="${task.id}">
+        <strong>${task.title}</strong>
+        <span class="task-meta">${task.window} · ${status.completedSubtasks}/${status.totalSubtasks} תתי-מטלות</span>
+      </button>
+    `;
+    ui.focusList.appendChild(item);
+  });
+}
+
+function renderWeeklyGrid() {
+  ui.weeklyGrid.innerHTML = "";
+
+  for (let offset = 0; offset < 7; offset += 1) {
+    const date = addDays(planner.weekStart, offset);
+    const dateKey = formatDateKey(date);
+    const tasks = planner.weekTasks.filter((task) => task.dateKey === dateKey);
+    const dayCard = document.createElement("article");
+    dayCard.className = `panel day-card${dateKey === formatDateKey(planner.now) ? " today" : ""}`;
+
+    const taskMarkup = tasks.map((task) => renderTaskMarkup(task)).join("");
+
+    dayCard.innerHTML = `
+      <div class="task-topline">
+        <div>
+          <div class="day-label">${DAY_LABELS[offset]}</div>
+          <div class="task-meta">${formatShortDate(date)}</div>
+        </div>
+        ${dateKey === formatDateKey(planner.now) ? '<span class="mini-badge done">היום</span>' : ""}
+      </div>
+      <div class="task-stack">${taskMarkup}</div>
+    `;
+
+    ui.weeklyGrid.appendChild(dayCard);
+  }
+}
+
+function renderLaundryGrid() {
+  ui.laundryGrid.innerHTML = "";
+
+  planner.laundryTasks.forEach((task) => {
+    const card = document.createElement("article");
+    const current = task.dateKey === formatDateKey(planner.now) ? " is-current" : "";
+    card.className = `panel laundry-card${current}`;
+    card.innerHTML = renderTaskMarkup(task, {
+      heading: `<div class="task-topline"><div><div class="day-label">${task.title}</div><div class="task-meta">${formatShortDate(task.date)}</div></div></div>`
+    });
+    ui.laundryGrid.appendChild(card);
+  });
+}
+
+function renderTaskMarkup(task, options = {}) {
+  const status = getTaskStatus(task);
+  const stateClass = status.completed ? "done" : status.completedSubtasks > 0 ? "pending" : "";
+
+  return `
+    ${options.heading || ""}
+    <div class="task-shell">
+      <div class="task-topline">
+        <div>
+          <div class="task-title">${task.title}</div>
+          <span class="task-meta">${task.window} · ${task.description}</span>
+        </div>
+        <span class="status-pill ${stateClass || "pending"}">${status.completed ? "הושלם" : `${status.completedSubtasks}/${status.totalSubtasks}`}</span>
+      </div>
+      <div class="status-row" style="margin-top: 10px;">
+        <span class="sign-pill ${status.signatures.self ? "active" : ""}">אני</span>
+        <span class="sign-pill ${status.signatures.caregiver ? "active" : ""}">מטפל/ת</span>
+      </div>
+      <button type="button" class="task-open ${planner.selectedTaskId === task.id ? "active" : ""}" data-task-id="${task.id}">
+        פתח/י פירוק מטלה
+      </button>
+    </div>
+  `;
+}
+
+function renderBreakdown() {
+  const task = getTaskById(planner.selectedTaskId);
+
+  if (!task) {
+    ui.breakdownTitle.textContent = "אין מטלה פעילה";
+    ui.breakdownBadge.textContent = "0/0";
+    ui.breakdownSubtitle.textContent = "בחרו מטלה כדי לראות פירוק ברור לתת-מטלות.";
+    ui.subtaskList.innerHTML = "";
+    return;
+  }
+
+  const status = getTaskStatus(task);
+  ui.breakdownTitle.textContent = task.title;
+  ui.breakdownSubtitle.textContent = `${task.dayLabel} · ${formatShortDate(task.date)} · ${task.window} · ${task.description}`;
+  ui.breakdownBadge.textContent = `${status.completedSubtasks}/${status.totalSubtasks}`;
+  ui.breakdownBadge.className = `mini-badge ${status.completed ? "done" : status.completedSubtasks > 0 ? "warning" : ""}`.trim();
+  ui.subtaskProgressText.textContent = `${status.completedSubtasks}/${status.totalSubtasks}`;
+  ui.subtaskProgressBar.style.width = `${status.progress}%`;
+
+  const subtasks = getTaskState(task.id).subtasks;
+  ui.subtaskList.innerHTML = task.subtasks.map((subtask, index) => `
+    <li class="subtask-item ${subtasks[index] ? "done" : ""}">
+      <label>
+        <input type="checkbox" data-subtask-index="${index}" ${subtasks[index] ? "checked" : ""}>
+        <span>${subtask}</span>
+      </label>
+    </li>
+  `).join("");
+
+  const signatures = getSignatureState(task.id);
+  ui.selfSignButton.classList.toggle("active", signatures.self);
+  ui.caregiverSignButton.classList.toggle("active", signatures.caregiver);
+  ui.signatureHint.textContent = status.completed
+    ? "המטלה הושלמה במלואה ונחתמה על ידי שני הצדדים."
+    : "ביצוע מלא של מטלה נשמר רק לאחר סימון תתי-המשימות והחתימות הדרושות.";
+}
+
+async function hydrateCalendarNotes() {
   try {
-    return JSON.parse(sessionStorage.getItem(STORAGE_KEY)) || {};
-  } catch {
+    const response = await fetch(`/api/calendar?year=${planner.now.getFullYear()}&month=${planner.now.getMonth() + 1}`);
+    const calendarData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(calendarData.error || "Calendar fetch failed");
+    }
+
+    const lighting = calendarData.shabbat?.lighting;
+    const havdalah = calendarData.shabbat?.havdalah;
+
+    if (lighting && havdalah) {
+      ui.shabbatWindow.textContent = `${lighting.title} · ${formatTime(new Date(lighting.date))} | ${havdalah.title} · ${formatTime(new Date(havdalah.date))}`;
+
+      const hoursUntilLighting = (new Date(lighting.date).getTime() - planner.now.getTime()) / 36e5;
+      if (hoursUntilLighting > 0 && hoursUntilLighting < 30) {
+        ui.calendarAlert.textContent = "תזכורת: שבת או חג נכנסים בקרוב. כדאי להקדים משימות רועשות כמו כביסה וסידור.";
+        ui.calendarAlert.classList.remove("hidden");
+      }
+    }
+
+    const holidayItems = (calendarData.holidays || []).slice(0, 4).map((item) => item.title);
+
+    ui.holidayList.textContent = holidayItems.length
+      ? `אירועים קרובים: ${holidayItems.join(" · ")}`
+      : "לא זוהו אירועים מיוחדים קרובים החודש.";
+  } catch (error) {
+    ui.shabbatWindow.textContent = "לא ניתן היה לטעון כרגע זמני שבת וחג. אפשר לנסות שוב בהמשך.";
+    ui.holidayList.textContent = "לא ניתן היה לטעון כרגע אירועי חודש.";
+  }
+}
+
+function getTaskById(taskId) {
+  return planner.allTasks.find((task) => task.id === taskId) || null;
+}
+
+function loadStore(store, key) {
+  try {
+    const value = store.getItem(key);
+    return value ? JSON.parse(value) : {};
+  } catch (error) {
     return {};
   }
 }
 
-function saveState(state) {
-  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
-function getEntry(state, key) {
-  return state[key] || {
-    selfSignature: "",
-    caregiverSignature: "",
-    completedByUser: false,
-    approvedByCaregiver: false,
-    signedAt: "",
-  };
-}
-
-function buildLaundryDates(date) {
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const items = [];
-  const used = new Set();
-
-  for (let index = 0; index < TARGETS["כביסה"]; index += 1) {
-    let day = Math.floor((index * daysInMonth) / TARGETS["כביסה"]) + 1;
-    while (used.has(day) && day < daysInMonth) day += 1;
-    used.add(day);
-    items.push(new Date(year, month, day, 12, 0, 0, 0));
-  }
-
-  return items;
-}
-
-function contextualizeTask(task, dayEvents) {
-  const clone = { ...task, note: task.note, slot: task.slot };
-  const candles = dayEvents?.candles;
-  const havdalah = dayEvents?.havdalah;
-
-  if (candles && clone.slot !== "בוקר") {
-    const title = candles.title?.replace("הדלקת נרות ", "") || "שבת/חג";
-    clone.slot = "לפני כניסת שבת/חג";
-    clone.note = `${clone.note} אם מבצעים היום, לסיים עד ${candles.time} לפני ${title}.`;
-  }
-
-  if (havdalah && clone.id === "sat-a") {
-    clone.slot = "אחרי צאת שבת/חג";
-    clone.note = `${clone.note} אפשר לבצע החל מ-${havdalah.time}.`;
-  }
-
-  if (dayEvents?.holidays?.length) {
-    clone.note = `${clone.note} היום חל: ${dayEvents.holidays.join(" / ")}.`;
-  }
-
-  return clone;
-}
-
-function renderTask(task, saved) {
-  const signed = Boolean(saved.signedAt);
-  return `
-    <article class="task-card">
-      <div class="task-top">
-        <span class="task-badge">${task.task}</span>
-        <span class="task-time">${task.slot}</span>
-      </div>
-      <h4>${task.task}</h4>
-      <p class="task-note">${task.note}</p>
-      <ul class="task-steps">
-        ${TASK_META[task.task].steps.map((step) => `<li>${step}</li>`).join("")}
-      </ul>
-      <div class="field-grid">
-        <div class="field">
-          <label for="self-${task.storageKey}">חתימה שלי</label>
-          <input id="self-${task.storageKey}" data-key="${task.storageKey}" data-field="selfSignature" type="text" maxlength="40" autocomplete="off" spellcheck="false" placeholder="ראשי תיבות" value="${escapeHtml(saved.selfSignature)}">
-        </div>
-        <div class="field">
-          <label for="care-${task.storageKey}">חתימת מטפל/ת</label>
-          <input id="care-${task.storageKey}" data-key="${task.storageKey}" data-field="caregiverSignature" type="text" maxlength="40" autocomplete="off" spellcheck="false" placeholder="ראשי תיבות" value="${escapeHtml(saved.caregiverSignature)}">
-        </div>
-      </div>
-      <div class="checks">
-        <label><input data-key="${task.storageKey}" data-field="completedByUser" type="checkbox" ${saved.completedByUser ? "checked" : ""}>ביצעתי את המשימה</label>
-        <label><input data-key="${task.storageKey}" data-field="approvedByCaregiver" type="checkbox" ${saved.approvedByCaregiver ? "checked" : ""}>מטפל/ת אישר/ה</label>
-      </div>
-      <div class="task-actions">
-        <button type="button" data-action="save-task" data-key="${task.storageKey}">שמירת חתימה כפולה</button>
-      </div>
-      <div class="task-status ${signed ? "signed" : ""}" id="status-${task.storageKey}">
-        ${signed ? `נחתם: ${saved.signedAt}` : "ממתין לביצוע, אישור וחתימה כפולה"}
-      </div>
-    </article>
-  `;
-}
-
-function renderWeek(referenceDate, calendarData, state) {
-  const start = weekStart(referenceDate);
-  const days = DAYS.map((name, offset) => {
-    const date = new Date(start);
-    date.setDate(start.getDate() + offset);
-    const dayKey = isoDate(date);
-    const tasks = WEEKLY_TEMPLATES
-      .filter((task) => task.dayIndex === offset)
-      .map((task) => contextualizeTask({
-        ...task,
-        storageKey: `weekly:${isoDate(start)}:${task.id}`,
-      }, calendarData.eventsByDate?.[dayKey]));
-
-    return { name, date, tasks };
-  });
-
-  nodes.weekRange.textContent = `${formatDate(days[0].date)} - ${formatDate(days[6].date)}`;
-  nodes.weeklyGrid.innerHTML = days.map((day) => {
-    const signedCount = day.tasks.filter((task) => getEntry(state, task.storageKey).signedAt).length;
-    return `
-      <section class="panel day-card">
-        <div class="card-head">
-          <div>
-            <h3>${day.name}</h3>
-            <div class="muted">${formatDate(day.date)}</div>
-          </div>
-          <div class="day-status">${signedCount}/${day.tasks.length} חתומים</div>
-        </div>
-        <div class="task-stack">
-          ${day.tasks.map((task) => renderTask(task, getEntry(state, task.storageKey))).join("")}
-        </div>
-      </section>
-    `;
-  }).join("");
-
-  return days;
-}
-
-function renderLaundry(referenceDate, calendarData, state) {
-  const items = buildLaundryDates(referenceDate).map((date, index) => {
-    const task = contextualizeTask({
-      id: `laundry-${index + 1}`,
-      task: "כביסה",
-      slot: "גמיש",
-      note: "סבב כביסה אחד מלא.",
-      storageKey: `monthly:${referenceDate.getFullYear()}-${referenceDate.getMonth() + 1}:laundry-${index + 1}`,
-    }, calendarData.eventsByDate?.[isoDate(date)]);
-    return { date, task };
-  });
-
-  nodes.monthLabel.textContent = `${MONTHS[referenceDate.getMonth()]} ${referenceDate.getFullYear()}`;
-  nodes.laundryGrid.innerHTML = items.map((item, index) => `
-    <section class="panel laundry-card">
-      <div class="card-head">
-        <div>
-          <h3>כביסה ${index + 1}</h3>
-          <div class="muted">${formatDate(item.date)}</div>
-        </div>
-      </div>
-      ${renderTask(item.task, getEntry(state, item.task.storageKey))}
-    </section>
-  `).join("");
-
-  return items;
-}
-
-function updateSummary(weekDays, laundryItems, state) {
-  const showerCount = weekDays.flatMap((day) => day.tasks).filter((task) => task.task === "מקלחת" && getEntry(state, task.storageKey).signedAt).length;
-  const roomCount = weekDays.flatMap((day) => day.tasks).filter((task) => task.task === "סידור חדר" && getEntry(state, task.storageKey).signedAt).length;
-  const laundryCount = laundryItems.filter((item) => getEntry(state, item.task.storageKey).signedAt).length;
-
-  nodes.summaryShower.textContent = `${showerCount}/${TARGETS["מקלחת"]}`;
-  nodes.summaryRoom.textContent = `${roomCount}/${TARGETS["סידור חדר"]}`;
-  nodes.summaryLaundry.textContent = `${laundryCount}/${TARGETS["כביסה"]}`;
-  nodes.summaryShowerBar.style.width = `${(showerCount / TARGETS["מקלחת"]) * 100}%`;
-  nodes.summaryRoomBar.style.width = `${(roomCount / TARGETS["סידור חדר"]) * 100}%`;
-  nodes.summaryLaundryBar.style.width = `${(laundryCount / TARGETS["כביסה"]) * 100}%`;
-}
-
-function updateFocus(referenceDate, weekDays, laundryItems, state) {
-  const todayKey = isoDate(referenceDate);
-  const day = weekDays[referenceDate.getDay()];
-  const tasks = [
-    ...day.tasks.map((task) => ({ label: `${task.task} - ${task.slot}`, done: Boolean(getEntry(state, task.storageKey).signedAt) })),
-    ...laundryItems.filter((item) => isoDate(item.date) === todayKey).map((item) => ({ label: `כביסה - ${item.task.slot}`, done: Boolean(getEntry(state, item.task.storageKey).signedAt) })),
-  ];
-
-  nodes.focusTitle.textContent = `היום: ${DAYS[referenceDate.getDay()]}`;
-  nodes.focusSubtitle.textContent = `תאריך גרגוריאני: ${formatDate(referenceDate)}`;
-
-  if (!tasks.length) {
-    nodes.focusList.innerHTML = "";
-    nodes.focusEmpty.classList.remove("hidden");
-    return;
-  }
-
-  nodes.focusEmpty.classList.add("hidden");
-  nodes.focusList.innerHTML = tasks.map((task) => `<li>${task.label}${task.done ? " | כבר נחתם" : " | ממתין לחתימה"}</li>`).join("");
-}
-
-function updateCalendar(calendarData) {
-  nodes.gregorianDate.textContent = formatDate(todayMidday());
-  nodes.hebrewDate.textContent = calendarData.hebrewDate || "לא זמין";
-  nodes.shabbatWindow.textContent = calendarData.windowText || "אין כרגע נתוני שבת/חג.";
-  nodes.holidayList.textContent = calendarData.highlights?.length ? `אירועים בולטים: ${calendarData.highlights.join(" | ")}` : "אין חג מרכזי בטווח הקרוב.";
-
-  if (calendarData.alertText) {
-    nodes.calendarAlert.textContent = calendarData.alertText;
-    nodes.calendarAlert.classList.remove("hidden");
-  } else {
-    nodes.calendarAlert.classList.add("hidden");
-  }
-}
-
-function formValues(key) {
-  const query = (field) => document.querySelector(`[data-key="${key}"][data-field="${field}"]`);
-  return {
-    selfSignature: query("selfSignature")?.value.trim() || "",
-    caregiverSignature: query("caregiverSignature")?.value.trim() || "",
-    completedByUser: Boolean(query("completedByUser")?.checked),
-    approvedByCaregiver: Boolean(query("approvedByCaregiver")?.checked),
-  };
-}
-
-async function fetchCalendar(referenceDate) {
-  const response = await fetch(`/api/calendar?date=${isoDate(referenceDate)}`, {
-    method: "GET",
-    credentials: "same-origin",
-    headers: { "Accept": "application/json" },
-  });
-
-  if (!response.ok) throw new Error("calendar-api-failed");
-  return response.json();
-}
-
-async function renderApp() {
-  const referenceDate = todayMidday();
-  const state = loadState();
-  let calendarData = { eventsByDate: {}, highlights: [], windowText: "", alertText: "" };
-
+function saveStore(store, key, value) {
   try {
-    calendarData = await fetchCalendar(referenceDate);
-  } catch {
-    calendarData.alertText = "לא ניתן היה לטעון כרגע את נתוני הלוח העברי וזמני שבת/חג. הממשק ממשיך לפעול במצב מקומי בלבד.";
+    store.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    // Ignore storage failures in private browsing modes.
   }
-
-  updateCalendar(calendarData);
-  const weekDays = renderWeek(referenceDate, calendarData, state);
-  const laundryItems = renderLaundry(referenceDate, calendarData, state);
-  updateSummary(weekDays, laundryItems, state);
-  updateFocus(referenceDate, weekDays, laundryItems, state);
 }
 
-function resetByPrefix(prefix) {
-  const state = loadState();
-  const next = Object.fromEntries(Object.entries(state).filter(([key]) => !key.startsWith(prefix)));
-  saveState(next);
+function startOfWeek(date) {
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - start.getDay());
+  return start;
 }
 
-document.addEventListener("click", async (event) => {
-  const button = event.target.closest("[data-action='save-task']");
-  if (!button) return;
+function addDays(date, days) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  next.setHours(0, 0, 0, 0);
+  return next;
+}
 
-  const key = button.dataset.key;
-  const values = formValues(key);
-  const statusNode = document.getElementById(`status-${key}`);
+function formatDateKey(date) {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
-  if (!values.selfSignature || !values.caregiverSignature) {
-    if (statusNode) statusNode.textContent = "יש למלא שתי חתימות בראשי תיבות.";
-    return;
-  }
+function formatShortDate(date) {
+  return new Intl.DateTimeFormat("he-IL", {
+    day: "numeric",
+    month: "short"
+  }).format(date);
+}
 
-  if (!values.completedByUser || !values.approvedByCaregiver) {
-    if (statusNode) statusNode.textContent = "יש לסמן גם ביצוע וגם אישור מטפל/ת.";
-    return;
-  }
-
-  const state = loadState();
-  state[key] = { ...values, signedAt: new Date().toLocaleString("he-IL") };
-  saveState(state);
-  await renderApp();
-});
-
-nodes.printButton.addEventListener("click", () => window.print());
-nodes.resetWeekButton.addEventListener("click", async () => {
-  resetByPrefix(`weekly:${isoDate(weekStart(todayMidday()))}:`);
-  await renderApp();
-});
-nodes.resetMonthButton.addEventListener("click", async () => {
-  const today = todayMidday();
-  resetByPrefix(`monthly:${today.getFullYear()}-${today.getMonth() + 1}:`);
-  await renderApp();
-});
-
-renderApp();
+function formatTime(date) {
+  return new Intl.DateTimeFormat("he-IL", {
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
+}
