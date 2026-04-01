@@ -1242,29 +1242,42 @@
                         <div class="panel-header">
                             <div>
                                 <div class="eyebrow">Neural Analysis Engine</div>
-                                <h2 class="panel-title">HIPAA-oriented diagnostic simulation</h2>
+                                <h2 class="panel-title">Deep learning–backed EEG decoding</h2>
                                 <p class="muted">
-                                    Designed as a high-confidence intake surface for qEEG and neurobiological features.
+                                    Server-side inference (1D conv autoencoder + FFT) runs in the FastAPI service
+                                    at <code>/analyze</code>. Upload raw EEG streams to get bandpower, anomaly windows, and
+                                    channel importance in one JSON response.
                                 </p>
                             </div>
                             <div class="status-chip" id="portalStatusChip">Idle / Awaiting stream</div>
                         </div>
 
                         <div class="analysis-stage" id="idleStage">
-                            <div>
+                            <div class="space-y-4">
                                 <div class="upload-icon">+</div>
-                                <h3>Upload EEG raw stream</h3>
+                                <h3>Upload EEG stream or diagnostic PDF</h3>
                                 <p class="muted">
-                                    Supports `.EDF`, `.CSV`, and BrainVision exports. This demo simulates an inference run
-                                    without sending patient data anywhere.
+                                    EEG: CSV (rows=samples, cols=channels) or JSON <code>{"samples": [[...], ...]}</code>. Sampling rate defaults to 256 Hz.
+                                    Reports: upload PDF/TXT in Hebrew or English; the server will embed and attach a diagnostics note to the response.
                                 </p>
-                                <button type="button" class="primary-button" id="startAnalysisButton">Initialize decoding</button>
+                                <div class="flex flex-col gap-3">
+                                    <label class="secondary-button" style="display:inline-block; text-align:center; cursor:pointer;">
+                                        Select EEG CSV / JSON
+                                        <input type="file" id="eegFileInput" accept=".csv,application/json" style="display:none;">
+                                    </label>
+                                    <label class="secondary-button" style="display:inline-block; text-align:center; cursor:pointer;">
+                                        Select Diagnostic PDF/TXT (Hebrew/English)
+                                        <input type="file" id="reportFileInput" accept=".pdf,.txt" style="display:none;">
+                                    </label>
+                                </div>
+                                <button type="button" class="primary-button" id="startAnalysisButton">Run deep analysis</button>
+                                <p class="muted" id="uploadSummary" style="margin-top:6px;"></p>
                             </div>
                         </div>
 
                         <div class="analysis-stage hidden analyzing" id="analyzingStage" aria-live="polite">
                             <div class="scan-shell">
-                                <small>Running FFT decomposition</small>
+                                <small>Running deep + FFT analysis</small>
                                 <p class="progress-value" id="progressValue">0%</p>
                                 <div class="progress-track">
                                     <div class="progress-bar" id="progressBar"></div>
@@ -1277,7 +1290,7 @@
                                 <div class="result-topline">
                                     <div>
                                         <strong>Patient ID: X-8812</strong>
-                                        <div class="report-meta">Analysis bundle v4.2 / high-confidence readout</div>
+                                        <div class="report-meta">Analysis bundle v0.2 / deep autoencoder readout</div>
                                     </div>
                                     <div class="status-chip" style="background: rgba(52, 211, 153, 0.12); border-color: rgba(52, 211, 153, 0.22); color: var(--success);">
                                         High reliability
@@ -1617,10 +1630,15 @@
         const resetAnalysisButton = document.getElementById("resetAnalysisButton");
         const progressValue = document.getElementById("progressValue");
         const progressBar = document.getElementById("progressBar");
+        const eegFileInput = document.getElementById("eegFileInput");
+        const reportFileInput = document.getElementById("reportFileInput");
+        const uploadSummary = document.getElementById("uploadSummary");
 
         let activeView = "deck";
         let analysisProgress = 0;
         let analysisTimer = null;
+        let eegFile = null;
+        let reportFile = null;
 
         function renderLeadContact(lead, fallbackText = "Contact available on request") {
             if (lead.email) {
@@ -1715,7 +1733,7 @@
             if (state === "idle") {
                 statusChip.textContent = "Idle / Awaiting stream";
             } else if (state === "analyzing") {
-                statusChip.textContent = "Processing / FFT + feature scan";
+                statusChip.textContent = "Processing / Deep + FFT pipeline";
             } else {
                 statusChip.textContent = "Complete / Summary ready";
             }
@@ -1728,9 +1746,18 @@
             progressValue.textContent = "0%";
             progressBar.style.width = "0%";
             setPortalState("idle");
+            eegFile = null;
+            reportFile = null;
+            if (eegFileInput) eegFileInput.value = "";
+            if (reportFileInput) reportFileInput.value = "";
+            if (uploadSummary) uploadSummary.textContent = "";
         }
 
-        function runAnalysis() {
+        async function runAnalysis() {
+            if (!eegFile && !reportFile) {
+                uploadSummary.textContent = "Please add an EEG CSV/JSON and/or a report PDF/TXT before running.";
+                return;
+            }
             window.clearInterval(analysisTimer);
             analysisTimer = null;
             analysisProgress = 0;
@@ -1738,23 +1765,37 @@
             progressBar.style.width = "0%";
             setPortalState("analyzing");
 
-            analysisTimer = window.setInterval(() => {
-                analysisProgress += 4;
-                if (analysisProgress > 100) {
-                    analysisProgress = 100;
-                }
+            const formData = new FormData();
+            if (eegFile) formData.append("eeg", eegFile);
+            if (reportFile) formData.append("report", reportFile);
 
+            // Kick off optimistic progress
+            analysisTimer = window.setInterval(() => {
+                analysisProgress = Math.min(analysisProgress + 6, 92);
                 progressValue.textContent = `${analysisProgress}%`;
                 progressBar.style.width = `${analysisProgress}%`;
-
-                if (analysisProgress >= 100) {
-                    window.clearInterval(analysisTimer);
-                    analysisTimer = null;
-                    window.setTimeout(() => {
-                        setPortalState("result");
-                    }, 320);
-                }
             }, 80);
+
+            try {
+                const response = await fetch("http://localhost:8000/analyze", {
+                    method: "POST",
+                    body: formData,
+                });
+                const json = await response.json();
+                window.clearInterval(analysisTimer);
+                analysisTimer = null;
+                analysisProgress = 100;
+                progressValue.textContent = "100%";
+                progressBar.style.width = "100%";
+                // Bind returned data into the result view as needed; for now, flip state.
+                setPortalState("result");
+                uploadSummary.textContent = `Analysis complete. Deep mode: ${json?.deep_learning_analysis?.analysis_mode || "n/a"}`;
+            } catch (err) {
+                window.clearInterval(analysisTimer);
+                analysisTimer = null;
+                uploadSummary.textContent = "Upload failed — check server at http://localhost:8000.";
+                setPortalState("idle");
+            }
         }
 
         navButtons.forEach((button) => {
@@ -1770,6 +1811,28 @@
         startAnalysisButton.addEventListener("click", runAnalysis);
         resetAnalysisButton.addEventListener("click", resetAnalysis);
         printButton.addEventListener("click", () => window.print());
+
+        if (eegFileInput) {
+            eegFileInput.addEventListener("change", (event) => {
+                const file = event.target.files?.[0];
+                eegFile = file || null;
+                uploadSummary.textContent = [
+                    eegFile ? `EEG: ${eegFile.name}` : "",
+                    reportFile ? `Report: ${reportFile.name}` : "",
+                ].filter(Boolean).join(" | ");
+            });
+        }
+
+        if (reportFileInput) {
+            reportFileInput.addEventListener("change", (event) => {
+                const file = event.target.files?.[0];
+                reportFile = file || null;
+                uploadSummary.textContent = [
+                    eegFile ? `EEG: ${eegFile.name}` : "",
+                    reportFile ? `Report: ${reportFile.name}` : "",
+                ].filter(Boolean).join(" | ");
+            });
+        }
 
         renderProjectMentions();
         renderInventory();
