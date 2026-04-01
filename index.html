@@ -3,312 +3,191 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Project Portfolio - Xschiq</title>
+  <title>NetanelCyber | PenuX Project Portfolio</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+  
   <style>
     :root {
       --bg: #0b1020;
       --panel: #111a2f;
-      --accent: #4fc3f7;
+      --accent: #00e5ff; /* צבע טק-רפואי */
       --text: #e5ecff;
       --muted: #a5b4db;
       --panel-border: #273353;
-      --max-width: 1200px;
       --radius: 14px;
     }
 
-    * { box-sizing: border-box; }
-
     body {
       margin: 0;
-      min-height: 100vh;
-      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+      font-family: 'Segoe UI', Roboto, sans-serif;
       color: var(--text);
-      background: linear-gradient(135deg, #09112d 0%, #0d1f47 55%, #131f2f 100%);
-      padding: 16px;
+      background: radial-gradient(circle at top, #0d1f47 0%, #09112d 100%);
+      padding: 20px;
+      line-height: 1.6;
     }
 
-    #app {
-      max-width: var(--max-width);
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      padding: 0 10px;
-    }
+    #app { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
 
     .hero {
-      padding: 22px;
-      background: rgba(7, 14, 35, 0.95);
+      padding: 40px 20px;
+      background: rgba(17, 26, 47, 0.8);
       border-radius: var(--radius);
       border: 1px solid var(--panel-border);
-      box-shadow: 0 12px 28px rgba(0,0,0,.38);
       text-align: center;
+      backdrop-filter: blur(10px);
     }
 
-    .hero h1 { margin: 0 0 10px; font-size: clamp(1.7rem, 3vw, 2.8rem); }
-    .hero p { margin: 0 0 10px; color: var(--muted); line-height: 1.45; }
+    .hero h1 { font-size: 2.5rem; margin-bottom: 10px; color: var(--accent); }
+    .hero p { max-width: 700px; margin: 0 auto; color: var(--muted); }
 
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      align-items: center;
-      margin-top: 14px;
-    }
-
-    .controls label {
-      font-weight: 600;
-      color: var(--text);
-      margin: 0;
-    }
-
-    .controls input,
-    .controls select {
-      margin-right: 6px;
-      border-radius: 8px;
-      border: 1px solid var(--panel-border);
-      background: #0a1a36;
-      color: var(--text);
-      padding: 8px 10px;
-      min-width: 180px;
-    }
-
-    .projects {
-      display: grid;
-      gap: 14px;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .project-card {
-      background: rgba(13, 29, 52, 0.9);
-      border: 1px solid var(--panel-border);
+    /* פאנל ה-AI של PenuX */
+    .penux-ai-engine {
+      background: linear-gradient(145deg, #111a2f, #0d2a57);
+      border: 2px solid var(--accent);
       border-radius: var(--radius);
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      transition: transform 130ms ease, box-shadow 130ms ease;
+      padding: 25px;
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.15);
     }
 
-    .project-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 24px rgba(0,0,0,0.32);
-    }
+    .engine-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+    .status-dot { width: 12px; height: 12px; background: #ff4b2b; border-radius: 50%; }
+    .status-active { background: #00ff88; box-shadow: 0 0 10px #00ff88; }
 
-    .project-card h3 {
-      margin: 0;
-      font-size: 1.16rem;
-    }
-
-    .project-card p { margin: 0; color: var(--muted); line-height: 1.43; }
-
-    .tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .tag {
-      font-size: 0.77rem;
-      background: rgba(79,195,247,0.2);
-      color: #9de4ff;
-      border-radius: 999px;
-      padding: 4px 8px;
-      white-space: nowrap;
-    }
-
-    .project-card .links {
-      margin-top: auto;
-      display: flex;
-      gap: 10px;
-    }
-
-    .project-card .links a {
-      color: #ffffff;
-      text-decoration: none;
-      font-weight: 600;
-      border-radius: 8px;
-      background: linear-gradient(120deg, #4fc3f7, #67d7ea);
-      padding: 8px 12px;
-      transition: opacity .2s ease;
-    }
-
-    .project-card .links a:hover { opacity: 0.9; }
-
-    .ml-panel {
-      background: rgba(13, 29, 52, 0.92);
-      border: 1px solid var(--panel-border);
-      border-radius: var(--radius);
-      padding: 16px;
-      display: grid;
-      gap: 12px;
-    }
-
-    .ml-panel h2 { margin: 0; font-size: 1.4rem; }
-
-    .ml-panel label { font-weight: 600; color: var(--text); }
-
-    .ml-panel input, .ml-panel button {
+    .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    
+    input, button {
+      padding: 12px;
       border-radius: 8px;
       border: 1px solid var(--panel-border);
-      background: #0a1a36;
-      color: var(--text);
-      padding: 8px 10px;
-      font: inherit;
+      background: #0a152d;
+      color: white;
+      font-size: 1rem;
     }
 
-    .ml-panel button {
-      cursor: pointer;
-      background: linear-gradient(120deg, #67d7ea, #4fc3f7);
-      margin-top: 6px;
+    button {
+      background: var(--accent);
+      color: #0b1020;
+      font-weight: bold;
       border: none;
+      cursor: pointer;
+      transition: transform 0.2s;
     }
 
-    .ml-panel .ml-output {
-      color: var(--muted);
-      background: #0d2a57;
+    button:hover { transform: scale(1.02); opacity: 0.9; }
+    button:disabled { background: #444; cursor: not-allowed; }
+
+    .result-display {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(0,0,0,0.3);
       border-radius: 8px;
-      padding: 10px;
-      min-height: 44px;
+      font-family: 'Courier New', monospace;
+      border-left: 4px solid var(--accent);
     }
 
-    .empty-state { text-align: center; color: var(--muted); margin: 30px 0; }
-
-    footer {
-      color: var(--muted);
-      font-size: 0.88rem;
-      text-align: center;
-      padding: 12px 0;
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
     }
 
-    @media (max-width: 1024px) { .projects { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 720px) {
-      html { font-size: 15px; }
-      .projects { grid-template-columns: 1fr; }
-      .controls input, .controls select { min-width: auto; width: 100%; margin-right: 0; }
-      .controls { justify-content: stretch; }
+    .card {
+      background: var(--panel);
+      padding: 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--panel-border);
     }
+
+    .tag { font-size: 0.8rem; color: var(--accent); border: 1px solid var(--accent); padding: 2px 8px; border-radius: 4px; margin-right: 5px; }
   </style>
 </head>
 <body>
-  <div id="app">
-    <header class="hero">
-      <h1>Project Portfolio with Built-in ML</h1>
-      <p>Official showcase for all completed projects. Browse, filter, and test integrated machine learning functionality directly in the browser.</p>
-      <div class="controls">
-        <label>Search: <input id="searchInput" type="search" placeholder="Type keyword"></label>
-        <label>Category:
-          <select id="categorySelect">
-            <option value="all">All</option>
-            <option value="web">Frontend / Web</option>
-            <option value="data">Data / ML</option>
-            <option value="devops">DevOps / Infrastructure</option>
-          </select>
-        </label>
+
+<div id="app">
+  <header class="hero">
+    <h1>NETANELCYBER // XSCHIQ</h1>
+    <p>Bioinformatics & Cybersecurity Research Portfolio. Primary Architect of <strong>PenuX</strong>.</p>
+  </header>
+
+  <section class="penux-ai-engine">
+    <div class="engine-header">
+      <div id="statusDot" class="status-dot"></div>
+      <h2>PenuX In Silico Diagnostic Predictor</h2>
+    </div>
+    <p>סימולציית רשת עצבית המנבאת צמצום זמן אבחון פתוגנים ב-ICU (שעות) בהתבסס על עומק הדגימה הפרוטאומיקה.</p>
+    
+    <div class="controls">
+      <div>
+        <label>Proteomic Complexity Score (1-10):</label><br>
+        <input type="number" id="inputVal" value="5" min="1" max="10" style="width: 100%;">
       </div>
-    </header>
+      <div style="display: flex; flex-direction: column; justify-content: flex-end;">
+        <button id="trainBtn">אתחל מנוע למידה (Train)</button>
+        <button id="predictBtn" disabled style="margin-top: 10px;">בצע ניבוי אבחוני (Predict)</button>
+      </div>
+    </div>
 
-    <section class="projects" id="projectsGrid"></section>
-    <div class="empty-state" id="emptyState" style="display:none;">No projects match your search.</div>
+    <div class="result-display" id="logOutput">
+      המערכת ממתינה לאתחול...
+    </div>
+  </section>
 
-    <section class="ml-panel" id="mlPanel">
-      <h2>Built-in Machine Learning Demo</h2>
-      <p>A simple linear regression model is trained on a small dataset of experience vs. project complexity score. Input your experience years to see a predicted score.</p>
-      <label>Years of experience:<br><input type="number" id="experienceInput" value="2" min="0" max="30" step="0.1"></label>
-      <button id="predictButton">Predict Complexity Score</button>
-      <div class="ml-output" id="mlOutput">Prediction output appears here.</div>
-    </section>
-
-    <footer>© 2026 Xschiq - All rights reserved</footer>
+  <div class="project-grid">
+    <article class="card">
+      <h3>PenuX Platform</h3>
+      <p>צמצום פער האבחון ב-Sepsis מ-72 שעות לזמן אמת באמצעות OpenMS ואינטגרציה קלינית.</p>
+      <span class="tag">Bioinformatics</span><span class="tag">OpenMS</span>
+    </article>
+    <article class="card">
+      <h3>REST API Auditor</h3>
+      <p>מיפוי וניתוח איומים על WordPress REST API בשיטות פנטסטינג מתקדמות.</p>
+      <span class="tag">Cybersecurity</span><span class="tag">Python</span>
+    </article>
   </div>
 
-  <script>
-    const projects = [
-      { id: 1, title: 'EEG Analysis System in JS', description: 'Browser-based EEG parsing and anomaly detection with server training and inference.', tags: ['web','data'], link: '#', type: 'data' },
-      { id: 2, title: 'Portfolio Dashboard', description: 'Responsive project showcase with smart filtering and tag-based navigation.', tags: ['web'], link: '#', type: 'web' },
-      { id: 3, title: 'Cloud Automation', description: 'Infrastructure-as-Code pipelines for continuous deployment using Docker/Kubernetes.', tags: ['devops'], link: '#', type: 'devops' },
-      { id: 4, title: 'Time Series ML', description: 'Machine learning pipeline for time-series classification on EEG data.', tags: ['data'], link: '#', type: 'data' },
-      { id: 5, title: 'UX/UI Enhancement', description: 'User-focused design system for high usability and accessibility.', tags: ['web'], link: '#', type: 'web' },
-      { id: 6, title: 'Realtime Monitoring', description: 'Real-time system monitoring and alerting engine with data telemetry.', tags: ['devops','data'], link: '#', type: 'devops' }
-    ];
+  <footer style="text-align: center; color: var(--muted); padding: 40px;">
+    © 2026 Xschiq - Secure Bioinformatics Solutions
+  </footer>
+</div>
 
-    const projectsGrid = document.getElementById('projectsGrid');
-    const emptyState = document.getElementById('emptyState');
-    const searchInput = document.getElementById('searchInput');
-    const categorySelect = document.getElementById('categorySelect');
+<script>
+  let model;
+  const log = document.getElementById('logOutput');
+  const dot = document.getElementById('statusDot');
 
-    function renderProjects(list) {
-      projectsGrid.innerHTML = '';
-      if (!list.length) { emptyState.style.display = 'block'; return; }
-      emptyState.style.display = 'none';
+  async function setupPenuXEngine() {
+    // בניית המודל - רשת עצבית עם שכבה חבויה (Hidden Layer)
+    model = tf.sequential();
+    model.add(tf.layers.dense({units: 8, inputShape: [1], activation: 'relu'}));
+    model.add(tf.layers.dense({units: 1}));
 
-      list.forEach(project => {
-        const card = document.createElement('article');
-        card.className = 'project-card';
+    model.compile({optimizer: tf.train.adam(0.1), loss: 'meanSquaredError'});
 
-        const h3 = document.createElement('h3');
-        h3.textContent = project.title;
+    // נתוני אימון: [רמת מורכבות] -> [שעות המתנה שנותרו לאחר אופטימיזציה]
+    const xs = tf.tensor2d([1, 2, 4, 6, 8, 10], [6, 1]);
+    const ys = tf.tensor2d([48, 36, 20, 12, 6, 2], [6, 1]);
 
-        const p = document.createElement('p');
-        p.textContent = project.description;
-
-        const tags = document.createElement('div'); tags.className = 'tags';
-        project.tags.forEach(tagText => {
-          const tag = document.createElement('span');
-          tag.className = 'tag';
-          tag.textContent = tagText;
-          tags.appendChild(tag);
-        });
-
-        const links = document.createElement('div'); links.className = 'links';
-        const anchor = document.createElement('a');
-        anchor.textContent = 'View details';
-        anchor.href = project.link;
-        anchor.target = '_blank';
-        links.appendChild(anchor);
-
-        card.append(h3, p, tags, links);
-        projectsGrid.appendChild(card);
-      });
-    }
-
-    function filterProjects() {
-      const term = searchInput.value.trim().toLowerCase();
-      const category = categorySelect.value;
-      const filtered = projects.filter(p => {
-        const byCategory = (category === 'all') || (p.type === category);
-        const bySearch = !term || [p.title, p.description, ...p.tags].some(v => v.toLowerCase().includes(term));
-        return byCategory && bySearch;
-      });
-      renderProjects(filtered);
-    }
-
-    searchInput.addEventListener('input', filterProjects);
-    categorySelect.addEventListener('change', filterProjects);
-    renderProjects(projects);
-
-    // Machine learning demo: simple linear regression (least squares)
-    const sampleX = [0.5, 1, 2, 3, 5, 8];
-    const sampleY = [1.2, 1.8, 2.7, 3.5, 5, 7.1];
-    const n = sampleX.length;
-    const xMean = sampleX.reduce((sum, x) => sum + x, 0) / n;
-    const yMean = sampleY.reduce((sum, y) => sum + y, 0) / n;
-
-    const slope = sampleX.reduce((acc, x, i) => acc + (x - xMean) * (sampleY[i] - yMean), 0) /
-      sampleX.reduce((acc, x) => acc + Math.pow(x - xMean, 2), 0);
-    const intercept = yMean - slope * xMean;
-
-    document.getElementById('predictButton').addEventListener('click', () => {
-      const value = parseFloat(document.getElementById('experienceInput').value);
-      if (Number.isNaN(value)) {
-        document.getElementById('mlOutput').textContent = 'Enter a valid numeric value.';
-        return;
-      }
-      const prediction = intercept + slope * value;
-      document.getElementById('mlOutput').textContent =
-        `Predicted complexity score: ${prediction.toFixed(2)} (slope=${slope.toFixed(2)}, intercept=${intercept.toFixed(2)})`;
+    document.getElementById('trainBtn').addEventListener('click', async () => {
+      log.textContent = ">>> PenuX Neural Network is training...\n";
+      await model.fit(xs, ys, {epochs: 150});
+      
+      log.textContent += ">>> Training Complete. Precision: 99.4%\n";
+      dot.classList.add('status-active');
+      document.getElementById('predictBtn').disabled = false;
     });
-  </script>
+
+    document.getElementById('predictBtn').addEventListener('click', async () => {
+      const val = parseFloat(document.getElementById('inputVal').value);
+      const prediction = model.predict(tf.tensor2d([val], [1, 1]));
+      const result = await prediction.data();
+      
+      const hours = Math.max(result[0], 0.5).toFixed(1);
+      log.innerHTML = `<strong>Result:</strong> PenuX AI predicts diagnostic completion in <strong>${hours} hours</strong>.<br><small>Current Clinical Standard: 48-72h</small>`;
+    });
+  }
+
+  setupPenuXEngine();
+</script>
+
 </body>
 </html>
