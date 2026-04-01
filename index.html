@@ -3,221 +3,75 @@
 <head>
   <meta charset="utf-8" />
   <title>Xschiq - AngularJS integrated</title>
-  <script>
+  <script src="https://code.angularjs.org/1.8.3/angular.min.js"></script>
 
-/**
- * @license AngularJS v1.8.3
- * (c) 2010-2020 Google LLC. http://angularjs.org
- * License: MIT
- */
-(function(window) {'use strict';
-
-/* exported
-  minErrConfig,
-  errorHandlingConfig,
-  isValidObjectMaxDepth
-*/
-
-var minErrConfig = {
-  objectMaxDepth: 5,
-  urlErrorParamsEnabled: true
-};
-
-/**
- * @ngdoc function
- * @name angular.errorHandlingConfig
- * @module ng
- * @kind function
- *
- * @description
- * Configure several aspects of error handling in AngularJS if used as a setter or return the
- * current configuration if used as a getter. The following options are supported:
- *
- * - **objectMaxDepth**: The maximum depth to which objects are traversed when stringified for error messages.
- *
- * Omitted or undefined options will leave the corresponding configuration values unchanged.
- *
- * @param {Object=} config - The configuration object. May only contain the options that need to be
- *     updated. Supported keys:
- *
- * * `objectMaxDepth`  **{Number}** - The max depth for stringifying objects. Setting to a
- *   non-positive or non-numeric value, removes the max depth limit.
- *   Default: 5
- *
- * * `urlErrorParamsEnabled`  **{Boolean}** - Specifies whether the generated error url will
- *   contain the parameters of the thrown error. Disabling the parameters can be useful if the
- *   generated error url is very long.
- *
- *   Default: true. When used without argument, it returns the current value.
- */
-function errorHandlingConfig(config) {
-  if (isObject(config)) {
-    if (isDefined(config.objectMaxDepth)) {
-      minErrConfig.objectMaxDepth = isValidObjectMaxDepth(config.objectMaxDepth) ? config.objectMaxDepth : NaN;
-    }
-    if (isDefined(config.urlErrorParamsEnabled) && isBoolean(config.urlErrorParamsEnabled)) {
-      minErrConfig.urlErrorParamsEnabled = config.urlErrorParamsEnabled;
-    }
-  } else {
-    return minErrConfig;
-  }
-}
-
-/**
- * @private
- * @param {Number} maxDepth
- * @return {boolean}
- */
-function isValidObjectMaxDepth(maxDepth) {
-  return isNumber(maxDepth) && maxDepth > 0;
-}
-
-
-/**
- * @description
- *
- * This object provides a utility for producing rich Error messages within
- * AngularJS. It can be called as follows:
- *
- * var exampleMinErr = minErr('example');
- * throw exampleMinErr('one', 'This {0} is {1}', foo, bar);
- *
- * The above creates an instance of minErr in the example namespace. The
- * resulting error will have a namespaced error code of example.one.  The
- * resulting error will replace {0} with the value of foo, and {1} with the
- * value of bar. The object is not restricted in the number of arguments it can
- * take.
- *
- * If fewer arguments are specified than necessary for interpolation, the extra
- * interpolation markers will be preserved in the final string.
- *
- * Since data will be parsed statically during a build step, some restrictions
- * are applied with respect to how minErr instances are created and called.
- * Instances should have names of the form namespaceMinErr for a minErr created
- * using minErr('namespace'). Error codes, namespaces and template strings
- * should all be static strings, not variables or general expressions.
- *
- * @param {string} module The namespace to use for the new minErr instance.
- * @param {function} ErrorConstructor Custom error constructor to be instantiated when returning
- *   error from returned function, for cases when a particular type of error is useful.
- * @returns {function(code:string, template:string, ...templateArgs): Error} minErr instance
- */
-
-function minErr(module, ErrorConstructor) {
-  ErrorConstructor = ErrorConstructor || Error;
-
-  var url = 'https://errors.angularjs.org/1.8.3/';
-  var regex = url.replace('.', '\\.') + '[\\s\\S]*';
-  var errRegExp = new RegExp(regex, 'g');
-
-  return function() {
-    var code = arguments[0],
-      template = arguments[1],
-      message = '[' + (module ? module + ':' : '') + code + '] ',
-      templateArgs = sliceArgs(arguments, 2).map(function(arg) {
-        return toDebugString(arg, minErrConfig.objectMaxDepth);
-      }),
-      paramPrefix, i;
-
-    // A minErr message has two parts: the message itself and the url that contains the
-    // encoded message.
-    // The message's parameters can contain other error messages which also include error urls.
-    // To prevent the messages from getting too long, we strip the error urls from the parameters.
-
-    message += template.replace(/\{\d+\}/g, function(match) {
-      var index = +match.slice(1, -1);
-
-      if (index < templateArgs.length) {
-        return templateArgs[index].replace(errRegExp, '');
-      }
-
-      return match;
-    });
-
-    message += '\n' + url + (module ? module + '/' : '') + code;
-
-    if (minErrConfig.urlErrorParamsEnabled) {
-      for (i = 0, paramPrefix = '?'; i < templateArgs.length; i++, paramPrefix = '&') {
-        message += paramPrefix + 'p' + i + '=' + encodeURIComponent(templateArgs[i]);
-      }
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #111a2f;
+      --panel-border: #273353;
+      --text: #e5ecff;
+      --muted: #a5b4db;
+      --accent: #4fc3f7;
+      --danger: #f87171;
     }
 
-    return new ErrorConstructor(message);
-  };
-}
+    * { box-sizing: border-box; }
 
-/* We need to tell ESLint what variables are being exported */
-/* exported
-  angular,
-  msie,
-  jqLite,
-  jQuery,
-  slice,
-  splice,
-  push,
-  toString,
-  minErrConfig,
-  errorHandlingConfig,
-  isValidObjectMaxDepth,
-  ngMinErr,
-  angularModule,
-  uid,
-  REGEX_STRING_REGEXP,
-  VALIDITY_STATE_PROPERTY,
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background: linear-gradient(135deg, #09112d 0%, #0d1f47 55%, #131f2f 100%);
+      padding: 18px;
+    }
 
-  lowercase,
-  uppercase,
-  nodeName_,
-  isArrayLike,
-  forEach,
-  forEachSorted,
-  reverseParams,
-  nextUid,
-  setHashKey,
-  extend,
-  toInt,
-  inherit,
-  merge,
-  noop,
-  identity,
-  valueFn,
-  isUndefined,
-  isDefined,
-  isObject,
-  isBlankObject,
-  isString,
-  isNumber,
-  isNumberNaN,
-  isDate,
-  isError,
-  isArray,
-  isFunction,
-  isRegExp,
-  isWindow,
-  isScope,
-  isFile,
-  isFormData,
-  isBlob,
-  isBoolean,
-  isPromiseLike,
-  trim,
-  escapeForRegexp,
-  isElement,
-  makeMap,
-  includes,
-  arrayRemove,
-  copy,
-  simpleCompare,
-  equals,
-  csp,
-  jq,
-  concat,
-  sliceArgs,
-  bind,
-  toJsonReplacer,
-  toJson,
-  fromJson,
-  convertTimezoneToLocal,
+    h1 { margin: 0 0 12px; font-size: 1.78rem; }
+    h3 { margin: 20px 0 10px; }
+
+    label { display: block; font-weight: 600; margin-bottom: 8px; }
+    input[type='file'] { margin-top: 4px; color: var(--muted); }
+    button {
+      border: none;
+      border-radius: 10px;
+      color: #102443;
+      background: linear-gradient(120deg, #4fc3f7, #67d7ea);
+      padding: 0.65rem 1.25rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-right: 8px;
+      transition: transform 120ms ease, box-shadow 120ms ease;
+    }
+
+    button:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(48, 190, 255, 0.3); }
+    button:active { transform: translateY(0); }
+
+    .panel, .status, .project-panel, .result-panel {
+      background: rgba(13, 29, 52, 0.9);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 14px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.22);
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 0.18rem 0.55rem;
+      font-size: 0.75rem;
+      color: #fff;
+      background: var(--accent);
+      margin-left: 6px;
+    }
+
+    textarea { width: 100%; min-height: 220px; border: 1px solid var(--panel-border); border-radius: 10px; background: #091223; color: #dbe9ff; padding: 10px; font-family: 'Courier New', monospace; }
+
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+
   timezoneToOffset,
   addDateMinutes,
   startingTag,
