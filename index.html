@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <title>Xschiq - AngularJS integrated</title>
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.4/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
   <style>
     :root {
       --bg: #0b1020;
@@ -125,6 +125,12 @@
 
   <h1>Xschiq EEG + Report DB</h1>
 
+  <div style="margin-bottom: 10px;">
+    <a href="https://angularjs.org/" target="_blank" style="color: #63b3ed; text-decoration: underline;">AngularJS official docs</a>
+    &nbsp;|&nbsp;
+    <a href="https://github.com/angular/angular.js" target="_blank" style="color: #63b3ed; text-decoration: underline;">AngularJS GitHub</a>
+  </div>
+
   <div>
     <label>
       EEG file:
@@ -161,6 +167,11 @@
   <h3>Result</h3>
   <textarea readonly>{{ vm.dump || '' }}</textarea>
 
+  <div style="margin-top: 10px; display:flex; align-items:center; gap: 12px;">
+    <button ng-click="vm.downloadDump()">Download Output</button>
+    <label style="color:#cbd5e1;"><input type="checkbox" ng-model="vm.autoDownload" /> Auto-download when complete</label>
+  </div>
+
 <script>
 angular.module('xschiqApp', [])
 .controller('EegCtrl', ['$scope', '$http', function($scope, $http) {
@@ -171,6 +182,7 @@ angular.module('xschiqApp', [])
   vm.serverResult = null;
   vm.modelResult = null;
   vm.dump = '';
+  vm.autoDownload = false;
   vm.project = {
     name: 'Xschiq EEG Deep Analysis',
     version: '0.3.0',
@@ -463,6 +475,9 @@ angular.module('xschiqApp', [])
       }, null, 2);
 
       vm.status = 'complete';
+      if (vm.autoDownload) {
+        vm.downloadDump();
+      }
     } catch (err) {
       vm.status = 'error: ' + (err.message || err);
       vm.dump = '';
@@ -470,6 +485,22 @@ angular.module('xschiqApp', [])
     }
 
     $scope.$applyAsync();
+  };
+
+  vm.downloadDump = function() {
+    if (!vm.dump) {
+      vm.status = 'No output to download';
+      return;
+    }
+    const blob = new Blob([vm.dump], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `xschiq-analysis-${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
 }]);
