@@ -1,2877 +1,369 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xschizq AI | Master Command & Audit Portal</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #09111f;
-            --panel: rgba(9, 17, 31, 0.78);
-            --panel-strong: rgba(13, 25, 45, 0.94);
-            --panel-soft: rgba(233, 239, 248, 0.92);
-            --text: #e5eef8;
-            --muted: #8ea3bb;
-            --border: rgba(154, 176, 201, 0.16);
-            --cyan: #2dd4bf;
-            --blue: #60a5fa;
-            --gold: #f6c665;
-            --danger: #fb7185;
-            --success: #34d399;
-            --shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
-            --radius-xl: 32px;
-            --radius-lg: 22px;
-            --radius-md: 16px;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: "Space Grotesk", sans-serif;
-            color: var(--text);
-            background:
-                radial-gradient(circle at top left, rgba(96, 165, 250, 0.22), transparent 28%),
-                radial-gradient(circle at 85% 15%, rgba(45, 212, 191, 0.18), transparent 24%),
-                linear-gradient(145deg, #050913 0%, #0a1425 45%, #08101d 100%);
-        }
-
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            background-image:
-                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-            background-size: 48px 48px;
-            mask-image: radial-gradient(circle at center, black, transparent 80%);
-            opacity: 0.45;
-        }
-
-        button,
-        select {
-            font: inherit;
-        }
-
-        a {
-            color: inherit;
-        }
-
-        .app-shell {
-            display: grid;
-            grid-template-columns: 310px minmax(0, 1fr);
-            min-height: 100vh;
-        }
-
-        .sidebar {
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            padding: 28px;
-            border-right: 1px solid var(--border);
-            background: linear-gradient(180deg, rgba(3, 9, 20, 0.92), rgba(5, 11, 24, 0.82));
-            backdrop-filter: blur(18px);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-bottom: 34px;
-        }
-
-        .brand-mark {
-            width: 52px;
-            height: 52px;
-            border-radius: 18px;
-            display: grid;
-            place-items: center;
-            color: #04111f;
-            background: linear-gradient(145deg, var(--cyan), var(--blue));
-            font-size: 1.35rem;
-            font-weight: 700;
-            box-shadow: 0 18px 40px rgba(96, 165, 250, 0.35);
-        }
-
-        .brand h1,
-        .brand p {
-            margin: 0;
-        }
-
-        .brand h1 {
-            font-size: 1.15rem;
-            letter-spacing: -0.03em;
-        }
-
-        .brand p {
-            font-family: "IBM Plex Mono", monospace;
-            font-size: 0.72rem;
-            color: var(--blue);
-            text-transform: uppercase;
-            letter-spacing: 0.18em;
-            margin-top: 4px;
-        }
-
-        .nav {
-            display: grid;
-            gap: 10px;
-        }
-
-        .nav button {
-            border: 1px solid transparent;
-            background: transparent;
-            color: var(--muted);
-            border-radius: 18px;
-            padding: 14px 16px;
-            text-align: left;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 180ms ease;
-        }
-
-        .nav button:hover,
-        .nav button:focus-visible {
-            outline: none;
-            color: var(--text);
-            border-color: rgba(96, 165, 250, 0.18);
-            background: rgba(96, 165, 250, 0.08);
-        }
-
-        .nav button.active {
-            color: #04111f;
-            background: linear-gradient(135deg, var(--cyan), var(--blue));
-            box-shadow: 0 20px 40px rgba(31, 146, 222, 0.3);
-        }
-
-        .sidebar-footer {
-            margin-top: auto;
-            display: grid;
-            gap: 14px;
-            padding-top: 26px;
-        }
-
-        .operator-card,
-        .print-button {
-            border-radius: 22px;
-            border: 1px solid var(--border);
-        }
-
-        .operator-card {
-            padding: 18px;
-            background: rgba(255, 255, 255, 0.04);
-        }
-
-        .operator-card span {
-            display: block;
-            font-family: "IBM Plex Mono", monospace;
-            font-size: 0.7rem;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.16em;
-            margin-bottom: 10px;
-        }
-
-        .operator-card strong,
-        .operator-card a {
-            display: block;
-        }
-
-        .operator-card a {
-            margin-top: 6px;
-            color: var(--blue);
-            text-decoration: none;
-        }
-
-        .print-button {
-            border: 0;
-            padding: 14px 18px;
-            cursor: pointer;
-            font-weight: 700;
-            color: #04111f;
-            background: linear-gradient(135deg, #f8fafc, #dce7f5);
-        }
-
-        .content {
-            padding: 34px;
-        }
-
-        .mobile-bar {
-            display: none;
-            position: sticky;
-            top: 0;
-            z-index: 20;
-            padding: 16px 18px;
-            border-bottom: 1px solid var(--border);
-            background: rgba(4, 10, 20, 0.88);
-            backdrop-filter: blur(18px);
-        }
-
-        .mobile-bar-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-        }
-
-        .mobile-bar strong {
-            font-size: 1rem;
-        }
-
-        .mobile-select {
-            min-width: 180px;
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 10px 12px;
-            color: var(--text);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .view {
-            display: none;
-            max-width: 1160px;
-            margin: 0 auto;
-            animation: fade-slide 420ms ease;
-        }
-
-        .view.active {
-            display: block;
-        }
-
-        .hero-card,
-        .panel-card,
-        .report-card,
-        .paper-card {
-            position: relative;
-            overflow: hidden;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow);
-        }
-
-        .hero-card,
-        .panel-card,
-        .report-card {
-            background: linear-gradient(180deg, rgba(10, 20, 36, 0.9), rgba(8, 16, 30, 0.92));
-        }
-
-        .hero-card {
-            padding: 52px;
-        }
-
-        .hero-card::after,
-        .panel-card::after {
-            content: "";
-            position: absolute;
-            inset: auto -60px -80px auto;
-            width: 220px;
-            height: 220px;
-            border-radius: 999px;
-            background: radial-gradient(circle, rgba(45, 212, 191, 0.22), transparent 68%);
-        }
-
-        .eyebrow {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 12px;
-            border-radius: 999px;
-            margin-bottom: 24px;
-            color: var(--cyan);
-            background: rgba(45, 212, 191, 0.1);
-            border: 1px solid rgba(45, 212, 191, 0.18);
-            font-family: "IBM Plex Mono", monospace;
-            font-size: 0.78rem;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-        }
-
-        .hero-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
-            gap: 28px;
-            align-items: end;
-        }
-
-        .hero-copy h2,
-        .report-title,
-        .paper-header h2 {
-            margin: 0;
-            letter-spacing: -0.05em;
-        }
-
-        .hero-copy h2 {
-            font-size: clamp(2.6rem, 5vw, 5rem);
-            line-height: 0.96;
-            margin-bottom: 18px;
-            max-width: 12ch;
-        }
-
-        .hero-copy p {
-            max-width: 46rem;
-            margin: 0 0 28px;
-            font-size: 1.1rem;
-            line-height: 1.7;
-            color: #b8c9db;
-        }
-
-        .pill-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .pill {
-            padding: 10px 14px;
-            border-radius: 999px;
-            color: #d9e7f6;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            font-size: 0.82rem;
-            font-weight: 700;
-        }
-
-        .hero-stats {
-            display: grid;
-            gap: 18px;
-        }
-
-        .stat-card {
-            padding: 22px;
-            border-radius: 24px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .stat-card strong,
-        .mini-stat strong {
-            display: block;
-            font-size: clamp(1.8rem, 3vw, 3.3rem);
-            line-height: 1;
-            margin: 12px 0 8px;
-        }
-
-        .stat-card span,
-        .mini-stat span,
-        .section-note,
-        .muted {
-            color: var(--muted);
-        }
-
-        .section-grid {
-            display: grid;
-            gap: 24px;
-            margin-top: 24px;
-        }
-
-        .project-grid {
-            display: grid;
-            gap: 18px;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            margin-top: 24px;
-        }
-
-        .project-card {
-            padding: 20px;
-            border-radius: 22px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .project-card h3 {
-            margin: 10px 0 8px;
-            font-size: 1rem;
-        }
-
-        .repo-label {
-            font-family: "IBM Plex Mono", monospace;
-            font-size: 0.72rem;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: var(--cyan);
-        }
-
-        .project-card p,
-        .repo-note {
-            margin: 0;
-            color: var(--muted);
-            line-height: 1.6;
-        }
-
-        .project-card a,
-        .contact-repos a {
-            color: var(--blue);
-            text-decoration: none;
-        }
-
-        .contact-repos {
-            display: grid;
-            gap: 10px;
-            margin-top: 12px;
-        }
-
-        .contact-repo-item {
-            padding: 10px 0;
-            border-top: 1px solid rgba(17, 32, 48, 0.08);
-        }
-
-        .detail-grid {
-            display: grid;
-            gap: 18px;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            margin-top: 24px;
-        }
-
-        .detail-card {
-            padding: 22px;
-            border-radius: 24px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .detail-card h3 {
-            margin: 0 0 10px;
-            font-size: 1rem;
-        }
-
-        .kpi-strip {
-            display: grid;
-            gap: 16px;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            margin-top: 24px;
-        }
-
-        .kpi {
-            padding: 18px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .kpi strong {
-            display: block;
-            margin-top: 8px;
-            font-size: 1.5rem;
-        }
-
-        .signal-list {
-            display: grid;
-            gap: 12px;
-            margin-top: 18px;
-        }
-
-        .signal-item {
-            padding: 14px 16px;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .signal-item strong {
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .audience-grid {
-            display: grid;
-            gap: 20px;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            margin-top: 24px;
-        }
-
-        .audience-card {
-            padding: 24px;
-            border-radius: 26px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: var(--shadow);
-        }
-
-        .audience-card.research {
-            background: linear-gradient(180deg, rgba(96, 165, 250, 0.08), rgba(255, 255, 255, 0.04));
-        }
-
-        .audience-card.clinical {
-            background: linear-gradient(180deg, rgba(45, 212, 191, 0.08), rgba(255, 255, 255, 0.04));
-        }
-
-        .audience-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            border-radius: 999px;
-            font-family: "IBM Plex Mono", monospace;
-            font-size: 0.72rem;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            color: var(--cyan);
-            background: rgba(45, 212, 191, 0.08);
-            border: 1px solid rgba(45, 212, 191, 0.16);
-        }
-
-        .audience-card h3 {
-            margin: 16px 0 10px;
-            font-size: 1.15rem;
-        }
-
-        .audience-list {
-            display: grid;
-            gap: 12px;
-            margin-top: 16px;
-        }
-
-        .audience-item {
-            padding: 14px 16px;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .audience-item strong {
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .stats-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .mini-stat {
-            padding: 28px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            border-radius: 28px;
-            box-shadow: var(--shadow);
-        }
-
-        .mini-stat.accent {
-            background: linear-gradient(160deg, rgba(27, 48, 75, 0.92), rgba(12, 20, 37, 0.95));
-        }
-
-        .portal-layout {
-            display: grid;
-            gap: 24px;
-            grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
-        }
-
-        .panel-card {
-            padding: 32px;
-        }
-
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            gap: 24px;
-            align-items: start;
-            margin-bottom: 24px;
-        }
-
-        .panel-title {
-            margin: 0 0 8px;
-            font-size: 2rem;
-        }
-
-        .status-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 12px;
-            border-radius: 999px;
-            font-size: 0.78rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            font-family: "IBM Plex Mono", monospace;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .analysis-stage {
-            position: relative;
-            min-height: 440px;
-            display: grid;
-            place-items: center;
-            border: 1px dashed rgba(154, 176, 201, 0.22);
-            border-radius: 28px;
-            background:
-                linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01)),
-                radial-gradient(circle at center, rgba(96, 165, 250, 0.14), transparent 55%);
-            text-align: center;
-            padding: 30px;
-        }
-
-        .analysis-stage.hidden {
-            display: none;
-        }
-
-        .analysis-stage .upload-icon {
-            width: 94px;
-            height: 94px;
-            display: grid;
-            place-items: center;
-            border-radius: 999px;
-            font-size: 2rem;
-            margin: 0 auto 22px;
-            background: rgba(96, 165, 250, 0.12);
-            border: 1px solid rgba(96, 165, 250, 0.2);
-        }
-
-        .primary-button,
-        .secondary-button {
-            border: 0;
-            cursor: pointer;
-            border-radius: 18px;
-            padding: 14px 20px;
-            font-weight: 700;
-            transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
-        }
-
-        .primary-button {
-            color: #04111f;
-            background: linear-gradient(135deg, var(--cyan), var(--blue));
-            box-shadow: 0 22px 40px rgba(31, 146, 222, 0.3);
-        }
-
-        .secondary-button {
-            color: var(--text);
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .primary-button:hover,
-        .secondary-button:hover,
-        .primary-button:focus-visible,
-        .secondary-button:focus-visible {
-            outline: none;
-            transform: translateY(-1px);
-        }
-
-        .scan-shell {
-            width: min(100%, 460px);
-            padding: 24px;
-            border-radius: 26px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .scan-shell small {
-            display: block;
-            margin-bottom: 14px;
-            color: var(--blue);
-            font-family: "IBM Plex Mono", monospace;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-        }
-
-        .progress-value {
-            font-size: clamp(3rem, 7vw, 5.5rem);
-            font-weight: 700;
-            letter-spacing: -0.06em;
-            margin: 0 0 16px;
-        }
-
-        .progress-track {
-            width: 100%;
-            height: 12px;
-            overflow: hidden;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .progress-bar {
-            height: 100%;
-            width: 0;
-            border-radius: inherit;
-            background: linear-gradient(90deg, var(--cyan), var(--blue));
-            transition: width 120ms linear;
-        }
-
-        .analysis-stage.analyzing::before {
-            content: "";
-            position: absolute;
-            inset: 16px;
-            border-radius: 22px;
-            pointer-events: none;
-            background: linear-gradient(180deg, transparent, rgba(96, 165, 250, 0.1), transparent);
-            animation: scan 2.4s linear infinite;
-        }
-
-        .result-grid {
-            display: grid;
-            gap: 24px;
-        }
-
-        .article-studio {
-            display: grid;
-            gap: 18px;
-            margin-top: 24px;
-        }
-
-        .article-controls {
-            display: grid;
-            gap: 16px;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .article-field {
-            display: grid;
-            gap: 8px;
-        }
-
-        .article-field.wide {
-            grid-column: 1 / -1;
-        }
-
-        .article-field label,
-        .article-caption {
-            font-family: "IBM Plex Mono", monospace;
-            font-size: 0.78rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--muted);
-        }
-
-        .article-input,
-        .article-output,
-        .article-snippets {
-            width: 100%;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.04);
-            color: var(--text);
-        }
-
-        .article-input {
-            padding: 14px 16px;
-        }
-
-        textarea.article-input {
-            min-height: 110px;
-            resize: vertical;
-        }
-
-        .article-output {
-            min-height: 320px;
-            padding: 20px;
-            white-space: pre-wrap;
-            line-height: 1.7;
-            overflow: auto;
-        }
-
-        .article-snippets {
-            display: grid;
-            gap: 12px;
-            padding: 18px;
-        }
-
-        .article-snippet {
-            padding: 14px 16px;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-        }
-
-        .article-snippet strong {
-            display: block;
-            margin-bottom: 6px;
-            color: var(--blue);
-        }
-
-        .result-topline {
-            display: flex;
-            justify-content: space-between;
-            gap: 18px;
-            align-items: center;
-            padding-bottom: 18px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .result-metrics {
-            display: grid;
-            gap: 18px;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .metric-block {
-            padding: 18px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.04);
-        }
-
-        .metric-label {
-            display: flex;
-            justify-content: space-between;
-            gap: 16px;
-            font-size: 0.82rem;
-            margin-bottom: 10px;
-        }
-
-        .metric-track {
-            width: 100%;
-            height: 10px;
-            overflow: hidden;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .metric-fill {
-            height: 100%;
-            border-radius: inherit;
-            background: linear-gradient(90deg, var(--cyan), var(--blue));
-        }
-
-        .metric-fill.indigo {
-            background: linear-gradient(90deg, #818cf8, #60a5fa);
-        }
-
-        .outlook {
-            padding: 22px;
-            border-radius: 24px;
-            background: linear-gradient(180deg, rgba(45, 212, 191, 0.12), rgba(96, 165, 250, 0.08));
-            border: 1px solid rgba(96, 165, 250, 0.16);
-        }
-
-        .side-stack {
-            display: grid;
-            gap: 18px;
-        }
-
-        .side-card {
-            padding: 24px;
-            border-radius: 28px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-        }
-
-        .side-card h3,
-        .section-title,
-        .report-title,
-        .paper-header h2 {
-            margin-top: 0;
-        }
-
-        .timeline {
-            display: grid;
-            gap: 16px;
-        }
-
-        .timeline-item {
-            display: grid;
-            grid-template-columns: 28px minmax(0, 1fr);
-            gap: 14px;
-            align-items: start;
-        }
-
-        .timeline-dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 999px;
-            margin-top: 4px;
-            background: linear-gradient(135deg, var(--cyan), var(--blue));
-            box-shadow: 0 0 0 6px rgba(45, 212, 191, 0.1);
-        }
-
-        .timeline-item strong,
-        .pipeline strong {
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .pipeline {
-            display: grid;
-            gap: 14px;
-        }
-
-        .pipeline-item {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            align-items: center;
-            padding: 14px 16px;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .pipeline-item code,
-        .report-meta,
-        .mono {
-            font-family: "IBM Plex Mono", monospace;
-        }
-
-        .report-card {
-            padding: 40px;
-        }
-
-        .report-header {
-            display: flex;
-            justify-content: space-between;
-            gap: 24px;
-            align-items: end;
-            padding-bottom: 24px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .report-title {
-            font-size: clamp(2.2rem, 4vw, 3.8rem);
-            margin-bottom: 12px;
-        }
-
-        .report-meta {
-            color: var(--muted);
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-        }
-
-        .report-body {
-            display: grid;
-            gap: 34px;
-            padding-top: 28px;
-        }
-
-        .report-section {
-            display: grid;
-            gap: 16px;
-        }
-
-        .report-section h3 {
-            margin: 0;
-            font-size: 1.35rem;
-        }
-
-        .math-box {
-            padding: 20px;
-            border-radius: 20px;
-            background: rgba(2, 8, 18, 0.46);
-            border: 1px solid rgba(96, 165, 250, 0.15);
-            font-family: "IBM Plex Mono", monospace;
-            color: #d7e7f8;
-            overflow-x: auto;
-        }
-
-        .leaders-grid,
-        .inventory-grid,
-        .summary-grid,
-        .contact-grid {
-            display: grid;
-            gap: 16px;
-        }
-
-        .leaders-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .leader-card,
-        .contact-card {
-            padding: 18px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .leader-card h4,
-        .contact-card strong {
-            margin: 0 0 8px;
-        }
-
-        .leader-role,
-        .paper-eyebrow {
-            font-family: "IBM Plex Mono", monospace;
-            font-size: 0.74rem;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-        }
-
-        .leader-role {
-            color: var(--cyan);
-        }
-
-        .leader-card a {
-            color: var(--blue);
-            text-decoration: none;
-        }
-
-        .contact-note {
-            color: var(--blue);
-            font-weight: 500;
-        }
-
-        .inventory-grid {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-
-        .inventory-head,
-        .inventory-row {
-            display: contents;
-        }
-
-        #inventoryRows {
-            display: contents;
-        }
-
-        .inventory-cell {
-            padding: 16px;
-            min-height: 100%;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .inventory-cell.head {
-            background: rgba(96, 165, 250, 0.08);
-            font-weight: 700;
-        }
-
-        .inventory-cell em {
-            font-style: normal;
-            font-weight: 700;
-        }
-
-        .paper-card {
-            padding: 42px;
-            color: #112030;
-            background:
-                radial-gradient(circle at top right, rgba(96, 165, 250, 0.1), transparent 32%),
-                linear-gradient(180deg, rgba(247, 250, 253, 0.98), rgba(236, 242, 248, 0.98));
-        }
-
-        .paper-header {
-            display: flex;
-            justify-content: space-between;
-            gap: 24px;
-            align-items: end;
-            padding-bottom: 20px;
-            border-bottom: 2px solid rgba(17, 32, 48, 0.08);
-        }
-
-        .paper-header h2 {
-            font-size: clamp(2.4rem, 5vw, 4.2rem);
-            margin-bottom: 8px;
-        }
-
-        .paper-eyebrow {
-            color: #2563eb;
-        }
-
-        .paper-card .muted {
-            color: #546678;
-        }
-
-        .summary-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            margin-top: 28px;
-        }
-
-        .summary-grid h3,
-        .contact-grid h3 {
-            margin: 0 0 10px;
-            font-size: 0.84rem;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            color: #6b7280;
-        }
-
-        .contact-grid {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            margin-top: 32px;
-            padding-top: 24px;
-            border-top: 1px solid rgba(17, 32, 48, 0.1);
-        }
-
-        .expert-list {
-            display: grid;
-            gap: 10px;
-        }
-
-        .expert-line {
-            display: grid;
-            gap: 4px;
-            padding: 12px 14px;
-            border-radius: 14px;
-            background: rgba(17, 32, 48, 0.06);
-        }
-
-        .expert-line a {
-            color: #2563eb;
-            text-decoration: none;
-            word-break: break-word;
-        }
-
-        .tag-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 18px;
-        }
-
-        .tag {
-            border-radius: 999px;
-            padding: 8px 12px;
-            background: rgba(17, 32, 48, 0.06);
-            font-size: 0.8rem;
-            font-weight: 700;
-        }
-
-        .soft {
-            color: #435366;
-        }
-
-        .print-only {
-            display: none;
-        }
-
-        @keyframes fade-slide {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes scan {
-            from {
-                transform: translateY(-76%);
-            }
-            to {
-                transform: translateY(76%);
-            }
-        }
-
-        @media (max-width: 1120px) {
-            .app-shell {
-                grid-template-columns: 1fr;
-            }
-
-            .sidebar {
-                display: none;
-            }
-
-            .mobile-bar {
-                display: block;
-            }
-
-            .content {
-                padding: 22px;
-            }
-        }
-
-        @media (max-width: 920px) {
-            .hero-grid,
-            .portal-layout,
-            .stats-grid,
-            .project-grid,
-            .detail-grid,
-            .kpi-strip,
-            .article-controls,
-            .audience-grid,
-            .leaders-grid,
-            .summary-grid,
-            .contact-grid,
-            .result-metrics {
-                grid-template-columns: 1fr;
-            }
-
-            .inventory-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .inventory-head {
-                display: none;
-            }
-
-            .inventory-row {
-                display: grid;
-                gap: 8px;
-                padding: 16px;
-                border-radius: 22px;
-                background: rgba(255, 255, 255, 0.04);
-                border: 1px solid rgba(255, 255, 255, 0.08);
-            }
-
-            .inventory-row .inventory-cell {
-                border: 0;
-                padding: 0;
-                background: transparent;
-            }
-
-            .inventory-row .inventory-cell::before {
-                content: attr(data-label);
-                display: block;
-                margin-bottom: 6px;
-                color: var(--muted);
-                font-family: "IBM Plex Mono", monospace;
-                font-size: 0.7rem;
-                text-transform: uppercase;
-                letter-spacing: 0.12em;
-            }
-        }
-
-        @media (max-width: 720px) {
-            .hero-card,
-            .panel-card,
-            .report-card,
-            .paper-card {
-                padding: 24px;
-                border-radius: 24px;
-            }
-
-            .content {
-                padding: 18px;
-            }
-
-            .report-header,
-            .paper-header,
-            .panel-header,
-            .result-topline {
-                align-items: start;
-                flex-direction: column;
-            }
-
-            .mobile-bar-row {
-                align-items: stretch;
-                flex-direction: column;
-            }
-
-            .mobile-select {
-                width: 100%;
-            }
-
-            .analysis-stage {
-                min-height: 360px;
-                padding: 20px;
-            }
-        }
-
-        @media print {
-            body {
-                background: white;
-                color: #09111f;
-            }
-
-            body::before,
-            .sidebar,
-            .mobile-bar,
-            .no-print {
-                display: none !important;
-            }
-
-            .app-shell {
-                display: block;
-            }
-
-            .content {
-                padding: 0;
-            }
-
-            .view {
-                display: block !important;
-                max-width: none;
-                animation: none;
-                break-after: page;
-                page-break-after: always;
-                margin-bottom: 24px;
-            }
-
-            .hero-card,
-            .panel-card,
-            .report-card {
-                color: #09111f;
-                background: white;
-                box-shadow: none;
-                border: 1px solid #dce6f1;
-            }
-
-            .paper-card {
-                box-shadow: none;
-                border: 1px solid #dce6f1;
-            }
-
-            .muted,
-            .section-note,
-            .report-meta,
-            .soft {
-                color: #475569;
-            }
-
-            .print-only {
-                display: block;
-            }
-        }
-    </style>
+  <meta charset="utf-8" />
+  <title>Xschiq - AngularJS integrated</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.4/angular.min.js"></script>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    textarea { width: 100%; min-height: 200px; }
+    .status { margin-top: 12px; }
+    .status strong { display: inline-block; width: 120px; }
+  </style>
 </head>
-<body>
-    <div class="mobile-bar no-print">
-        <div class="mobile-bar-row">
-            <strong>Xschizq AI</strong>
-            <select class="mobile-select" id="mobileViewSelect" aria-label="Switch section">
-                <option value="deck">Investor Deck</option>
-                <option value="portal">Diagnostic Portal</option>
-                <option value="audit">Technical Audit</option>
-                <option value="penux">penuX Subsite</option>
-                <option value="pager">Executive Summary</option>
-            </select>
-        </div>
-    </div>
+<body ng-app="xschiqApp" ng-controller="EegCtrl as vm">
 
-    <div class="app-shell">
-        <aside class="sidebar no-print">
-            <div class="brand">
-                <div class="brand-mark">X</div>
-                <div>
-                    <h1>Xschizq AI</h1>
-                    <p>Master Command Portal</p>
-                </div>
-            </div>
+  <h1>Xschiq EEG + Report DB</h1>
 
-            <nav class="nav" aria-label="Section navigation">
-                <button type="button" class="nav-link active" data-view-target="deck">
-                    <span>01</span>
-                    <span>Investor Deck</span>
-                </button>
-                <button type="button" class="nav-link" data-view-target="portal">
-                    <span>02</span>
-                    <span>Diagnostic Portal</span>
-                </button>
-                <button type="button" class="nav-link" data-view-target="audit">
-                    <span>03</span>
-                    <span>Technical Audit</span>
-                </button>
-                <button type="button" class="nav-link" data-view-target="penux">
-                    <span>04</span>
-                    <span>penuX Subsite</span>
-                </button>
-                <button type="button" class="nav-link" data-view-target="pager">
-                    <span>05</span>
-                    <span>Executive Summary</span>
-                </button>
-            </nav>
+  <div>
+    <label>
+      EEG file:
+      <input type="file" accept=".csv,.json" onchange="angular.element(this).scope().vm.onEegFile(this.files)">
+    </label>
+  </div>
 
-            <div class="sidebar-footer">
-                <div class="operator-card">
-                    <span>Lead Investigator</span>
-                    <strong>Netanel Stern</strong>
-                    <a href="mailto:nsh531@gmail.com">nsh531@gmail.com</a>
-                </div>
-                <button type="button" class="print-button" id="printButton">Export to PDF</button>
-            </div>
-        </aside>
+  <div style="margin-top: 10px;">
+    <label>
+      Report file:
+      <input type="file" accept=".txt,.json,.pdf" onchange="angular.element(this).scope().vm.onReportFile(this.files)">
+    </label>
+  </div>
 
-        <main class="content">
-            <section class="view active" id="view-deck" data-view="deck">
-                <div class="hero-card">
-                    <div class="eyebrow">Signal-Driven Psychiatry</div>
-                    <div class="hero-grid">
-                        <div class="hero-copy">
-                            <h2>Precision psychiatry built like a command system.</h2>
-                            <p>
-                                Xschizq AI reframes schizophrenia diagnostics as a measurable intelligence problem,
-                                combining neuroimaging, electrophysiology, and literature-grounded inference into an
-                                operating surface for clinical decision support.
-                            </p>
-                            <div class="pill-row">
-                                <span class="pill">Multi-Omics Correlation</span>
-                                <span class="pill">Deep Learning Pipelines</span>
-                                <span class="pill">Neuroimaging Biomarkers</span>
-                                <span class="pill">Clinical Decision Layer</span>
-                            </div>
-                        </div>
+  <div style="margin-top: 16px;">
+    <button ng-click="vm.process()">Analyze + Upload</button>
+    <button ng-click="vm.reset()">Reset</button>
+  </div>
 
-                        <div class="hero-stats">
-                            <div class="stat-card">
-                                <span class="section-note">Projected opportunity</span>
-                                <strong>$14.0B</strong>
-                                <span>Projected serviceable market for AI-enabled precision psychiatry by 2033.</span>
-                            </div>
-                            <div class="stat-card">
-                                <span class="section-note">Treatment efficiency target</span>
-                                <strong>70%</strong>
-                                <span>Reduction in clinical trial-and-error prescribing cycles through response prediction.</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+  <div class="status">
+    <p><strong>Status:</strong> {{ vm.status }}</p>
+    <p><strong>Server:</strong> {{ vm.serverResult?.message || 'n/a' }}</p>
+    <p><strong>Model errors:</strong> {{ vm.modelResult?.error || 'n/a' }}</p>
+  </div>
 
-                <div class="section-grid stats-grid">
-                    <div class="mini-stat">
-                        <span class="section-note">Why now</span>
-                        <strong>Objective inputs</strong>
-                        <span>
-                            Psychiatry still leans heavily on interviews and delayed behavioral observations. The platform
-                            aims to introduce signal-rich evidence into that workflow.
-                        </span>
-                    </div>
-                    <div class="mini-stat accent">
-                        <span class="section-note">Commercial wedge</span>
-                        <strong>Clinical + Pharma</strong>
-                        <span>
-                            Dual motion across hospital decision support and compound efficacy assessment creates
-                            multiple routes to revenue and validation.
-                        </span>
-                    </div>
-                </div>
+  <div class="status" style="margin-top: 16px; border: 1px solid #d0d0d0; padding: 12px; border-radius: 8px; background: #f7f8fa;">
+    <h4>Project Overview</h4>
+    <p><strong>Name:</strong> {{ vm.project.name }}</p>
+    <p><strong>Version:</strong> {{ vm.project.version }}</p>
+    <p><strong>Description:</strong> {{ vm.project.description }}</p>
+    <p><strong>Mode:</strong> {{ vm.project.mode }}</p>
+  </div>
 
-                <div class="panel-card" style="padding: 32px; margin-top: 24px;">
-                    <h3 class="section-title">Public Project Footprint</h3>
-                    <p class="muted">
-                        Selected repository mentions tied to the `nsh531` and `netanelcyber` public GitHub footprint.
-                    </p>
-                    <div class="project-grid" id="projectMentionsGrid"></div>
-                </div>
-            </section>
+  <h3>Result</h3>
+  <textarea readonly>{{ vm.dump || '' }}</textarea>
 
-            <section class="view" id="view-portal" data-view="portal">
-                <div class="portal-layout">
-                    <div class="panel-card">
-                        <div class="panel-header">
-                            <div>
-                                <div class="eyebrow">Neural Analysis Engine</div>
-                                <h2 class="panel-title">Deep learning-backed EEG decoding</h2>
-                                <p class="muted">
-                                    Server-side inference (1D conv autoencoder + FFT) runs in the FastAPI service
-                                    at <code>/analyze</code>. Upload raw EEG streams to get bandpower, anomaly windows, and
-                                    channel importance in one JSON response.
-                                </p>
-                            </div>
-                            <div class="status-chip" id="portalStatusChip">Idle / Awaiting stream</div>
-                        </div>
+<script>
+angular.module('xschiqApp', []
+.controller('EegCtrl', ['$scope', '$http', function($scope, $http) {
+  const vm = this;
+  vm.status = 'idle';
+  vm.eegFile = null;
+  vm.reportFile = null;
+  vm.serverResult = null;
+  vm.modelResult = null;
+  vm.dump = '';
+  vm.project = {
+    name: 'Xschiq EEG Deep Analysis',
+    version: '0.3.0',
+    description: 'Client-side evaluation, server-side training, PDF/EEG fusion',
+    mode: 'train-on-server / infer-on-client'
+  };
 
-                        <div class="analysis-stage" id="idleStage">
-                            <div class="space-y-4">
-                                <div class="upload-icon">+</div>
-                                <h3>Upload EEG stream or diagnostic PDF</h3>
-                                <p class="muted">
-                                    EEG: CSV (rows=samples, cols=channels) or JSON <code>{"samples": [[...], ...]}</code>. Sampling rate defaults to 256 Hz.
-                                    Reports: upload PDF/TXT in Hebrew or English; the server will embed and attach a diagnostics note to the response.
-                                </p>
-                                <div class="flex flex-col gap-3">
-                                    <label class="secondary-button" style="display:inline-block; text-align:center; cursor:pointer;">
-                                        Select EEG CSV / JSON
-                                        <input type="file" id="eegFileInput" accept=".csv,application/json" style="display:none;">
-                                    </label>
-                                    <label class="secondary-button" style="display:inline-block; text-align:center; cursor:pointer;">
-                                        Select Diagnostic PDF/TXT (Hebrew/English)
-                                        <input type="file" id="reportFileInput" accept=".pdf,.txt" style="display:none;">
-                                    </label>
-                                </div>
-                                <button type="button" class="primary-button" id="startAnalysisButton">Run deep analysis</button>
-                                <p class="muted" id="uploadSummary" style="margin-top:6px;"></p>
-                            </div>
-                        </div>
+  const _cleanText = (s, max = 18000) => {
+    let t = (s || '').toString().replace(/\x00/g, ' ').replace(/[ \t\r\f\v]+/g, ' ').replace(/\n{2,}/g, '\n').trim();
+    return t.slice(0, max);
+  };
 
-                        <div class="analysis-stage hidden analyzing" id="analyzingStage" aria-live="polite">
-                            <div class="scan-shell">
-                                <small>Running deep + FFT analysis</small>
-                                <p class="progress-value" id="progressValue">0%</p>
-                                <div class="progress-track">
-                                    <div class="progress-bar" id="progressBar"></div>
-                                </div>
-                            </div>
-                        </div>
+  const _bestEffortPdfText = (raw) => {
+    const regex = /\(([^()]{4,240})\)/g;
+    const fragments = [];
 
-                        <div class="analysis-stage hidden" id="resultStage">
-                            <div class="result-grid">
-                                <div class="result-topline">
-                                    <div>
-                                        <strong>Patient ID: X-8812</strong>
-                                        <div class="report-meta">Analysis bundle v0.2 / deep autoencoder readout</div>
-                                    </div>
-                                    <div class="status-chip" style="background: rgba(52, 211, 153, 0.12); border-color: rgba(52, 211, 153, 0.22); color: var(--success);">
-                                        High reliability
-                                    </div>
-                                </div>
+    for (const m of raw.matchAll(regex)) {
+      let c = m[1].replace(/\\n/g, ' ').replace(/\\r/g, ' ').replace(/\\\(/g, '(').replace(/\\\)/g, ')');
+      c = _cleanText(c, 240);
+      if (c.length >= 4) fragments.push(c);
+      if (fragments.length >= 80) break;
+    }
 
-                                <div class="result-metrics">
-                                    <div class="metric-block">
-                                        <div class="metric-label">
-                                            <span>Gamma Oscillations</span>
-                                            <span>82%</span>
-                                        </div>
-                                        <div class="metric-track">
-                                            <div class="metric-fill" style="width: 82%;"></div>
-                                        </div>
-                                    </div>
-                                    <div class="metric-block">
-                                        <div class="metric-label">
-                                            <span>D2 Receptor Affinity (Pred)</span>
-                                            <span>High</span>
-                                        </div>
-                                        <div class="metric-track">
-                                            <div class="metric-fill indigo" style="width: 65%;"></div>
-                                        </div>
-                                    </div>
-                                </div>
+    if (!fragments.length) {
+      for (const m of raw.matchAll(/[A-Za-z0-9\u0590-\u05FF ,.;:()\/%-]{12,}/g)) {
+        const c = _cleanText(m[0], 240);
+        if (c) fragments.push(c);
+        if (fragments.length >= 80) break;
+      }
+    }
 
-                                <div class="outlook">
-                                    <strong>Clinical outlook</strong>
-                                    <p class="muted">
-                                        Biomarkers suggest higher sensitivity to partial agonists. Simulated pathway:
-                                        aripiprazole or brexpiprazole review before risperidone escalation.
-                                    </p>
-                                </div>
+    return _cleanText(fragments.join(' '));
+  };
 
-                                <div>
-                                    <button type="button" class="secondary-button" id="resetAnalysisButton">Reset dashboard</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+  const parseCsvToMatrix = (text) => {
+    const rows = text.trim().split(/\r?\n/).filter(Boolean).map(line => line.split(/[\t,]+/).map(x => Number(x.trim())));
+    if (!rows.length) throw new Error('EEG text empty');
+    const col = Math.max(...rows.map(r => r.length));
+    rows.forEach(row => {
+      if (row.some(v => Number.isNaN(v))) throw new Error('EEG contains NaN');
+      while (row.length < col) row.push(row[row.length - 1] || 0);
+    });
+    return rows;
+  };
 
-                    <div class="side-stack">
-                        <div class="side-card">
-                            <h3>Pipeline checkpoints</h3>
-                            <div class="pipeline">
-                                <div class="pipeline-item">
-                                    <span>Signal ingest</span>
-                                    <code>qEEG / EDF</code>
-                                </div>
-                                <div class="pipeline-item">
-                                    <span>Feature extraction</span>
-                                    <code>FFT / coherence</code>
-                                </div>
-                                <div class="pipeline-item">
-                                    <span>Model layer</span>
-                                    <code>CNN + rules</code>
-                                </div>
-                                <div class="pipeline-item">
-                                    <span>Clinician brief</span>
-                                    <code>Evidence summary</code>
-                                </div>
-                            </div>
-                        </div>
+  vm.onEegFile = (files) => {
+    vm.eegFile = files && files[0] ? files[0] : null;
+    vm.status = vm.eegFile ? `EEG selected: ${vm.eegFile.name}` : 'no EEG selected';
+    $scope.$applyAsync();
+  };
 
-                        <div class="side-card">
-                            <h3>Why this interface</h3>
-                            <div class="timeline">
-                                <div class="timeline-item">
-                                    <div class="timeline-dot"></div>
-                                    <div>
-                                        <strong>Structured evidence</strong>
-                                        <span class="muted">Turns raw streams into readable, auditable intermediate steps.</span>
-                                    </div>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-dot"></div>
-                                    <div>
-                                        <strong>Faster review loop</strong>
-                                        <span class="muted">Simulates the kind of handoff a psychiatrist or reviewer would need.</span>
-                                    </div>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-dot"></div>
-                                    <div>
-                                        <strong>Presentation-ready</strong>
-                                        <span class="muted">Investor and technical audiences can both trace the workflow.</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+  vm.onReportFile = (files) => {
+    vm.reportFile = files && files[0] ? files[0] : null;
+    vm.status = vm.reportFile ? `report selected: ${vm.reportFile.name}` : vm.status;
+    $scope.$applyAsync();
+  };
 
-                <div class="panel-card article-studio" style="padding: 32px;">
-                    <div class="panel-header" style="margin-bottom: 0;">
-                        <div>
-                            <div class="eyebrow">Research Draft Studio</div>
-                            <h3 class="section-title">Article generator from scans, prior papers, and deep learning</h3>
-                            <p class="muted">
-                                Build a structured draft article from uploaded EEG scans, diagnostic reports, previous articles,
-                                and the autoencoder-derived scan profile. The generator uses deep EEG features for the results layer
-                                and retrieves language/themes from prior documents for the manuscript framing.
-                            </p>
-                        </div>
-                        <div class="status-chip" id="articleStatusChip">Idle / Awaiting materials</div>
-                    </div>
+  vm.reset = () => {
+    vm.status = 'idle';
+    vm.eegFile = null;
+    vm.reportFile = null;
+    vm.serverResult = null;
+    vm.modelResult = null;
+    vm.dump = '';
+    $scope.$applyAsync();
+  };
 
-                    <div class="article-controls">
-                        <div class="article-field">
-                            <label for="previousArticlesInput">Previous articles</label>
-                            <label class="secondary-button" style="display:inline-block; text-align:center; cursor:pointer;">
-                                Select prior article files
-                                <input type="file" id="previousArticlesInput" accept=".txt,.md,.json,.pdf" multiple style="display:none;">
-                            </label>
-                        </div>
+  function mean(arr) { return arr.reduce((a, b) => a + b, 0) / Math.max(1, arr.length); }
+  function std(arr) { const m = mean(arr); return Math.sqrt(mean(arr.map(v => (v - m) ** 2))); }
+  function gelu(x) { return 0.5 * x * (1 + Math.tanh(Math.sqrt(2 / Math.PI) * (x + 0.044715 * x * x * x))); }
 
-                        <div class="article-field">
-                            <label for="articleTitleInput">Article title hint</label>
-                            <input id="articleTitleInput" class="article-input" type="text" placeholder="Deep-learning-guided EEG manuscript title">
-                        </div>
+  function conv1d(input, weight, bias, stride = 1, padding = 0) {
+    const inC = input.length;
+    const xLen = input[0]?.length || 0;
+    const outC = weight.length;
+    const kernel = weight[0][0].length;
+    const outLen = Math.floor((xLen + padding * 2 - kernel) / stride) + 1;
+    const out = Array.from({ length: outC }, () => Array(outLen).fill(0));
 
-                        <div class="article-field wide">
-                            <label for="articleFocusInput">Study focus</label>
-                            <textarea id="articleFocusInput" class="article-input" placeholder="Describe the study focus, target disorder, cohort context, or publication angle."></textarea>
-                        </div>
-                    </div>
-
-                    <div class="space-y-4">
-                        <button type="button" class="primary-button" id="generateArticleButton">Generate article draft</button>
-                        <p class="muted" id="articleSummary">Use the current scan/report selections and optionally add previous articles to generate a manuscript draft.</p>
-                    </div>
-
-                    <div class="article-field wide">
-                        <div class="article-caption">Draft article</div>
-                        <pre id="articleDraftOutput" class="article-output">No article generated yet.</pre>
-                    </div>
-
-                    <div class="article-field wide">
-                        <div class="article-caption">Retrieved context</div>
-                        <div id="articleSnippets" class="article-snippets">
-                            <div class="article-snippet">
-                                <strong>Awaiting generation</strong>
-                                <span class="muted">Relevant snippets from prior articles and uploaded reports will appear here.</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="panel-card" style="padding: 32px; margin-top: 24px;">
-                    <h3 class="section-title">Researcher and clinician interface</h3>
-                    <p class="muted">
-                        The primary site now separates a research workflow from a clinician workflow so the same
-                        analysis engine can support technical validation, bilingual document intake, and decision-ready
-                        clinical summaries.
-                    </p>
-                    <div class="audience-grid">
-                        <article class="audience-card research">
-                            <span class="audience-label">Research Interface</span>
-                            <h3>Research workspace</h3>
-                            <p class="muted">
-                                Built for EEG investigators, validation teams, and computational reviewers who need
-                                direct visibility into anomaly windows, latent patterns, and reproducible exports.
-                            </p>
-                            <div class="audience-list">
-                                <div class="audience-item">
-                                    <strong>Cohort and protocol review</strong>
-                                    <span class="muted">Compare acquisition settings, cohorts, channel layouts, and sampling assumptions before interpretation.</span>
-                                </div>
-                                <div class="audience-item">
-                                    <strong>Anomaly and latent inspection</strong>
-                                    <span class="muted">Inspect window-level anomalies, channel importance, and the deep model's compressed representation.</span>
-                                </div>
-                                <div class="audience-item">
-                                    <strong>Research export surface</strong>
-                                    <span class="muted">Carry forward JSON outputs for notebooks, audit trails, reproducibility checks, and follow-on studies.</span>
-                                </div>
-                            </div>
-                            <div class="pill-row" style="margin-top: 18px;">
-                                <span class="pill">Protocol QA</span>
-                                <span class="pill">Anomaly Maps</span>
-                                <span class="pill">JSON Export</span>
-                            </div>
-                        </article>
-
-                        <article class="audience-card clinical">
-                            <span class="audience-label">Clinical Interface</span>
-                            <h3>Clinician workspace</h3>
-                            <p class="muted">
-                                Designed for psychiatrists, neurologists, and diagnostic teams who need a fast handoff
-                                from raw signal and written reports to a readable clinical brief.
-                            </p>
-                            <div class="audience-list">
-                                <div class="audience-item">
-                                    <strong>Bilingual intake</strong>
-                                    <span class="muted">Accept EEG files alongside diagnostic reports written in Hebrew or English from the same screen.</span>
-                                </div>
-                                <div class="audience-item">
-                                    <strong>Patient-ready summary</strong>
-                                    <span class="muted">Highlight confidence, notable signal changes, and a concise interpretation path for case review.</span>
-                                </div>
-                                <div class="audience-item">
-                                    <strong>Decision support handoff</strong>
-                                    <span class="muted">Prepare a compact packet for multidisciplinary discussion, chart review, and next-step planning.</span>
-                                </div>
-                            </div>
-                            <div class="pill-row" style="margin-top: 18px;">
-                                <span class="pill">Hebrew / English</span>
-                                <span class="pill">Clinical Brief</span>
-                                <span class="pill">Case Handoff</span>
-                            </div>
-                        </article>
-                    </div>
-                </div>
-            </section>
-
-            <section class="view" id="view-audit" data-view="audit">
-                <div class="report-card">
-                    <div class="report-header">
-                        <div>
-                            <div class="eyebrow">Strategic Assessment Report</div>
-                            <h2 class="report-title">Verification of leadership, infrastructure, and computational paradigms.</h2>
-                        </div>
-                        <div class="report-meta">Prepared for diligence review / 2026</div>
-                    </div>
-
-                    <div class="report-body">
-                        <section class="report-section">
-                            <h3>1. Technical framework</h3>
-                            <p class="muted">
-                                Xschizq AI targets the limits of subjective symptom reporting by modeling neurobiological
-                                biomarkers across volumetric imaging and electrophysiological data. The proposed system
-                                references 3D convolutional analysis for fMRI studies such as COBRE and MCIC, then routes
-                                outputs into clinician-readable summaries.
-                            </p>
-                            <div class="math-box">
-                                <div>H_in = X * W_input + b_input</div>
-                                <div>H_out = ReLU(H_in)</div>
-                                <div>O_out = softmax(H_out * W_output + b_output)</div>
-                            </div>
-                        </section>
-
-                        <section class="report-section">
-                            <h3>2. Core leadership matrix</h3>
-                            <div class="leaders-grid" id="leadersGrid"></div>
-                        </section>
-
-                        <section class="report-section">
-                            <h3>3. Infrastructure inventory</h3>
-                            <div class="inventory-grid">
-                                <div class="inventory-head">
-                                    <div class="inventory-cell head">Asset</div>
-                                    <div class="inventory-cell head">Tech stack</div>
-                                    <div class="inventory-cell head">Clinical focus</div>
-                                </div>
-                                <div id="inventoryRows"></div>
-                            </div>
-                        </section>
-                    </div>
-                </div>
-
-                <div class="panel-card" style="padding: 32px; margin-top: 24px;">
-                    <h3 class="section-title">ממשק חוקרים וממשק קלינאים</h3>
-                    <p class="muted">
-                        האתר הראשי כולל עכשיו שני מסלולי עבודה ייעודיים: סביבת חקירה למחקר חישובי וסביבת תרגום
-                        לקלינאים שצריכים סיכום מהיר, בטוח וקריא בעברית או באנגלית.
-                    </p>
-                    <div class="audience-grid">
-                        <article class="audience-card research">
-                            <span class="audience-label">Research Interface</span>
-                            <h3>מרחב עבודה לחוקרים</h3>
-                            <p class="muted">
-                                מיועד לחוקרי EEG, data scientists וצוותי ולידציה שרוצים לראות את שכבות הפענוח,
-                                חלונות החריגה והחיבורים בין אות גולמי, embedding ותוצרים בני יצוא.
-                            </p>
-                            <div class="audience-list">
-                                <div class="audience-item">
-                                    <strong>Cohort and protocol review</strong>
-                                    <span class="muted">השוואת פרוטוקולים, תיוגי cohort, ובקרה על קצב דגימה ופורמט הקלט.</span>
-                                </div>
-                                <div class="audience-item">
-                                    <strong>Anomaly and latent inspection</strong>
-                                    <span class="muted">בדיקת חלונות חריגים, channel importance ווקטורי latent ישירות מתוך המנוע.</span>
-                                </div>
-                                <div class="audience-item">
-                                    <strong>Export surface</strong>
-                                    <span class="muted">ייצוא JSON למחקר המשך, audit trail ותיעוד לצורכי שיחזור ותיקוף.</span>
-                                </div>
-                            </div>
-                            <div class="pill-row" style="margin-top: 18px;">
-                                <span class="pill">Protocol QA</span>
-                                <span class="pill">Anomaly Maps</span>
-                                <span class="pill">JSON Export</span>
-                            </div>
-                        </article>
-
-                        <article class="audience-card clinical">
-                            <span class="audience-label">Clinical Interface</span>
-                            <h3>מרחב עבודה לקלינאים</h3>
-                            <p class="muted">
-                                מותאם לפסיכיאטרים, נוירולוגים וצוותי אבחון שצריכים תרגום מהיר מהמודל לשפה קלינית,
-                                כולל מסמכים בעברית או באנגלית והמלצות פעולה ברמת מקרה.
-                            </p>
-                            <div class="audience-list">
-                                <div class="audience-item">
-                                    <strong>Bilingual intake</strong>
-                                    <span class="muted">קליטת EEG לצד דוחות אבחון כתובים בעברית או באנגלית באותו מסך עבודה.</span>
-                                </div>
-                                <div class="audience-item">
-                                    <strong>Patient-ready summaries</strong>
-                                    <span class="muted">הפקת תמצית קלינית ברורה עם דגלי אמינות, חריגות בולטות ונתיב טיפולי מוצע.</span>
-                                </div>
-                                <div class="audience-item">
-                                    <strong>Decision support handoff</strong>
-                                    <span class="muted">מבנה מסירה שנועד לוועדות, שיחות case review ותיעוד במערכות המשך.</span>
-                                </div>
-                            </div>
-                            <div class="pill-row" style="margin-top: 18px;">
-                                <span class="pill">Hebrew / English</span>
-                                <span class="pill">Clinical Summary</span>
-                                <span class="pill">Case Handoff</span>
-                            </div>
-                        </article>
-                    </div>
-                </div>
-            </section>
-
-            <section class="view" id="view-penux" data-view="penux">
-                <div class="hero-card">
-                    <div class="eyebrow">penuX / MIMIC Demo</div>
-                    <div class="hero-grid">
-                        <div class="hero-copy">
-                            <h2>Pathogen class prediction from hospital data.</h2>
-                            <p>
-                                penuX is a research/demo pipeline built around <code>mimic3.py</code>, designed to auto-discover
-                                MIMIC-III and MIMIC-IV roots, build mixed text + medication + early-vitals features,
-                                and train a PyTorch multiclass classifier with calibration-aware evaluation.
-                            </p>
-                            <div class="pill-row">
-                                <span class="pill">MIMIC-III / MIMIC-IV</span>
-                                <span class="pill">PyTorch-first</span>
-                                <span class="pill">One-file pipeline</span>
-                                <span class="pill">Calibration outputs</span>
-                            </div>
-                        </div>
-                        <div class="hero-stats">
-                            <div class="stat-card">
-                                <span class="section-note">Primary script</span>
-                                <strong>mimic3.py</strong>
-                                <span>Single-file demo pipeline for data discovery, ETL, training, and evaluation.</span>
-                            </div>
-                            <div class="stat-card">
-                                <span class="section-note">Intended use</span>
-                                <strong>Research only</strong>
-                                <span>Explicitly framed in the repo as research/education, not clinical deployment.</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="kpi-strip">
-                    <div class="kpi">
-                        <span class="section-note">Model shape</span>
-                        <strong>Hybrid NN</strong>
-                    </div>
-                    <div class="kpi">
-                        <span class="section-note">Signal types</span>
-                        <strong>3 feature groups</strong>
-                    </div>
-                    <div class="kpi">
-                        <span class="section-note">Outputs</span>
-                        <strong>ROC / PR / ECE</strong>
-                    </div>
-                    <div class="kpi">
-                        <span class="section-note">Repo</span>
-                        <strong><a href="https://github.com/netanelcyber/penuX" class="contact-note">netanelcyber/penuX</a></strong>
-                    </div>
-                </div>
-
-                <div class="detail-grid">
-                    <article class="detail-card">
-                        <h3>What the model learns</h3>
-                        <p class="muted">
-                            The README describes a fixed-order multiclass pathogen prediction task using microbiology text,
-                            antibiotic exposures, and an early-hour vitals/labs window extracted from MIMIC.
-                        </p>
-                        <div class="signal-list">
-                            <div class="signal-item">
-                                <strong>Short categorical text</strong>
-                                <span class="muted">Microbiology descriptors and interpretations mapped into token sequences.</span>
-                            </div>
-                            <div class="signal-item">
-                                <strong>Antibiotic exposure</strong>
-                                <span class="muted">One-hot medication signals summarized at the admission level.</span>
-                            </div>
-                            <div class="signal-item">
-                                <strong>Early vitals / labs</strong>
-                                <span class="muted">A configurable clinical window used for numeric feature construction.</span>
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="detail-card">
-                        <h3>Deep-learning architecture</h3>
-                        <p class="muted">
-                            The repo frames penuX as a PyTorch-first model using Embedding, Conv1d, and LSTM components,
-                            fused with numeric features before a multiclass prediction head.
-                        </p>
-                        <div class="signal-list">
-                            <div class="signal-item">
-                                <strong>ONE FILE</strong>
-                                <span class="muted">Discovery, ETL, training, evaluation, and plotting live in one script.</span>
-                            </div>
-                            <div class="signal-item">
-                                <strong>No pandas</strong>
-                                <span class="muted">Streaming CSV and gzip parsing keeps the pipeline light for demo use.</span>
-                            </div>
-                            <div class="signal-item">
-                                <strong>Calibration-aware</strong>
-                                <span class="muted">The README explicitly calls out Brier/ECE-style evaluation and reliability plots.</span>
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="detail-card">
-                        <h3>Bilingual research surface</h3>
-                        <p class="muted">
-                            The repository README is structured in both Hebrew and English, which makes penuX a strong fit
-                            for a dedicated sub-site rather than a one-line portfolio mention.
-                        </p>
-                        <div class="signal-list">
-                            <div class="signal-item">
-                                <strong>Hebrew + English</strong>
-                                <span class="muted">The project narrative, warnings, and documentation are presented bilingually.</span>
-                            </div>
-                            <div class="signal-item">
-                                <strong>MIMIC positioning</strong>
-                                <span class="muted">Anchored around PhysioNet-hosted MIMIC-III/MIMIC-IV datasets and demo subsets.</span>
-                            </div>
-                            <div class="signal-item">
-                                <strong>Responsible use</strong>
-                                <span class="muted">The README explicitly warns that this is not for clinical decision-making.</span>
-                            </div>
-                        </div>
-                    </article>
-                </div>
-
-                <div class="panel-card" style="padding: 32px; margin-top: 24px;">
-                    <h3 class="section-title">penuX Runtime Story</h3>
-                    <p class="muted">
-                        Based on the public README, the sub-site centers on an auto-discovery pipeline for MIMIC roots,
-                        mixed feature building, PyTorch training, and rich evaluation that includes calibration artifacts.
-                    </p>
-                    <div class="pipeline" style="margin-top: 18px;">
-                        <div class="pipeline-item">
-                            <span>1. Discover data roots</span>
-                            <code>MIMIC-III / IV</code>
-                        </div>
-                        <div class="pipeline-item">
-                            <span>2. Stream ETL without pandas</span>
-                            <code>CSV / CSV.GZ</code>
-                        </div>
-                        <div class="pipeline-item">
-                            <span>3. Train hybrid PyTorch model</span>
-                            <code>Embedding + Conv1d + LSTM</code>
-                        </div>
-                        <div class="pipeline-item">
-                            <span>4. Evaluate and calibrate</span>
-                            <code>ROC / PR / Brier / ECE</code>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="panel-card" style="padding: 32px; margin-top: 24px;">
-                    <h3 class="section-title">penuX interfaces for researchers and clinicians</h3>
-                    <p class="muted">
-                        The secondary site now carries its own dual-surface design: one interface for research teams
-                        working with MIMIC-derived data and one interface for clinicians who need a concise, safety-first
-                        translation of the model story.
-                    </p>
-                    <div class="audience-grid">
-                        <article class="audience-card research">
-                            <span class="audience-label">Research Interface</span>
-                            <h3>penuX research workspace</h3>
-                            <p class="muted">
-                                Built for bioinformatics researchers, clinical ML teams, and data engineers tracing how
-                                the pipeline configures data roots, assembles features, and evaluates calibration.
-                            </p>
-                            <div class="audience-list">
-                                <div class="audience-item">
-                                    <strong>Dataset configuration</strong>
-                                    <span class="muted">Review MIMIC-III and MIMIC-IV path assumptions, early-hour windows, and filtering choices.</span>
-                                </div>
-                                <div class="audience-item">
-                                    <strong>Model diagnostics</strong>
-                                    <span class="muted">Inspect the hybrid Embedding, Conv1d, and LSTM stack together with ROC, PR, and calibration outputs.</span>
-                                </div>
-                                <div class="audience-item">
-                                    <strong>Artifact review</strong>
-                                    <span class="muted">Track plots, tables, and intermediate artifacts needed for reproducibility and peer review.</span>
-                                </div>
-                            </div>
-                            <div class="pill-row" style="margin-top: 18px;">
-                                <span class="pill">MIMIC Roots</span>
-                                <span class="pill">Model Diagnostics</span>
-                                <span class="pill">Calibration</span>
-                            </div>
-                        </article>
-
-                        <article class="audience-card clinical">
-                            <span class="audience-label">Clinical Interface</span>
-                            <h3>Clinician translation layer</h3>
-                            <p class="muted">
-                                Designed for clinical stakeholders who need to understand the project intent, the research-only
-                                safety boundaries, and the bilingual framing without stepping through the codebase.
-                            </p>
-                            <div class="audience-list">
-                                <div class="audience-item">
-                                    <strong>Case translation layer</strong>
-                                    <span class="muted">Translate model outputs into plain-language descriptions suitable for team review and stakeholder briefings.</span>
-                                </div>
-                                <div class="audience-item">
-                                    <strong>Safety framing</strong>
-                                    <span class="muted">Keep the research-only positioning visible so the sub-site does not overstate clinical readiness.</span>
-                                </div>
-                                <div class="audience-item">
-                                    <strong>Bilingual reporting</strong>
-                                    <span class="muted">Surface summaries, caveats, and collaboration notes in Hebrew and English for mixed teams.</span>
-                                </div>
-                            </div>
-                            <div class="pill-row" style="margin-top: 18px;">
-                                <span class="pill">Case Translation</span>
-                                <span class="pill">Research Safety</span>
-                                <span class="pill">Bilingual Reports</span>
-                            </div>
-                        </article>
-                    </div>
-                </div>
-            </section>
-
-            <section class="view" id="view-pager" data-view="pager">
-                <div class="paper-card">
-                    <div class="paper-header">
-                        <div>
-                            <div class="paper-eyebrow">Strategic One-Pager 2026</div>
-                            <h2>Xschizq</h2>
-                        </div>
-                        <div class="mono soft">CONFIDENTIAL // N. STERN</div>
-                    </div>
-
-                    <div class="summary-grid">
-                        <div>
-                            <h3>Mission</h3>
-                            <p>
-                                "Bridging the gap between neuroimaging engineering and clinical psychiatry through
-                                multi-omics AI."
-                            </p>
-                            <div class="tag-row">
-                                <span class="tag">RAG-assisted literature synthesis</span>
-                                <span class="tag">qEEG spectral feature fusion</span>
-                                <span class="tag">Case-study generation</span>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h3>Revenue strategy</h3>
-                            <p>
-                                Dual licensing motion: clinical SaaS for psychiatric wards and pharma R&amp;D partnerships
-                                for compound efficacy assessment.
-                            </p>
-                            <p class="muted">
-                                The positioning emphasizes decision support and translational research rather than a
-                                consumer-facing mental health product.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="contact-grid">
-                        <div class="contact-card">
-                            <h3>Validated Contact Node</h3>
-                            <strong>Netanel Stern</strong>
-                            <div class="soft">Penn Medicine Affiliated</div>
-                            <a href="mailto:nsh531@gmail.com">nsh531@gmail.com</a>
-                        </div>
-                        <div class="contact-card">
-                            <h3>Israel Lab</h3>
-                            <strong>Sifan 5, Rosh Haayin</strong>
-                            <div class="soft">+972 55 970 8708</div>
-                        </div>
-                        <div class="contact-card">
-                            <h3>Digital Presence</h3>
-                            <strong>GitHub: <a href="https://github.com/nsh531" class="contact-note">nsh531</a></strong>
-                            <div class="soft">Security/AI workstreams</div>
-                            <strong style="margin-top:8px; display:block;">GitHub: <a href="https://github.com/netanelcyber" class="contact-note">netanelcyber</a></strong>
-                            <div class="soft">Clinical data pipelines</div>
-                            <div class="contact-repos" id="githubMentionsList"></div>
-                        </div>
-                        <div class="contact-card">
-                            <h3>Expert Contacts</h3>
-                            <div class="expert-list" id="expertsContactList"></div>
-                        </div>
-                    </div>
-
-                    <div class="print-only">
-                        <p class="mono soft">End of report</p>
-                    </div>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <script>
-        const leaders = [
-            {
-                name: "Netanel Stern",
-                role: "Technical Architect & PI",
-                email: "nsh531@gmail.com",
-                desc: "Expert in clinical AI workflows and radiology systems. Penn Medicine (University City) & L.H.V Properties."
-            },
-            {
-                name: "Dr. Elena Volkov",
-                role: "EHR Integration Advisor",
-                contactLabel: "No public email verified; request intro via nsh531@gmail.com",
-                contactHref: "mailto:nsh531@gmail.com?subject=Introduction%20request%20for%20Dr.%20Elena%20Volkov",
-                desc: "Specializing in the transition of unstructured patient data into predictive clinical insights."
-            },
-            {
-                name: "Prof. Isaac Stern",
-                role: "Clinical & Humanistic Lead",
-                contactLabel: "No public email verified; request intro via nsh531@gmail.com",
-                contactHref: "mailto:nsh531@gmail.com?subject=Introduction%20request%20for%20Prof.%20Isaac%20Stern",
-                desc: "Translating neurobiological abstraction into human-centered psychiatric interfaces."
-            },
-            {
-                name: "Dr. Alex Murphy",
-                role: "Multi-Omics Specialist",
-                contactLabel: "No public UCSF email found; request intro via nsh531@gmail.com",
-                contactHref: "mailto:nsh531@gmail.com?subject=Introduction%20request%20for%20Dr.%20Alex%20Murphy",
-                desc: "UCSF Postdoctoral Fellow specializing in genomic regulation and chromosome folding."
-            }
-        ];
-
-        const projectMentions = [
-            {
-                handle: "nsh531",
-                repo: "xschizo",
-                href: "https://github.com/nsh531/xschizo",
-                stack: "Clinical AI / neuroimaging",
-                focus: "Schizophrenia imaging exploration referenced publicly in community collaboration posts."
-            },
-            {
-                handle: "nsh531",
-                repo: "EncryptVC",
-                href: "https://github.com/nsh531",
-                stack: "Security tooling",
-                focus: "Encrypted version-control concept referenced in the public portfolio footprint."
-            },
-            {
-                handle: "nsh531",
-                repo: "xcovid",
-                href: "https://github.com/nsh531",
-                stack: "Public health interface",
-                focus: "COVID-facing data and web interface exploration across multiple languages."
-            },
-            {
-                handle: "netanelcyber",
-                repo: "penuX",
-                href: "https://github.com/netanelcyber/penuX",
-                stack: "Python / PyTorch / MIMIC",
-                focus: "Pathogen prediction using MIMIC-III and MIMIC-IV EHR data."
-            },
-            {
-                handle: "netanelcyber",
-                repo: "sqlmap",
-                href: "https://github.com/netanelcyber/sqlmap",
-                stack: "Python / security tooling",
-                focus: "Fork of sqlmapproject/sqlmap for SQL injection testing and database takeover workflows."
-            },
-            {
-                handle: "netanelcyber",
-                repo: "kroger-price-alert",
-                href: "https://github.com/netanelcyber/kroger-price-alert",
-                stack: "Python / alerting",
-                focus: "Fork of a retail price-alert workflow adapted for automated monitoring."
-            },
-            {
-                handle: "netanelcyber",
-                repo: "xschiq-website",
-                href: "https://github.com/netanelcyber/xschiq-website",
-                stack: "HTML / Python / EEG",
-                focus: "Website and EEG-facing presentation layer around the Xschiq project surface."
-            },
-            {
-                handle: "netanelcyber",
-                repo: "FLIGHT-PREDICTIONS",
-                href: "https://github.com/netanelcyber/FLIGHT-PREDICTIONS",
-                stack: "Python / forecasting",
-                focus: "Forecasting-oriented repository mention surfaced on the public profile."
-            },
-            {
-                handle: "netanelcyber",
-                repo: "zenday1",
-                href: "https://github.com/netanelcyber/zenday1",
-                stack: "Python",
-                focus: "Additional Python project surfaced in the public repository list."
-            }
-        ];
-
-        const infrastructureAssets = [
-            {
-                asset: "xschizo",
-                stack: "Python, CNN, imaging workflows",
-                focus: "Schizophrenia imaging exploration"
-            },
-            {
-                asset: "gammau-crwd",
-                stack: "Django, FalconPy",
-                focus: "Secure remote diagnoses"
-            },
-            {
-                asset: "penuX",
-                stack: "Python, PyTorch, MIMIC-III/IV",
-                focus: "Pathogen prediction and EHR modeling"
-            },
-            {
-                asset: "sqlmap",
-                stack: "Python, offensive security tooling",
-                focus: "Forked SQL injection testing workflow"
-            },
-            {
-                asset: "kroger-price-alert",
-                stack: "Python, automation, alerts",
-                focus: "Retail monitoring and alert automation"
-            },
-            {
-                asset: "xschiq-website",
-                stack: "HTML, Python, EEG assets",
-                focus: "Product surface and presentation layer"
-            },
-            {
-                asset: "EncryptVC",
-                stack: "Security workflow concept",
-                focus: "Encrypted collaboration and version control"
-            },
-            {
-                asset: "xcovid",
-                stack: "HTML, CSS, JS, Python, PHP",
-                focus: "COVID-facing data and web interface exploration"
-            },
-            {
-                asset: "zenday1",
-                stack: "Python",
-                focus: "Additional Python utility/project footprint"
-            }
-        ];
-
-        const navButtons = Array.from(document.querySelectorAll("[data-view-target]"));
-        const viewSections = Array.from(document.querySelectorAll("[data-view]"));
-        const mobileViewSelect = document.getElementById("mobileViewSelect");
-        const printButton = document.getElementById("printButton");
-        const leadersGrid = document.getElementById("leadersGrid");
-        const expertsContactList = document.getElementById("expertsContactList");
-        const projectMentionsGrid = document.getElementById("projectMentionsGrid");
-        const inventoryRows = document.getElementById("inventoryRows");
-        const githubMentionsList = document.getElementById("githubMentionsList");
-
-        const idleStage = document.getElementById("idleStage");
-        const analyzingStage = document.getElementById("analyzingStage");
-        const resultStage = document.getElementById("resultStage");
-        const statusChip = document.getElementById("portalStatusChip");
-        const startAnalysisButton = document.getElementById("startAnalysisButton");
-        const resetAnalysisButton = document.getElementById("resetAnalysisButton");
-        const progressValue = document.getElementById("progressValue");
-        const progressBar = document.getElementById("progressBar");
-        const eegFileInput = document.getElementById("eegFileInput");
-        const reportFileInput = document.getElementById("reportFileInput");
-        const uploadSummary = document.getElementById("uploadSummary");
-        const articleStatusChip = document.getElementById("articleStatusChip");
-        const previousArticlesInput = document.getElementById("previousArticlesInput");
-        const articleTitleInput = document.getElementById("articleTitleInput");
-        const articleFocusInput = document.getElementById("articleFocusInput");
-        const generateArticleButton = document.getElementById("generateArticleButton");
-        const articleSummary = document.getElementById("articleSummary");
-        const articleDraftOutput = document.getElementById("articleDraftOutput");
-        const articleSnippets = document.getElementById("articleSnippets");
-
-        let activeView = "deck";
-        let analysisProgress = 0;
-        let analysisTimer = null;
-        let eegFile = null;
-        let reportFile = null;
-        let previousArticleFiles = [];
-        let latestAnalysis = null;
-
-        function renderLeadContact(lead, fallbackText = "Contact available on request") {
-            if (lead.email) {
-                return `<a href="mailto:${lead.email}">${lead.email}</a>`;
-            }
-
-            if (lead.contactHref && lead.contactLabel) {
-                return `<a href="${lead.contactHref}">${lead.contactLabel}</a>`;
-            }
-
-            return `<span class="contact-note">${lead.contactLabel || fallbackText}</span>`;
+    for (let oc = 0; oc < outC; oc++) {
+      for (let ic = 0; ic < inC; ic++) {
+        const w = weight[oc][ic];
+        for (let i = 0; i < outLen; i++) {
+          const base = i * stride - padding;
+          let sum = 0;
+          for (let k = 0; k < kernel; k++) {
+            const pos = base + k;
+            if (pos >= 0 && pos < xLen) sum += input[ic][pos] * w[k];
+          }
+          out[oc][i] += sum;
         }
+      }
+      if (bias && bias.length === outC) {
+        for (let i = 0; i < outLen; i++) out[oc][i] += bias[oc];
+      }
+    }
+    return out;
+  }
 
-        function renderProjectMentions() {
-            projectMentionsGrid.innerHTML = projectMentions.map((project) => `
-                <article class="project-card">
-                    <div class="repo-label">${project.handle}</div>
-                    <h3><a href="${project.href}">${project.repo}</a></h3>
-                    <p>${project.focus}</p>
-                    <p class="repo-note" style="margin-top: 10px;">${project.stack}</p>
-                </article>
-            `).join("");
+  function conv1dTranspose(input, weight, bias, stride = 1, padding = 0, outputPadding = 0) {
+    const inC = input.length;
+    const xLen = input[0]?.length || 0;
+    const outC = weight[0].length;
+    const kernel = weight[0][0].length;
+    const outLen = (xLen - 1) * stride - 2 * padding + kernel + outputPadding;
+    const out = Array.from({ length: outC }, () => Array(outLen).fill(0));
+
+    for (let ic = 0; ic < inC; ic++) {
+      for (let i = 0; i < xLen; i++) {
+        const val = input[ic][i];
+        const base = i * stride - padding;
+        for (let oc = 0; oc < outC; oc++) {
+          const w = weight[ic][oc];
+          for (let k = 0; k < kernel; k++) {
+            const pos = base + k;
+            if (pos >= 0 && pos < outLen) out[oc][pos] += val * w[k];
+          }
         }
+      }
+    }
+    if (bias && bias.length === outC) {
+      for (let oc = 0; oc < outC; oc++) {
+        for (let i = 0; i < outLen; i++) out[oc][i] += bias[oc];
+      }
+    }
+    return out;
+  }
 
-        function renderInventory() {
-            inventoryRows.innerHTML = infrastructureAssets.map((item) => `
-                <div class="inventory-row">
-                    <div class="inventory-cell" data-label="Asset"><em>${item.asset}</em></div>
-                    <div class="inventory-cell" data-label="Tech stack">${item.stack}</div>
-                    <div class="inventory-cell" data-label="Clinical focus">${item.focus}</div>
-                </div>
-            `).join("");
+  function prepareWindowsJs(matrix, windowSize = 512, stride = 256, maxWindows = 128) {
+    const samples = matrix.length;
+    const channels = matrix[0]?.length || 0;
+    const aligned = Math.max(128, windowSize);
+
+    const padRows = samples < aligned ? aligned - samples : 0;
+    const padded = [...matrix];
+    for (let i = 0; i < padRows; i++) padded.push(matrix[samples - 1] ? [...matrix[samples - 1]] : Array(channels).fill(0));
+
+    const means = Array(channels).fill(0);
+    const stds = Array(channels).fill(0);
+
+    for (let c = 0; c < channels; c++) {
+      const col = padded.map(row => row[c]);
+      means[c] = mean(col);
+      stds[c] = Math.max(1e-6, std(col));
+    }
+
+    const normalized = padded.map(row => row.map((v, c) => (v - means[c]) / stds[c]));
+
+    const starts = [];
+    for (let i = 0; i <= normalized.length - aligned; i += Math.max(1, stride)) {
+      starts.push(i);
+    }
+    if (!starts.length) starts.push(0);
+
+    if (starts.length > maxWindows) {
+      const step = (starts.length - 1) / (maxWindows - 1);
+      for (let idx = 0; idx < maxWindows; idx++) {
+        starts[idx] = starts[Math.round(idx * step)];
+      }
+      starts.length = maxWindows;
+    }
+
+    const windows = starts.map(start => {
+      const slice = normalized.slice(start, start + aligned);
+      return Array.from({ length: channels }, (_, c) => slice.map(row => row[c]));
+    });
+
+    return { windows, starts, aligned };
+  }
+
+  function runModelInferenceJs(windows, modelState) {
+    const enc0W = modelState['encoder.0.weight']; const enc0B = modelState['encoder.0.bias'];
+    const enc2W = modelState['encoder.2.weight']; const enc2B = modelState['encoder.2.bias'];
+    const enc4W = modelState['encoder.4.weight']; const enc4B = modelState['encoder.4.bias'];
+    const dec0W = modelState['decoder.0.weight']; const dec0B = modelState['decoder.0.bias'];
+    const dec2W = modelState['decoder.2.weight']; const dec2B = modelState['decoder.2.bias'];
+    const dec4W = modelState['decoder.4.weight']; const dec4B = modelState['decoder.4.bias'];
+
+    const errors = [];
+    for (const w of windows) {
+      let x = conv1d(w, enc0W, enc0B, 1, 3);
+      x = x.map(channel => channel.map(gelu));
+      x = conv1d(x, enc2W, enc2B, 2, 2).map(channel => channel.map(gelu));
+      x = conv1d(x, enc4W, enc4B, 2, 2).map(channel => channel.map(gelu));
+      x = conv1dTranspose(x, dec0W, dec0B, 2, 1).map(channel => channel.map(gelu));
+      x = conv1dTranspose(x, dec2W, dec2B, 2, 1).map(channel => channel.map(gelu));
+      x = conv1d(x, dec4W, dec4B, 1, 3);
+
+      let sum = 0;
+      const ch = x.length;
+      const len = Math.min(w[0].length || 0, x[0]?.length || 0);
+      for (let c = 0; c < ch; c++) {
+        for (let t = 0; t < len; t++) {
+          const d = (w[c][t] || 0) - (x[c][t] || 0);
+          sum += d * d;
         }
+      }
+      errors.push(sum / (ch * len || 1));
+    }
+
+    return errors;
+  }
+
+  function analyzeWithModelInBrowser(eegMatrix, modelState) {
+    const { windows, starts, aligned } = prepareWindowsJs(eegMatrix, 512, 256, 128);
+    const reconErrors = runModelInferenceJs(windows, modelState);
+    const meanErr = mean(reconErrors);
+    const variance = mean(reconErrors.map(x => (x - meanErr) ** 2));
+    const threshold = meanErr + 2 * Math.sqrt(variance);
+
+    return {
+      reconErrors,
+      threshold,
+      anomalies: reconErrors.map((err, i) => ({
+        windowIndex: i,
+        startSample: starts[i],
+        endSample: starts[i] + aligned,
+        reconstructionError: err,
+        isAnomaly: err >= threshold
+      }))
+    };
+  }
+
+  async function parseReportFile(file) {
+    if (!file) return '';
+    if (file.type.includes('text') || file.name.toLowerCase().endsWith('.txt')) {
+      return _cleanText(await file.text());
+    }
+    if (file.type.includes('json') || file.name.toLowerCase().endsWith('.json')) {
+      const payload = JSON.parse(await file.text());
+      return _cleanText(JSON.stringify(payload));
+    }
+    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+      const data = await file.arrayBuffer();
+      const text = new TextDecoder('iso-8859-1').decode(data);
+      const extracted = _bestEffortPdfText(text);
+      return extracted || 'PDF uploaded; extraction limited';
+    }
+    try {
+      return _cleanText(await file.text());
+    } catch {
+      return '';
+    }
+  }
+
+  async function parseEegFile(file) {
+    const text = await file.text();
+    if (file.type.includes('json') || file.name.toLowerCase().endsWith('.json')) {
+      const payload = JSON.parse(text);
+      const samples = payload?.samples || payload;
+      if (!Array.isArray(samples) || !samples.length) {
+        throw new Error('EEG JSON payload must contain a samples array');
+      }
+      return Array.isArray(samples[0]) ? samples : [];
+    }
+    return parseCsvToMatrix(text);
+  }
+
+  vm.process = async function() {
+    if (!vm.eegFile) { vm.status = 'EEG file required'; return; }
+    vm.status = 'parsing...';
+    vm.dump = '';
+    vm.serverResult = null;
+    vm.modelResult = null;
+
+    try {
+      const eeg = await parseEegFile(vm.eegFile);
+      const reportText = await parseReportFile(vm.reportFile);
+      const formData = new FormData();
+      formData.append('eeg', vm.eegFile);
+
+      vm.status = 'uploading to /train...';
+      const response = await $http({
+        method: 'POST',
+        url: '/train?sampling_rate_hz=250',
+        data: formData,
+        headers: { 'Content-Type': undefined },
+        transformRequest: angular.identity
+      });
+
+      vm.serverResult = response.data;
+      vm.status = 'server trained; running in-browser inference...';
+
+      vm.modelResult = analyzeWithModelInBrowser(eeg, response.data.model_state);
+      vm.dump = JSON.stringify({
+        report_text: reportText,
+        eeg_shape: [eeg.length, eeg[0]?.length || 0],
+        server: response.data,
+        model_inference: vm.modelResult
+      }, null, 2);
+
+      vm.status = 'complete';
+    } catch (err) {
+      vm.status = 'error: ' + (err.message || err);
+      vm.dump = '';
+      vm.modelResult = null;
+    }
 
-        function renderGitHubMentions() {
-            githubMentionsList.innerHTML = projectMentions
-                .filter((project) =>
-                    project.repo === "xschizo" ||
-                    project.repo === "penuX" ||
-                    project.repo === "xschiq-website" ||
-                    project.repo === "EncryptVC" ||
-                    project.repo === "sqlmap" ||
-                    project.repo === "kroger-price-alert" ||
-                    project.repo === "zenday1"
-                )
-                .map((project) => `
-                    <div class="contact-repo-item">
-                        <a href="${project.href}">${project.handle}/${project.repo}</a>
-                        <div class="soft">${project.focus}</div>
-                    </div>
-                `).join("");
-        }
+    $scope.$applyAsync();
+  };
 
-        function renderLeaders() {
-            leadersGrid.innerHTML = leaders.map((lead) => `
-                <article class="leader-card">
-                    <h4>${lead.name}</h4>
-                    <div class="leader-role">${lead.role}</div>
-                    <p class="muted">${lead.desc}</p>
-                    ${renderLeadContact(lead)}
-                </article>
-            `).join("");
-        }
+}]);
+</script>
 
-        function renderExpertContacts() {
-            const experts = leaders.filter((lead) => lead.name !== "Netanel Stern");
-            expertsContactList.innerHTML = experts.map((lead) => `
-                <div class="expert-line">
-                    <strong>${lead.name}</strong>
-                    <div class="soft">${lead.role}</div>
-                    ${renderLeadContact(lead, "Contact via lead investigator")}
-                </div>
-            `).join("");
-        }
-
-        function buildMaterialSummary() {
-            return [
-                eegFile ? `EEG: ${eegFile.name}` : "",
-                reportFile ? `Report: ${reportFile.name}` : "",
-                previousArticleFiles.length ? `Prior articles: ${previousArticleFiles.length}` : "",
-            ].filter(Boolean).join(" | ");
-        }
-
-        function syncMaterialSummaries() {
-            const summary = buildMaterialSummary();
-            if (uploadSummary) {
-                uploadSummary.textContent = summary;
-            }
-            if (articleSummary && !articleSummary.dataset.locked) {
-                articleSummary.textContent = summary || "Use the current scan/report selections and optionally add previous articles to generate a manuscript draft.";
-            }
-        }
-
-        function setArticleStatus(state) {
-            if (!articleStatusChip) return;
-
-            if (state === "working") {
-                articleStatusChip.textContent = "Generating / Deep + retrieval";
-            } else if (state === "ready") {
-                articleStatusChip.textContent = "Ready / Draft created";
-            } else if (state === "error") {
-                articleStatusChip.textContent = "Error / Retry needed";
-            } else {
-                articleStatusChip.textContent = "Idle / Awaiting materials";
-            }
-        }
-
-        function renderArticleSnippets(items) {
-            if (!articleSnippets) return;
-
-            if (!items || !items.length) {
-                articleSnippets.innerHTML = `
-                    <div class="article-snippet">
-                        <strong>No retrieved snippets</strong>
-                        <span class="muted">Add report text or previous articles to ground the article draft in prior language.</span>
-                    </div>
-                `;
-                return;
-            }
-
-            articleSnippets.innerHTML = items.map((item) => `
-                <div class="article-snippet">
-                    <strong>${item.source}</strong>
-                    <span class="muted">${item.excerpt}</span>
-                </div>
-            `).join("");
-        }
-
-        function setActiveView(viewName) {
-            activeView = viewName;
-
-            navButtons.forEach((button) => {
-                const isActive = button.dataset.viewTarget === viewName;
-                button.classList.toggle("active", isActive);
-            });
-
-            viewSections.forEach((section) => {
-                section.classList.toggle("active", section.dataset.view === viewName);
-            });
-
-            if (mobileViewSelect.value !== viewName) {
-                mobileViewSelect.value = viewName;
-            }
-
-            window.scrollTo({ top: 0, behavior: "smooth" });
-        }
-
-        function setPortalState(state) {
-            idleStage.classList.toggle("hidden", state !== "idle");
-            analyzingStage.classList.toggle("hidden", state !== "analyzing");
-            resultStage.classList.toggle("hidden", state !== "result");
-
-            if (state === "idle") {
-                statusChip.textContent = "Idle / Awaiting stream";
-            } else if (state === "analyzing") {
-                statusChip.textContent = "Processing / Deep + FFT pipeline";
-            } else {
-                statusChip.textContent = "Complete / Summary ready";
-            }
-        }
-
-        function resetAnalysis() {
-            window.clearInterval(analysisTimer);
-            analysisTimer = null;
-            analysisProgress = 0;
-            progressValue.textContent = "0%";
-            progressBar.style.width = "0%";
-            setPortalState("idle");
-            eegFile = null;
-            reportFile = null;
-            if (eegFileInput) eegFileInput.value = "";
-            if (reportFileInput) reportFileInput.value = "";
-            if (uploadSummary) uploadSummary.textContent = "";
-
-        }
-
-        function parseCsvToMatrix(text) {
-            const rows = text
-                .trim()
-                .split(/\r?\n/)
-                .map((line) => line.trim())
-                .filter(Boolean)
-                .map((line) => line.split(/[\t,]+/).map((cell) => Number(cell.trim())));
-
-            if (!rows.length) {
-                throw new Error("EEG file is empty after parsing");
-            }
-
-            const colCount = Math.max(...rows.map((r) => r.length));
-            for (const r of rows) {
-                if (r.some((x) => Number.isNaN(x))) {
-                    throw new Error("EEG CSV contains non-numeric entries");
-                }
-                while (r.length < colCount) r.push(r[r.length - 1] ?? 0);
-            }
-            return rows;
-        }
-
-        function _cleanText(str, maxChars = 18000) {
-            let text = String(str || "");
-            text = text.replace(/\x00/g, " ");
-            text = text.replace(/[ \t\r\f\v]+/g, " ");
-            text = text.replace(/\n{2,}/g, "\n");
-            text = text.trim();
-            return text.slice(0, maxChars);
-        }
-
-        function _bestEffortPdfText(rawText) {
-            const candidates = Array.from(rawText.matchAll(/\(([^()]{4,240})\)/g), (m) => m[1]);
-            const fragments = [];
-            for (let candidate of candidates) {
-                candidate = candidate.replace(/\\n/g, " ").replace(/\\r/g, " ");
-                candidate = candidate.replace(/\\\(/g, "(").replace(/\\\)/g, ")");
-                const cleaned = _cleanText(candidate, 240);
-                if (cleaned.length >= 4) fragments.push(cleaned);
-                if (fragments.length >= 80) break;
-            }
-
-            if (!fragments.length) {
-                const asciiRuns = Array.from(rawText.matchAll(/[A-Za-z0-9\u0590-\u05FF ,.;:()\/%\-]{12,}/g), (m) => _cleanText(m[0], 240));
-                for (const run of asciiRuns) {
-                    if (run) fragments.push(run);
-                    if (fragments.length >= 80) break;
-                }
-            }
-            return _cleanText(fragments.join(" "));
-        }
-
-        async function parseReportFile(file) {
-            if (!file) return "";
-            if (file.type.includes("text") || file.name.toLowerCase().endsWith(".txt")) {
-                const txt = await file.text();
-                return _cleanText(txt);
-            }
-
-            if (file.type.includes("json") || file.name.toLowerCase().endsWith(".json")) {
-                const txt = await file.text();
-                const payload = JSON.parse(txt);
-                return _cleanText(JSON.stringify(payload, null, 0));
-            }
-
-            // PDF fallback for English/Hebrew PDF
-            if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
-                const buffer = await file.arrayBuffer();
-                const latin = new TextDecoder("iso-8859-1").decode(buffer);
-                const extracted = _bestEffortPdfText(latin);
-                return extracted || "PDF uploaded. Text extraction was limited.";
-            }
-
-            // Otherwise fallback via raw text decode
-            try {
-                const txt = await file.text();
-                return _cleanText(txt);
-            } catch (err) {
-                return "";
-            }
-        }
-
-        async function parseEegFile(file) {
-            const text = await file.text();
-
-            if (file.type.includes("json") || file.name.toLowerCase().endsWith(".json")) {
-                const payload = JSON.parse(text);
-                const samples = payload?.samples || payload;
-                if (!Array.isArray(samples) || !samples.length) {
-                    throw new Error("JSON EEG payload must be an array or object with samples");
-                }
-                const matrix = Array.isArray(samples[0]) ? samples : [];
-                return matrix;
-            }
-
-            return parseCsvToMatrix(text);
-        }
-
-        function mean(arr) {
-            return arr.reduce((s, v) => s + v, 0) / Math.max(1, arr.length);
-        }
-
-        function std(arr) {
-            const m = mean(arr);
-            return Math.sqrt(mean(arr.map((v) => (v - m) ** 2)));
-        }
-
-        function gelu(x) {
-            // approximation from Hendrycks & Gimpel
-            return 0.5 * x * (1 + Math.tanh(Math.sqrt(2 / Math.PI) * (x + 0.044715 * x * x * x)));
-        }
-
-        function conv1d(input, weight, bias, stride = 1, padding = 0) {
-            const inC = input.length;
-            const xLen = input[0].length;
-            const outC = weight.length;
-            const kernel = weight[0][0].length;
-            const outLen = Math.floor((xLen + padding * 2 - kernel) / stride) + 1;
-            const out = Array.from({ length: outC }, () => Array(outLen).fill(0));
-
-            for (let oc = 0; oc < outC; oc++) {
-                for (let ic = 0; ic < inC; ic++) {
-                    const w = weight[oc][ic];
-                    for (let i = 0; i < outLen; i++) {
-                        let sum = 0;
-                        const start = i * stride - padding;
-                        for (let ki = 0; ki < kernel; ki++) {
-                            const xIdx = start + ki;
-                            if (xIdx >= 0 && xIdx < xLen) {
-                                sum += input[ic][xIdx] * w[ki];
-                            }
-                        }
-                        out[oc][i] += sum;
-                    }
-                }
-                if (bias && bias.length === outC) {
-                    for (let i = 0; i < outLen; i++) {
-                        out[oc][i] += bias[oc];
-                    }
-                }
-            }
-            return out;
-        }
-
-        function conv1dTranspose(input, weight, bias, stride = 1, padding = 0, outputPadding = 0) {
-            const inC = input.length;
-            const xLen = input[0].length;
-            const outC = weight[0].length;
-            const kernel = weight[0][0].length;
-            const outLen = (xLen - 1) * stride - 2 * padding + kernel + outputPadding;
-            const out = Array.from({ length: outC }, () => Array(outLen).fill(0));
-
-            for (let ic = 0; ic < inC; ic++) {
-                for (let i = 0; i < xLen; i++) {
-                    const val = input[ic][i];
-                    const base = i * stride - padding;
-                    for (let oc = 0; oc < outC; oc++) {
-                        const w = weight[ic][oc];
-                        for (let ki = 0; ki < kernel; ki++) {
-                            const pos = base + ki;
-                            if (pos >= 0 && pos < outLen) {
-                                out[oc][pos] += val * w[ki];
-                            }
-                        }
-                    }
-                }
-            }
-            if (bias && bias.length === outC) {
-                for (let oc = 0; oc < outC; oc++) {
-                    for (let i = 0; i < outLen; i++) {
-                        out[oc][i] += bias[oc];
-                    }
-                }
-            }
-            return out;
-        }
-
-        function prepareWindowsJs(matrix, windowSize = 512, stride = 256, maxWindows = 128) {
-            const samples = matrix.length;
-            const channels = matrix[0]?.length || 0;
-            const aligned = Math.max(128, windowSize); // rough imitation
-
-            let padded = matrix.map((row) => row.slice());
-            if (samples < aligned) {
-                const padRows = aligned - samples;
-                const bottom = matrix.length > 0 ? matrix[matrix.length - 1] : Array(channels).fill(0);
-                for (let i = 0; i < padRows; i++) {
-                    padded.push(bottom.slice());
-                }
-            }
-
-            const means = Array(channels).fill(0);
-            const stds = Array(channels).fill(0);
-            for (let c = 0; c < channels; c++) {
-                const col = padded.map((r) => r[c]);
-                means[c] = mean(col);
-                const s = std(col);
-                stds[c] = s < 1e-6 ? 1.0 : s;
-            }
-
-            const normalized = padded.map((row) => row.map((v, c) => (v - means[c]) / stds[c]));
-            const starts = [];
-            for (let i = 0; i <= normalized.length - aligned; i += Math.max(1, stride)) {
-                starts.push(i);
-            }
-            if (!starts.length) starts.push(0);
-            if (starts.length > maxWindows) {
-                const idx = [];
-                const step = (starts.length - 1) / (maxWindows - 1);
-                for (let i = 0; i < maxWindows; i++) idx.push(Math.round(i * step));
-                starts.splice(0, starts.length, ...idx.map((j) => starts[j]));
-            }
-
-            const windows = starts.map((start) => {
-                const slice = normalized.slice(start, start + aligned);
-                return Array.from({ length: channels }, (_, c) => slice.map((row) => row[c]));
-            });
-            return { windows, starts, aligned };
-        }
-
-        function runModelInferenceJs(windows, modelState) {
-            const encode0W = modelState['encoder.0.weight'];
-            const encode0B = modelState['encoder.0.bias'];
-            const encode2W = modelState['encoder.2.weight'];
-            const encode2B = modelState['encoder.2.bias'];
-            const encode4W = modelState['encoder.4.weight'];
-            const encode4B = modelState['encoder.4.bias'];
-            const decode0W = modelState['decoder.0.weight'];
-            const decode0B = modelState['decoder.0.bias'];
-            const decode2W = modelState['decoder.2.weight'];
-            const decode2B = modelState['decoder.2.bias'];
-            const decode4W = modelState['decoder.4.weight'];
-            const decode4B = modelState['decoder.4.bias'];
-
-            const errors = [];
-            for (const w of windows) {
-                let x = gelu(conv1d(w, encode0W, encode0B, 1, 3));
-                x = gelu(conv1d(x, encode2W, encode2B, 2, 2));
-                x = gelu(conv1d(x, encode4W, encode4B, 2, 2));
-                x = gelu(conv1dTranspose(x, decode0W, decode0B, 2, 1));
-                x = gelu(conv1dTranspose(x, decode2W, decode2B, 2, 1));
-                x = conv1d(x, decode4W, decode4B, 1, 3);
-
-                // compare x reconstruction to original w
-                let totalErr = 0;
-                const ch = x.length;
-                const length = x[0].length;
-                for (let c = 0; c < ch; c++) {
-                    for (let t = 0; t < length; t++) {
-                        const d = (w[c][t] || 0) - (x[c][t] || 0);
-                        totalErr += d * d;
-                    }
-                }
-                errors.push(totalErr / (ch * length));
-            }
-            return errors;
-        }
-
-        async function analyzeWithModelInBrowser(eegMatrix, modelState, fs = 250) {
-            const { windows, starts, aligned } = prepareWindowsJs(eegMatrix, 512, 256, 128);
-            const reconErrors = runModelInferenceJs(windows, modelState);
-            const anomalyThreshold = reconErrors.reduce((s, v) => s + v, 0) / reconErrors.length +
-                2 * Math.sqrt(reconErrors.reduce((s, v) => s + (v - (reconErrors.reduce((a,b)=>a+b,0)/reconErrors.length))**2, 0) / reconErrors.length);
-
-            const anomalous = reconErrors.map((err, idx) => ({
-                window: idx,
-                start: starts[idx],
-                end: starts[idx] + aligned,
-                err,
-                isAnomaly: err >= anomalyThreshold,
-            }));
-            return { reconErrors, anomalyThreshold, anomalous };
-        }
-
-        function analyzeSignalStatisticsJs(matrix, fs = 250) {
-            const stats = {};
-            const channels = matrix[0].length;
-            for (let c = 0; c < channels; c += 1) {
-                const signal = matrix.map((row) => row[c]);
-                const mn = mean(signal);
-                const sd = std(signal);
-                const minimum = Math.min(...signal);
-                const maximum = Math.max(...signal);
-                stats[`ch_${c + 1}`] = {
-                    mean: mn,
-                    std: sd,
-                    min: minimum,
-                    max: maximum,
-                    band_power_fraction: {},
-                };
-            }
-            return stats;
-        }
-
-        async function runAnalysis() {
-            if (!eegFile) {
-                uploadSummary.textContent = "Please add an EEG CSV/JSON before running.";
-                return;
-            }
-
-            let eegMatrix;
-            try {
-                eegMatrix = await parseEegFile(eegFile);
-            } catch (err) {
-                uploadSummary.textContent = `EEG parse error: ${err.message}`;
-                return;
-            }
-
-            window.clearInterval(analysisTimer);
-            analysisTimer = null;
-            analysisProgress = 0;
-            progressValue.textContent = "0%";
-            progressBar.style.width = "0%";
-            setPortalState("analyzing");
-
-            const formData = new FormData();
-            formData.append("eeg", eegFile);
-
-            analysisTimer = window.setInterval(() => {
-                analysisProgress = Math.min(analysisProgress + 6, 92);
-                progressValue.textContent = `${analysisProgress}%`;
-                progressBar.style.width = `${analysisProgress}%`;
-            }, 80);
-
-            try {
-                const reportText = await parseReportFile(reportFile);
-                const samples = eegMatrix.length;
-                const channels = eegMatrix[0]?.length || 0;
-                const fs = 250; // static fallback; optional per-ui config if needed
-
-                const response = await fetch(`/train?sampling_rate_hz=${fs}`, {
-                    method: "POST",
-                    body: formData,
-                });
-
-                const trainJson = await response.json();
-                window.clearInterval(analysisTimer);
-                analysisTimer = null;
-                analysisProgress = 100;
-                progressValue.textContent = "100%";
-                progressBar.style.width = "100%";
-
-                const localStats = analyzeSignalStatisticsJs(eegMatrix, fs);
-                let modelResult = null;
-                try {
-                    modelResult = analyzeWithModelInBrowser(eegMatrix, trainJson.model_state, fs);
-                } catch (merr) {
-                    modelResult = { error: `client model inference failed: ${merr.message || merr}` };
-                }
-
-                setPortalState("result");
-                uploadSummary.textContent = `Server training finished. Trained model on ${samples}x${channels} matrix (device: ${trainJson.device}). Model run locally.`;
-                articleDraftOutput.textContent = JSON.stringify({
-                    network_training: trainJson,
-                    local_analysis: localStats,
-                    model_inference: modelResult,
-                    report_text: reportText,
-                }, null, 2);
-            } catch (err) {
-                window.clearInterval(analysisTimer);
-                analysisTimer = null;
-                uploadSummary.textContent = `Server/training error: ${err.message || err}`;
-                setPortalState("idle");
-            }
-        }
-
-        navButtons.forEach((button) => {
-            button.addEventListener("click", () => {
-                setActiveView(button.dataset.viewTarget);
-            });
-        });
-
-        mobileViewSelect.addEventListener("change", (event) => {
-            setActiveView(event.target.value);
-        });
-
-        startAnalysisButton.addEventListener("click", runAnalysis);
-        resetAnalysisButton.addEventListener("click", resetAnalysis);
-        printButton.addEventListener("click", () => window.print());
-
-        if (eegFileInput) {
-            eegFileInput.addEventListener("change", (event) => {
-                const file = event.target.files?.[0];
-                eegFile = file || null;
-                uploadSummary.textContent = [
-                    eegFile ? `EEG: ${eegFile.name}` : "",
-                    reportFile ? `Report: ${reportFile.name}` : "",
-                ].filter(Boolean).join(" | ");
-            });
-        }
-
-        if (reportFileInput) {
-            reportFileInput.addEventListener("change", (event) => {
-                const file = event.target.files?.[0];
-                reportFile = file || null;
-                uploadSummary.textContent = [
-                    eegFile ? `EEG: ${eegFile.name}` : "",
-                    reportFile ? `Report: ${reportFile.name}` : "",
-                ].filter(Boolean).join(" | ");
-            });
-        }
-
-        renderProjectMentions();
-        renderInventory();
-        renderGitHubMentions();
-        renderLeaders();
-        renderExpertContacts();
-        resetAnalysis();
-        setActiveView(activeView);
-    </script>
 </body>
 </html>
