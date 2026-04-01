@@ -2460,7 +2460,7 @@
             if (eegFileInput) eegFileInput.value = "";
             if (reportFileInput) reportFileInput.value = "";
             if (uploadSummary) uploadSummary.textContent = "";
-            
+
         }
 
         function parseCsvToMatrix(text) {
@@ -2508,6 +2508,173 @@
         function std(arr) {
             const m = mean(arr);
             return Math.sqrt(mean(arr.map((v) => (v - m) ** 2)));
+        }
+
+        function gelu(x) {
+            // approximation from Hendrycks & Gimpel
+            return 0.5 * x * (1 + Math.tanh(Math.sqrt(2 / Math.PI) * (x + 0.044715 * x * x * x)));
+        }
+
+        function conv1d(input, weight, bias, stride = 1, padding = 0) {
+            const inC = input.length;
+            const xLen = input[0].length;
+            const outC = weight.length;
+            const kernel = weight[0][0].length;
+            const outLen = Math.floor((xLen + padding * 2 - kernel) / stride) + 1;
+            const out = Array.from({ length: outC }, () => Array(outLen).fill(0));
+
+            for (let oc = 0; oc < outC; oc++) {
+                for (let ic = 0; ic < inC; ic++) {
+                    const w = weight[oc][ic];
+                    for (let i = 0; i < outLen; i++) {
+                        let sum = 0;
+                        const start = i * stride - padding;
+                        for (let ki = 0; ki < kernel; ki++) {
+                            const xIdx = start + ki;
+                            if (xIdx >= 0 && xIdx < xLen) {
+                                sum += input[ic][xIdx] * w[ki];
+                            }
+                        }
+                        out[oc][i] += sum;
+                    }
+                }
+                if (bias && bias.length === outC) {
+                    for (let i = 0; i < outLen; i++) {
+                        out[oc][i] += bias[oc];
+                    }
+                }
+            }
+            return out;
+        }
+
+        function conv1dTranspose(input, weight, bias, stride = 1, padding = 0, outputPadding = 0) {
+            const inC = input.length;
+            const xLen = input[0].length;
+            const outC = weight[0].length;
+            const kernel = weight[0][0].length;
+            const outLen = (xLen - 1) * stride - 2 * padding + kernel + outputPadding;
+            const out = Array.from({ length: outC }, () => Array(outLen).fill(0));
+
+            for (let ic = 0; ic < inC; ic++) {
+                for (let i = 0; i < xLen; i++) {
+                    const val = input[ic][i];
+                    const base = i * stride - padding;
+                    for (let oc = 0; oc < outC; oc++) {
+                        const w = weight[ic][oc];
+                        for (let ki = 0; ki < kernel; ki++) {
+                            const pos = base + ki;
+                            if (pos >= 0 && pos < outLen) {
+                                out[oc][pos] += val * w[ki];
+                            }
+                        }
+                    }
+                }
+            }
+            if (bias && bias.length === outC) {
+                for (let oc = 0; oc < outC; oc++) {
+                    for (let i = 0; i < outLen; i++) {
+                        out[oc][i] += bias[oc];
+                    }
+                }
+            }
+            return out;
+        }
+
+        function prepareWindowsJs(matrix, windowSize = 512, stride = 256, maxWindows = 128) {
+            const samples = matrix.length;
+            const channels = matrix[0]?.length || 0;
+            const aligned = Math.max(128, windowSize); // rough imitation
+
+            let padded = matrix.map((row) => row.slice());
+            if (samples < aligned) {
+                const padRows = aligned - samples;
+                const bottom = matrix.length > 0 ? matrix[matrix.length - 1] : Array(channels).fill(0);
+                for (let i = 0; i < padRows; i++) {
+                    padded.push(bottom.slice());
+                }
+            }
+
+            const means = Array(channels).fill(0);
+            const stds = Array(channels).fill(0);
+            for (let c = 0; c < channels; c++) {
+                const col = padded.map((r) => r[c]);
+                means[c] = mean(col);
+                const s = std(col);
+                stds[c] = s < 1e-6 ? 1.0 : s;
+            }
+
+            const normalized = padded.map((row) => row.map((v, c) => (v - means[c]) / stds[c]));
+            const starts = [];
+            for (let i = 0; i <= normalized.length - aligned; i += Math.max(1, stride)) {
+                starts.push(i);
+            }
+            if (!starts.length) starts.push(0);
+            if (starts.length > maxWindows) {
+                const idx = [];
+                const step = (starts.length - 1) / (maxWindows - 1);
+                for (let i = 0; i < maxWindows; i++) idx.push(Math.round(i * step));
+                starts.splice(0, starts.length, ...idx.map((j) => starts[j]));
+            }
+
+            const windows = starts.map((start) => {
+                const slice = normalized.slice(start, start + aligned);
+                return Array.from({ length: channels }, (_, c) => slice.map((row) => row[c]));
+            });
+            return { windows, starts, aligned };
+        }
+
+        function runModelInferenceJs(windows, modelState) {
+            const encode0W = modelState['encoder.0.weight'];
+            const encode0B = modelState['encoder.0.bias'];
+            const encode2W = modelState['encoder.2.weight'];
+            const encode2B = modelState['encoder.2.bias'];
+            const encode4W = modelState['encoder.4.weight'];
+            const encode4B = modelState['encoder.4.bias'];
+            const decode0W = modelState['decoder.0.weight'];
+            const decode0B = modelState['decoder.0.bias'];
+            const decode2W = modelState['decoder.2.weight'];
+            const decode2B = modelState['decoder.2.bias'];
+            const decode4W = modelState['decoder.4.weight'];
+            const decode4B = modelState['decoder.4.bias'];
+
+            const errors = [];
+            for (const w of windows) {
+                let x = gelu(conv1d(w, encode0W, encode0B, 1, 3));
+                x = gelu(conv1d(x, encode2W, encode2B, 2, 2));
+                x = gelu(conv1d(x, encode4W, encode4B, 2, 2));
+                x = gelu(conv1dTranspose(x, decode0W, decode0B, 2, 1));
+                x = gelu(conv1dTranspose(x, decode2W, decode2B, 2, 1));
+                x = conv1d(x, decode4W, decode4B, 1, 3);
+
+                // compare x reconstruction to original w
+                let totalErr = 0;
+                const ch = x.length;
+                const length = x[0].length;
+                for (let c = 0; c < ch; c++) {
+                    for (let t = 0; t < length; t++) {
+                        const d = (w[c][t] || 0) - (x[c][t] || 0);
+                        totalErr += d * d;
+                    }
+                }
+                errors.push(totalErr / (ch * length));
+            }
+            return errors;
+        }
+
+        async function analyzeWithModelInBrowser(eegMatrix, modelState, fs = 250) {
+            const { windows, starts, aligned } = prepareWindowsJs(eegMatrix, 512, 256, 128);
+            const reconErrors = runModelInferenceJs(windows, modelState);
+            const anomalyThreshold = reconErrors.reduce((s, v) => s + v, 0) / reconErrors.length +
+                2 * Math.sqrt(reconErrors.reduce((s, v) => s + (v - (reconErrors.reduce((a,b)=>a+b,0)/reconErrors.length))**2, 0) / reconErrors.length);
+
+            const anomalous = reconErrors.map((err, idx) => ({
+                window: idx,
+                start: starts[idx],
+                end: starts[idx] + aligned,
+                err,
+                isAnomaly: err >= anomalyThreshold,
+            }));
+            return { reconErrors, anomalyThreshold, anomalous };
         }
 
         function analyzeSignalStatisticsJs(matrix, fs = 250) {
@@ -2578,12 +2745,19 @@
                 progressBar.style.width = "100%";
 
                 const localStats = analyzeSignalStatisticsJs(eegMatrix, fs);
+                let modelResult = null;
+                try {
+                    modelResult = analyzeWithModelInBrowser(eegMatrix, trainJson.model_state, fs);
+                } catch (merr) {
+                    modelResult = { error: `client model inference failed: ${merr.message || merr}` };
+                }
 
                 setPortalState("result");
-                uploadSummary.textContent = `Server training finished. Trained model on ${samples}x${channels} matrix (device: ${trainJson.device}). Local analysis ready.`;
+                uploadSummary.textContent = `Server training finished. Trained model on ${samples}x${channels} matrix (device: ${trainJson.device}). Model run locally.`;
                 articleDraftOutput.textContent = JSON.stringify({
                     network_training: trainJson,
                     local_analysis: localStats,
+                    model_inference: modelResult,
                 }, null, 2);
             } catch (err) {
                 window.clearInterval(analysisTimer);
