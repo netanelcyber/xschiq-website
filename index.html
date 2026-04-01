@@ -36815,14 +36815,24 @@ $provide.value("$locale", {
   </div>
 
   <div class="project-panel" style="margin-top: 12px;">
-    <h4>Market Cap Projection (2026-2036)</h4>
-    <p><strong>Source:</strong> {{ vm.marketCapData.source }}</p>
-    <p><strong>Years:</strong> {{ vm.marketCapData.startYear }} - {{ vm.marketCapData.endYear }}</p>
-    <p><strong>Est. Market Cap (Billion $):</strong> {{ vm.marketCapData.estimatedValueBillionUSD }}</p>
-    <p><strong>Annual Growth:</strong> {{ vm.marketCapData.growthPerYearPercent }}</p>
-    <p><strong>Notes:</strong> {{ vm.marketCapData.notes }}</p>
-    <button ng-click="vm.refreshMarketCapData()">Refresh Market Cap</button>
-    <p style="font-size: 0.85rem; color: #bcccdc; margin-top:8px;">Based on government forecasts for 2026-2036.</p>
+    <h4>API Config (no hardcode)</h4>
+    <label style="display:block; margin-bottom:8px;">
+      Market data URL:
+      <input type="text" ng-model="vm.apiConfig.marketDataUrl" style="width:100%; padding:6px; margin-top:4px; border-radius:6px; border:1px solid #273353; background:#0c1b36; color:#e5ecff;" />
+    </label>
+    <label style="display:block; margin-bottom:8px;">
+      Forecast URL:
+      <input type="text" ng-model="vm.apiConfig.forecastUrl" style="width:100%; padding:6px; margin-top:4px; border-radius:6px; border:1px solid #273353; background:#0c1b36; color:#e5ecff;" />
+    </label>
+    <label style="display:block; margin-bottom:8px;">
+      Market cap URL:
+      <input type="text" ng-model="vm.apiConfig.marketCapUrl" style="width:100%; padding:6px; margin-top:4px; border-radius:6px; border:1px solid #273353; background:#0c1b36; color:#e5ecff;" />
+    </label>
+    <label style="display:block; margin-bottom:8px;">
+      API Key (Bearer):
+      <input type="text" ng-model="vm.apiConfig.apiKey" style="width:100%; padding:6px; margin-top:4px; border-radius:6px; border:1px solid #273353; background:#0c1b36; color:#e5ecff;" />
+    </label>
+    <p style="font-size: 0.85rem; color: #bcccdc; margin-top:8px;">כתובת API ו-API Key גמישים, ללא hardcoded פנימי.</p>
   </div>
 
 <script>
@@ -36862,6 +36872,13 @@ angular.module('xschiqApp', [])
     estimatedValueBillionUSD: 'N/A',
     growthPerYearPercent: 'N/A',
     notes: 'Derived from US government sector projection model.'
+  };
+
+  vm.apiConfig = {
+    marketDataUrl: 'https://query1.finance.yahoo.com/v7/finance/quote?symbols=XSCHIZQ',
+    forecastUrl: 'https://query1.finance.yahoo.com/v10/finance/quoteSummary/XSCHIZQ?modules=price',
+    marketCapUrl: 'https://query1.finance.yahoo.com/v10/finance/quoteSummary/XSCHIZQ?modules=summaryDetail,defaultKeyStatistics',
+    apiKey: ''
   };
 
   vm.project = {
@@ -36931,6 +36948,14 @@ angular.module('xschiqApp', [])
     $scope.$applyAsync();
   };
 
+  function _apiHeaders() {
+    const h = { 'Accept': 'application/json' };
+    if (vm.apiConfig.apiKey && vm.apiConfig.apiKey.trim()) {
+      h['Authorization'] = `Bearer ${vm.apiConfig.apiKey.trim()}`;
+    }
+    return h;
+  }
+
   vm.refreshMarketData = async () => {
     const now = new Date().toISOString();
     vm.status = 'Refreshing market data...';
@@ -36974,17 +36999,25 @@ angular.module('xschiqApp', [])
     vm.status = 'Refreshing פסיכיאטריה מדויקת forecast...';
 
     try {
-      // In a real deployment, replace with a real API endpoint for forecasts.
-      const resp = await fetch('https://example.com/api/psykhiatria-meduyeket/forecast?symbol=XSCHIZQ');
+      const forecastUrl = vm.apiConfig.forecastUrl;
+      if (!forecastUrl || !forecastUrl.trim()) throw new Error('forecastUrl not configured');
+      const resp = await fetch(forecastUrl);
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const data = await resp.json();
+      const priceSection = data?.quoteSummary?.result?.[0]?.price;
+      if (!priceSection) throw new Error('Yahoo price data missing');
+
+      const currentPrice = (priceSection.regularMarketPrice?.raw != null) ? priceSection.regularMarketPrice.raw : null;
+      const previousClose = (priceSection.regularMarketPreviousClose?.raw != null) ? priceSection.regularMarketPreviousClose.raw : null;
+      const change = currentPrice != null && previousClose != null ? currentPrice - previousClose : null;
+      const changePercent = (priceSection.regularMarketChangePercent?.raw != null) ? `${priceSection.regularMarketChangePercent.raw.toFixed(2)}%` : 'n/a';
 
       vm.forecastData = {
-        source: 'פסיכיאטריה מדויקת',
-        date: data.timestamp || now,
-        expectedPrice: data.expectedPrice || 'n/a',
-        trend: data.trend || 'n/a',
-        confidence: data.confidence ? `${data.confidence}%` : 'n/a'
+        source: 'Yahoo Finance Price',
+        date: priceSection.quoteSourceName || new Date().toISOString(),
+        expectedPrice: currentPrice != null ? currentPrice.toFixed(2) : 'n/a',
+        trend: change != null ? (change >= 0 ? 'up' : 'down') : 'n/a',
+        confidence: changePercent
       };
 
       vm.status = 'Forecast data refreshed';
@@ -37015,18 +37048,23 @@ angular.module('xschiqApp', [])
     };
 
     try {
-      // Replace with real US Government API or local data store in production.
-      const resp = await fetch('https://example.com/api/us-government/market-cap?symbol=XSCHIZQ&from=2026&to=2036');
+      const marketCapUrl = vm.apiConfig.marketCapUrl;
+      if (!marketCapUrl || !marketCapUrl.trim()) throw new Error('marketCapUrl not configured');
+      const resp = await fetch(marketCapUrl);
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const data = await resp.json();
 
+      const summary = data?.quoteSummary?.result?.[0]?.summaryDetail;
+      const stats = data?.quoteSummary?.result?.[0]?.defaultKeyStatistics;
+      const marketCap = stats?.marketCap?.raw || summary?.marketCap?.raw || null;
+
       vm.marketCapData = {
-        source: data.source || 'US Government Projections',
-        startYear: data.startYear || 2026,
-        endYear: data.endYear || 2036,
-        estimatedValueBillionUSD: data.estimatedValueBillionUSD || 'n/a',
-        growthPerYearPercent: data.growthPerYearPercent || 'n/a',
-        notes: data.notes || 'Derived from US Government dataset 2026-2036.'
+        source: 'Yahoo Finance QuoteSummary',
+        startYear: 2026,
+        endYear: 2036,
+        estimatedValueBillionUSD: marketCap != null ? (marketCap / 1e9).toFixed(2) : 'n/a',
+        growthPerYearPercent: stats?.earningsQuarterlyGrowth?.fmt || 'n/a',
+        notes: 'Derived from Yahoo Finance market cap stats.'
       };
       vm.status = 'Market cap projection refreshed';
     } catch (err) {
