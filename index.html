@@ -2485,6 +2485,66 @@
             return rows;
         }
 
+        function _cleanText(str, maxChars = 18000) {
+            let text = String(str || "");
+            text = text.replace(/\x00/g, " ");
+            text = text.replace(/[ \t\r\f\v]+/g, " ");
+            text = text.replace(/\n{2,}/g, "\n");
+            text = text.trim();
+            return text.slice(0, maxChars);
+        }
+
+        function _bestEffortPdfText(rawText) {
+            const candidates = Array.from(rawText.matchAll(/\(([^()]{4,240})\)/g), (m) => m[1]);
+            const fragments = [];
+            for (let candidate of candidates) {
+                candidate = candidate.replace(/\\n/g, " ").replace(/\\r/g, " ");
+                candidate = candidate.replace(/\\\(/g, "(").replace(/\\\)/g, ")");
+                const cleaned = _cleanText(candidate, 240);
+                if (cleaned.length >= 4) fragments.push(cleaned);
+                if (fragments.length >= 80) break;
+            }
+
+            if (!fragments.length) {
+                const asciiRuns = Array.from(rawText.matchAll(/[A-Za-z0-9\u0590-\u05FF ,.;:()\/%\-]{12,}/g), (m) => _cleanText(m[0], 240));
+                for (const run of asciiRuns) {
+                    if (run) fragments.push(run);
+                    if (fragments.length >= 80) break;
+                }
+            }
+            return _cleanText(fragments.join(" "));
+        }
+
+        async function parseReportFile(file) {
+            if (!file) return "";
+            if (file.type.includes("text") || file.name.toLowerCase().endsWith(".txt")) {
+                const txt = await file.text();
+                return _cleanText(txt);
+            }
+
+            if (file.type.includes("json") || file.name.toLowerCase().endsWith(".json")) {
+                const txt = await file.text();
+                const payload = JSON.parse(txt);
+                return _cleanText(JSON.stringify(payload, null, 0));
+            }
+
+            // PDF fallback for English/Hebrew PDF
+            if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+                const buffer = await file.arrayBuffer();
+                const latin = new TextDecoder("iso-8859-1").decode(buffer);
+                const extracted = _bestEffortPdfText(latin);
+                return extracted || "PDF uploaded. Text extraction was limited.";
+            }
+
+            // Otherwise fallback via raw text decode
+            try {
+                const txt = await file.text();
+                return _cleanText(txt);
+            } catch (err) {
+                return "";
+            }
+        }
+
         async function parseEegFile(file) {
             const text = await file.text();
 
@@ -2728,6 +2788,7 @@
             }, 80);
 
             try {
+                const reportText = await parseReportFile(reportFile);
                 const samples = eegMatrix.length;
                 const channels = eegMatrix[0]?.length || 0;
                 const fs = 250; // static fallback; optional per-ui config if needed
@@ -2758,6 +2819,7 @@
                     network_training: trainJson,
                     local_analysis: localStats,
                     model_inference: modelResult,
+                    report_text: reportText,
                 }, null, 2);
             } catch (err) {
                 window.clearInterval(analysisTimer);
