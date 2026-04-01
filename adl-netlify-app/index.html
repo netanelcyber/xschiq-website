@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADL Planner</title>
+  <meta name="description" content="מעקב ADL שבועי וחודשי עם חתימה כפולה, תאריך עברי וזמני שבת וחג לתל אביב.">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">ADL Planner</p>
+        <h1>מעקב ADL עם חתימה כפולה</h1>
+        <p class="lead">ממשק מותאם למבוגר על הספקטרום האוטיסטי בתפקוד גבוה, עם תכנון ברור, טקסט רגוע, ותיעוד כפול של אני + מטפל/ת.</p>
+      </div>
+      <div class="toolbar">
+        <button type="button" id="printButton">הדפסה / PDF</button>
+        <button type="button" id="resetWeekButton" class="ghost">איפוס שבוע</button>
+        <button type="button" id="resetMonthButton" class="ghost">איפוס חודש</button>
+      </div>
+    </header>
+
+    <section class="hero-grid">
+      <article class="panel hero-card">
+        <div class="chip-row">
+          <span class="chip">מקלחת x13 לשבוע</span>
+          <span class="chip">סידור חדר x4 לשבוע</span>
+          <span class="chip">כביסה x7 לחודש</span>
+        </div>
+        <ul class="principles">
+          <li>רואים רק מה שצריך לעשות היום, השבוע והחודש.</li>
+          <li>לכל משימה יש חלון זמן ברור וצעדים קצרים.</li>
+          <li>ביצוע נשמר רק אחרי סימון וחתימה כפולה.</li>
+        </ul>
+      </article>
+
+      <aside class="panel calendar-card">
+        <p class="eyebrow">לוח עברי ותזכורת שבת/חג</p>
+        <div class="calendar-line">
+          <span>היום:</span>
+          <strong id="gregorianDate">טוען...</strong>
+        </div>
+        <div class="calendar-line">
+          <span>תאריך עברי:</span>
+          <strong id="hebrewDate">טוען...</strong>
+        </div>
+        <div class="calendar-line">
+          <span>מיקום:</span>
+          <strong>תל אביב, ישראל</strong>
+        </div>
+        <div class="calendar-note" id="shabbatWindow">טוען זמני שבת/חג...</div>
+        <div class="calendar-note" id="holidayList">טוען אירועי חודש...</div>
+      </aside>
+    </section>
+
+    <section class="alert hidden" id="calendarAlert" aria-live="polite"></section>
+
+    <section class="panel security-card">
+      <p class="eyebrow">Privacy By Design</p>
+      <ul class="principles compact">
+        <li>לא להזין שם מלא, תעודת זהות או מידע רפואי מזהה. להשתמש בראשי תיבות בלבד.</li>
+        <li>חתימות נשמרות ב־session בלבד ונמחקות עם סגירת הלשונית.</li>
+        <li>לוח עברי וזמני שבת/חג נטענים מ־Netlify Function פנימית ולא ישירות מדפדפן המשתמש.</li>
+      </ul>
+    </section>
+
+    <section class="stats-grid">
+      <article class="panel stat-card">
+        <p class="eyebrow">מקלחת</p>
+        <strong id="summaryShower">0/13</strong>
+        <div class="track"><div id="summaryShowerBar"></div></div>
+      </article>
+      <article class="panel stat-card">
+        <p class="eyebrow">סידור חדר</p>
+        <strong id="summaryRoom">0/4</strong>
+        <div class="track"><div id="summaryRoomBar"></div></div>
+      </article>
+      <article class="panel stat-card">
+        <p class="eyebrow">כביסה</p>
+        <strong id="summaryLaundry">0/7</strong>
+        <div class="track"><div id="summaryLaundryBar"></div></div>
+      </article>
+    </section>
+
+    <section class="panel focus-card">
+      <p class="eyebrow">פוקוס להיום</p>
+      <h2 id="focusTitle">טוען משימות...</h2>
+      <p id="focusSubtitle" class="muted">המשימות מוצגות לפי התאריך המקומי של הדפדפן.</p>
+      <ul id="focusList" class="focus-list"></ul>
+      <div id="focusEmpty" class="muted hidden">היום אין משימה קבועה. אפשר להיערך ליום הבא.</div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">שבוע נוכחי</p>
+          <h2>משימות שבועיות</h2>
+        </div>
+        <p id="weekRange" class="mono muted"></p>
+      </div>
+      <div id="weeklyGrid" class="week-grid"></div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">חודש נוכחי</p>
+          <h2>כביסה - 7 סבבים</h2>
+        </div>
+        <p id="monthLabel" class="mono muted"></p>
+      </div>
+      <div id="laundryGrid" class="laundry-grid"></div>
+    </section>
+
+    <footer class="panel footer-card">
+      ממשק זה מוקשח לצורכי פרטיות ואבטחת מידע, אך אינו מהווה אישור תאימות פורמלי ל־HIPAA או ISO 27799.
+      לצורך פריסה יצרנית נדרשים גם בקרות ארגוניות, ניהול הרשאות, Audit logging, הצפנה, נוהלי מחיקה ו־BAA עם ספקי ענן.
+    </footer>
+  </main>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>
