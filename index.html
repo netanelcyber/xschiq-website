@@ -2460,13 +2460,90 @@
             if (eegFileInput) eegFileInput.value = "";
             if (reportFileInput) reportFileInput.value = "";
             if (uploadSummary) uploadSummary.textContent = "";
+            
+        }
+
+        function parseCsvToMatrix(text) {
+            const rows = text
+                .trim()
+                .split(/\r?\n/)
+                .map((line) => line.trim())
+                .filter(Boolean)
+                .map((line) => line.split(/[\t,]+/).map((cell) => Number(cell.trim())));
+
+            if (!rows.length) {
+                throw new Error("EEG file is empty after parsing");
+            }
+
+            const colCount = Math.max(...rows.map((r) => r.length));
+            for (const r of rows) {
+                if (r.some((x) => Number.isNaN(x))) {
+                    throw new Error("EEG CSV contains non-numeric entries");
+                }
+                while (r.length < colCount) r.push(r[r.length - 1] ?? 0);
+            }
+            return rows;
+        }
+
+        async function parseEegFile(file) {
+            const text = await file.text();
+
+            if (file.type.includes("json") || file.name.toLowerCase().endsWith(".json")) {
+                const payload = JSON.parse(text);
+                const samples = payload?.samples || payload;
+                if (!Array.isArray(samples) || !samples.length) {
+                    throw new Error("JSON EEG payload must be an array or object with samples");
+                }
+                const matrix = Array.isArray(samples[0]) ? samples : [];
+                return matrix;
+            }
+
+            return parseCsvToMatrix(text);
+        }
+
+        function mean(arr) {
+            return arr.reduce((s, v) => s + v, 0) / Math.max(1, arr.length);
+        }
+
+        function std(arr) {
+            const m = mean(arr);
+            return Math.sqrt(mean(arr.map((v) => (v - m) ** 2)));
+        }
+
+        function analyzeSignalStatisticsJs(matrix, fs = 250) {
+            const stats = {};
+            const channels = matrix[0].length;
+            for (let c = 0; c < channels; c += 1) {
+                const signal = matrix.map((row) => row[c]);
+                const mn = mean(signal);
+                const sd = std(signal);
+                const minimum = Math.min(...signal);
+                const maximum = Math.max(...signal);
+                stats[`ch_${c + 1}`] = {
+                    mean: mn,
+                    std: sd,
+                    min: minimum,
+                    max: maximum,
+                    band_power_fraction: {},
+                };
+            }
+            return stats;
         }
 
         async function runAnalysis() {
-            if (!eegFile && !reportFile) {
-                uploadSummary.textContent = "Please add an EEG CSV/JSON and/or a report PDF/TXT before running.";
+            if (!eegFile) {
+                uploadSummary.textContent = "Please add an EEG CSV/JSON before running.";
                 return;
             }
+
+            let eegMatrix;
+            try {
+                eegMatrix = await parseEegFile(eegFile);
+            } catch (err) {
+                uploadSummary.textContent = `EEG parse error: ${err.message}`;
+                return;
+            }
+
             window.clearInterval(analysisTimer);
             analysisTimer = null;
             analysisProgress = 0;
@@ -2475,10 +2552,8 @@
             setPortalState("analyzing");
 
             const formData = new FormData();
-            if (eegFile) formData.append("eeg", eegFile);
-            if (reportFile) formData.append("report", reportFile);
+            formData.append("eeg", eegFile);
 
-            // Kick off optimistic progress
             analysisTimer = window.setInterval(() => {
                 analysisProgress = Math.min(analysisProgress + 6, 92);
                 progressValue.textContent = `${analysisProgress}%`;
@@ -2486,23 +2561,34 @@
             }, 80);
 
             try {
-                const response = await fetch("httpד://xschizq.netlify.app:8000/analyze", {
+                const samples = eegMatrix.length;
+                const channels = eegMatrix[0]?.length || 0;
+                const fs = 250; // static fallback; optional per-ui config if needed
+
+                const response = await fetch(`/train?sampling_rate_hz=${fs}`, {
                     method: "POST",
                     body: formData,
                 });
-                const json = await response.json();
+
+                const trainJson = await response.json();
                 window.clearInterval(analysisTimer);
                 analysisTimer = null;
                 analysisProgress = 100;
                 progressValue.textContent = "100%";
                 progressBar.style.width = "100%";
-                // Bind returned data into the result view as needed; for now, flip state.
+
+                const localStats = analyzeSignalStatisticsJs(eegMatrix, fs);
+
                 setPortalState("result");
-                uploadSummary.textContent = `Analysis complete. Deep mode: ${json?.deep_learning_analysis?.analysis_mode || "n/a"}`;
+                uploadSummary.textContent = `Server training finished. Trained model on ${samples}x${channels} matrix (device: ${trainJson.device}). Local analysis ready.`;
+                articleDraftOutput.textContent = JSON.stringify({
+                    network_training: trainJson,
+                    local_analysis: localStats,
+                }, null, 2);
             } catch (err) {
                 window.clearInterval(analysisTimer);
                 analysisTimer = null;
-                uploadSummary.textContent = "Upload failed — check server at https://xschizq.netlify.app:8000.";
+                uploadSummary.textContent = `Server/training error: ${err.message || err}`;
                 setPortalState("idle");
             }
         }

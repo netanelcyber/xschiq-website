@@ -91,6 +91,46 @@ class EEGAutoencoder(nn.Module):
         reconstruction = self.decoder(latent)
         return reconstruction, latent
 
+def serialize_model(model: EEGAutoencoder) -> Dict[str, Any]:
+    return {k: v.detach().cpu().numpy().tolist() for k, v in model.state_dict().items()}
+
+def train_model(matrix: np.ndarray, fs: float, epochs: int = 6, window_size: int = 512, stride: int = 256, max_windows: int = 128, batch_size: int = 16) -> Tuple[Dict[str, Any], str, List[float]]:
+    samples, channels = matrix.shape
+    if samples < 32 or channels < 1:
+        raise HTTPException(status_code=400, detail="EEG scan is too small for deep analysis.")
+
+    epochs = max(1, min(int(epochs), 20))
+    max_windows = max(8, min(int(max_windows), 256))
+    batch_size = max(1, min(int(batch_size), 64))
+
+    windows, starts = _prepare_windows(matrix, window_size, stride, max_windows)
+    window_tensor = torch.tensor(windows, dtype=torch.float32)
+    dataset = TensorDataset(window_tensor)
+    loader = DataLoader(dataset, batch_size=min(batch_size, len(dataset)), shuffle=True)
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model = EEGAutoencoder(channels=channels).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    loss_fn = nn.MSELoss()
+
+    training_curve: List[float] = []
+    model.train()
+    for _ in range(epochs):
+        epoch_loss = 0.0
+        sample_count = 0
+        for (batch,) in loader:
+            batch = batch.to(device)
+            optimizer.zero_grad(set_to_none=True)
+            reconstruction, _ = model(batch)
+            loss = loss_fn(reconstruction, batch)
+            loss.backward()
+            optimizer.step()
+            epoch_loss += float(loss.item()) * batch.shape[0]
+            sample_count += int(batch.shape[0])
+        training_curve.append(epoch_loss / max(1, sample_count))
+
+    return serialize_model(model), device, training_curve
+
 
 def _parse_csv(file_bytes: bytes) -> np.ndarray:
     text = file_bytes.decode("utf-8", errors="ignore")
@@ -688,3 +728,36 @@ def _build_article_markdown(
             f"## Retrieved Context\n{snippet_block}",
         ]
     )
+
+
+@app.get("/health")
+def health() -> Dict[str, str]:
+    return {"status": "ok", "mode": "server-train-only"}
+
+
+@app.post("/train")
+async def train_endpoint(request: Request) -> Dict[str, Any]:
+    inputs = await _load_request_inputs(request)
+    matrix = inputs.get("matrix")
+    if matrix is None:
+        raise HTTPException(status_code=400, detail="No EEG data provided for training.")
+
+    fs = 250.0
+    if request.query_params.get("sampling_rate_hz"):
+        try:
+            fs = float(request.query_params.get("sampling_rate_hz", "250"))
+        except ValueError:
+            raise HTTPException(status_code=400, detail="sampling_rate_hz must be numeric")
+
+    model_state, device, training_curve = train_model(matrix, fs=fs)
+
+    return {
+        "message": "training_complete",
+        "device": device,
+        "samples": int(matrix.shape[0]),
+        "channels": int(matrix.shape[1]),
+        "sampling_rate_hz": fs,
+        "training_curve": training_curve,
+        "model_state": model_state,
+    }
+
