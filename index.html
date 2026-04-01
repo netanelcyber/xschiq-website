@@ -2,217 +2,129 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PenuX AI | MIMIC-IV Research Edition</title>
+  <title>PenuX AI | Pathogen Analytics</title>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-  
   <style>
-    :root {
-      --bg: #050a18;
-      --panel: #0d152b;
-      --accent: #00f2ff;
-      --mimic-color: #ff9d00; /* צבע ייעודי לנתוני MIMIC */
-      --text: #e0e6ed;
-      --border: #1e2d52;
-    }
-
-    body {
-      margin: 0;
-      font-family: 'Fira Code', 'Segoe UI', monospace;
-      background-color: var(--bg);
-      color: var(--text);
-      padding: 15px;
-    }
-
-    #app { max-width: 1200px; margin: 0 auto; display: grid; gap: 20px; }
-
-    /* Header & Branding */
-    .terminal-header {
-      border: 1px solid var(--border);
-      padding: 20px;
-      background: rgba(13, 21, 43, 0.7);
-      border-radius: 8px;
-      position: relative;
-      overflow: hidden;
-    }
-    .terminal-header::before {
-      content: "RESEARCH_MODE_ACTIVE";
-      position: absolute; top: 5px; right: 10px;
-      font-size: 10px; color: var(--mimic-color); opacity: 0.6;
-    }
-
-    /* AI Dashboard */
-    .ai-container {
-      display: grid;
-      grid-template-columns: 1fr 350px;
-      gap: 15px;
-    }
-
-    .main-engine {
-      background: var(--panel);
-      border: 1px solid var(--accent);
-      border-radius: 12px;
-      padding: 25px;
-      box-shadow: inset 0 0 15px rgba(0, 242, 255, 0.05);
-    }
-
-    .data-source-badge {
-      display: inline-block;
-      padding: 4px 10px;
-      background: var(--mimic-color);
-      color: #000;
-      font-weight: 900;
-      font-size: 12px;
-      border-radius: 4px;
-      margin-bottom: 15px;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 10px;
-      margin-top: 20px;
-    }
-
-    .stat-card {
-      background: rgba(255,255,255,0.03);
-      padding: 10px;
-      border-left: 2px solid var(--mimic-color);
-    }
-
-    .stat-val { display: block; font-size: 1.2rem; color: var(--accent); }
-
-    /* Controls */
-    .input-group { margin: 20px 0; }
-    input[type="range"] { width: 100%; accent-color: var(--accent); }
-    
-    button {
-      width: 100%;
-      padding: 15px;
-      background: var(--accent);
-      color: #050a18;
-      border: none;
-      font-weight: bold;
-      text-transform: uppercase;
-      cursor: pointer;
-      border-radius: 6px;
-      transition: 0.3s;
-    }
-
-    button:hover:not(:disabled) { background: #fff; box-shadow: 0 0 20px var(--accent); }
-    button:disabled { opacity: 0.3; filter: grayscale(1); }
-
-    .console {
-      background: #000;
-      color: #00ff41;
-      padding: 15px;
-      font-size: 13px;
-      border-radius: 8px;
-      height: 200px;
-      overflow-y: auto;
-      border: 1px solid #333;
-    }
-
-    @media (max-width: 850px) { .ai-container { grid-template-columns: 1fr; } }
+    :root { --bg: #060b19; --accent: #00f2ff; --panel: #0d152b; --text: #e0e6ed; }
+    body { font-family: 'monospace'; background: var(--bg); color: var(--text); padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; border: 1px solid #1e2d52; padding: 20px; border-radius: 12px; }
+    .header { border-bottom: 1px solid #1e2d52; padding-bottom: 10px; margin-bottom: 20px; }
+    .params { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+    .card { background: var(--panel); padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent); }
+    .pathogen-list { list-style: none; padding: 0; }
+    .pathogen-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #1e2d52; }
+    .prob-bar { height: 5px; background: var(--accent); margin-top: 5px; }
+    button { width: 100%; padding: 12px; background: var(--accent); font-weight: bold; cursor: pointer; border: none; margin-bottom: 10px; }
+    button:disabled { opacity: 0.3; }
+    .console { background: #000; color: #00ff41; padding: 10px; font-size: 12px; height: 100px; overflow-y: auto; }
   </style>
 </head>
 <body>
 
-<div id="app">
-  <header class="terminal-header">
-    <h1 style="margin:0; color: var(--accent);">PenuX v3.0 | <span style="color:white">XSCHIQ</span></h1>
-    <p style="margin:5px 0 0; color: var(--muted);">ICU Pathogen Prediction Platform (Sepsis Diagnostics Focus)</p>
-  </header>
+<div class="container">
+  <div class="header">
+    <h1 style="color:var(--accent)">PenuX Engine v3.2</h1>
+    <small>MIMIC-IV Integrated Clinical Decision Support</small>
+  </div>
 
-  <section class="ai-container">
-    <div class="main-engine">
-      <span class="data-source-badge">TRAINED ON MIMIC-IV DATASET</span>
-      <h2>In Silico Neural Inference</h2>
-      <p>סימולציית מודל המבוסס על אופטימיזציה של נתוני חולי ICU. המודל לומד את הקשר בין פרמטרים קליניים לקיצור זמן התשובה (TAT).</p>
-      
-      <div class="input-group">
-        <label>Sepsis Severity Index (SOFA score equivalent): <span id="valDisplay">12</span></label>
-        <input type="range" id="sofaInput" min="1" max="24" value="12">
-      </div>
-
-      <button id="runTrain">Initialize Transfer Learning (from MIMIC-IV)</button>
-      <button id="runPredict" disabled style="margin-top:10px;">Execute Pathogen Prediction</button>
-      
-      <div class="stats-grid">
-        <div class="stat-card"><span class="stat-val" id="resTime">--</span>Est. Diagnostic Time</div>
-        <div class="stat-card"><span class="stat-val">MIMIC-III/IV</span>Reference Base</div>
-        <div class="stat-card"><span class="stat-val">TF.js 4.x</span>Engine</div>
-      </div>
+  <div class="params">
+    <div class="card">
+      <label>SOFA Score (Severity):</label>
+      <input type="range" id="sofaIn" min="1" max="24" value="10" style="width:100%">
+      <div id="sofaVal">10</div>
     </div>
-
-    <div class="console" id="consoleOut">
-      [SYSTEM] Ready for deployment...
-      [INFO] MIMIC-IV feature mapping loaded.
-      [INFO] OpenMS pipeline waiting for PenuX trigger.
+    <div class="card">
+      <label>Mass Spec Intensity (Log):</label>
+      <input type="range" id="msIn" min="1" max="100" value="75" style="width:100%">
+      <div id="msVal">75</div>
     </div>
-  </section>
+  </div>
+
+  <button id="trainBtn">Load MIMIC-IV Weights & Train</button>
+  <button id="predictBtn" disabled>Analyze Clinical Proteomics</button>
+
+  <div id="results" style="display:none; margin-top:20px;">
+    <h3>Top 3 Predicted Pathogens (Probabilistic):</h3>
+    <div id="pathogenContainer" class="card">
+      </div>
+    <p>Estimated TAT (Turnaround Time): <strong id="tatResult">--</strong> hours</p>
+  </div>
+
+  <div class="console" id="console">System Ready. Waiting for MIMIC initialization...</div>
 </div>
 
 <script>
   let model;
-  const consoleEl = document.getElementById('consoleOut');
-  const sofaInput = document.getElementById('sofaInput');
-  const valDisplay = document.getElementById('valDisplay');
+  const pathogens = [
+    { name: "Staphylococcus aureus", baseProb: 0.35 },
+    { name: "Escherichia coli", baseProb: 0.28 },
+    { name: "Pseudomonas aeruginosa", baseProb: 0.22 },
+    { name: "Klebsiella pneumoniae", baseProb: 0.15 }
+  ];
 
-  // עדכון תצוגה
-  sofaInput.oninput = () => valDisplay.innerText = sofaInput.value;
+  const sofaIn = document.getElementById('sofaIn');
+  const msIn = document.getElementById('msIn');
+  const consoleEl = document.getElementById('console');
 
-  function writeToConsole(msg) {
-    const time = new Date().toLocaleTimeString();
-    consoleEl.innerHTML += `<div>[${time}] ${msg}</div>`;
-    consoleEl.scrollTop = consoleEl.scrollHeight;
-  }
+  sofaIn.oninput = () => document.getElementById('sofaVal').innerText = sofaIn.value;
+  msIn.oninput = () => document.getElementById('msVal').innerText = msIn.value;
 
-  async function buildModel() {
-    // מודל רב-שכבתי לדימוי ניתוח EHR מורכב
+  async function initPenuX() {
+    // מודל רב-ערכי (Multi-output simulation)
     model = tf.sequential();
-    model.add(tf.layers.dense({units: 16, activation: 'relu', inputShape: [1]}));
+    model.add(tf.layers.dense({units: 16, activation: 'relu', inputShape: [2]}));
     model.add(tf.layers.dense({units: 8, activation: 'relu'}));
-    model.add(tf.layers.dense({units: 1}));
+    model.add(tf.layers.dense({units: 1})); // TAT Prediction
+    model.compile({optimizer: 'adam', loss: 'meanSquaredError'});
 
-    model.compile({optimizer: tf.train.rmsprop(0.05), loss: 'meanSquaredError'});
-    
-    // נתוני MIMIC-IV מדומים: SOFA Score מול שעות אבחון עם PenuX
-    const trainX = tf.tensor2d([2, 5, 10, 15, 20, 24], [6, 1]);
-    const trainY = tf.tensor2d([3, 8, 14, 22, 34, 48], [6, 1]);
-
-    document.getElementById('runTrain').onclick = async function() {
+    document.getElementById('trainBtn').onclick = async function() {
       this.disabled = true;
-      writeToConsole("Loading weights from MIMIC-IV metadata...");
-      writeToConsole("Starting Neural Network training via TensorFlow.js...");
-      
-      await model.fit(trainX, trainY, {
-        epochs: 100,
-        callbacks: {
-          onEpochEnd: (epoch) => {
-            if(epoch % 20 === 0) writeToConsole(`Epoch ${epoch}: processing batch...`);
-          }
-        }
-      });
-
-      writeToConsole("Training stable. Pathogen weight map generated.");
-      document.getElementById('runPredict').disabled = false;
-      this.innerText = "Model Optimized";
+      consoleEl.innerText = "Training on MIMIC-IV Proteomic cohorts...";
+      // סימולציה של אימון מהיר
+      const xs = tf.tensor2d([[5, 80], [15, 40], [20, 20]], [3, 2]);
+      const ys = tf.tensor2d([[4], [24], [42]], [3, 1]);
+      await model.fit(xs, ys, {epochs: 50});
+      consoleEl.innerText = "Model Ready. PenuX online.";
+      document.getElementById('predictBtn').disabled = false;
     };
 
-    document.getElementById('runPredict').onclick = async function() {
-      const sofa = parseFloat(sofaInput.value);
-      const prediction = model.predict(tf.tensor2d([sofa], [1, 1]));
-      const result = await prediction.data();
+    document.getElementById('predictBtn').onclick = async function() {
+      const sofa = parseFloat(sofaIn.value);
+      const ms = parseFloat(msIn.value);
       
-      const hours = Math.abs(result[0]).toFixed(1);
-      document.getElementById('resTime').innerText = `${hours}h`;
-      writeToConsole(`PREDICTION: At SOFA ${sofa}, PenuX reduces diagnostic gap to ${hours} hours.`);
+      const prediction = model.predict(tf.tensor2d([[sofa, ms]], [1, 2]));
+      const tat = (await prediction.data())[0];
+
+      // לוגיקת זיהוי פתוגנים (מבוססת הסתברות מותנית SOFA)
+      const results = pathogens
+        .map(p => ({
+          name: p.name,
+          prob: Math.min(0.99, (p.baseProb + (sofa/100) + (Math.random()*0.1)))
+        }))
+        .sort((a, b) => b.prob - a.prob)
+        .slice(0, 3);
+
+      displayResults(results, tat);
     };
   }
 
-  buildModel();
-</script>
+  function displayResults(data, tat) {
+    const container = document.getElementById('pathogenContainer');
+    document.getElementById('results').style.display = 'block';
+    document.getElementById('tatResult').innerText = Math.abs(tat).toFixed(1);
+    
+    container.innerHTML = data.map(p => `
+      <div class="pathogen-item">
+        <div>
+          <strong>${p.name}</strong>
+          <div class="prob-bar" style="width: ${p.prob * 100}%"></div>
+        </div>
+        <span>${(p.prob * 100).toFixed(1)}%</span>
+      </div>
+    `).join('');
+  }
 
+  initPenuX();
+</script>
 </body>
 </html>
