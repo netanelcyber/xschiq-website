@@ -5,10 +5,120 @@
   <title>Xschiq - AngularJS integrated</title>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.4/angular.min.js"></script>
   <style>
-    body { font-family: sans-serif; margin: 20px; }
-    textarea { width: 100%; min-height: 200px; }
-    .status { margin-top: 12px; }
-    .status strong { display: inline-block; width: 120px; }
+    :root {
+      --bg: #0b1020;
+      --panel: #111a2f;
+      --panel-border: #273353;
+      --text: #e5ecff;
+      --muted: #a5b4db;
+      --accent: #4fc3f7;
+      --danger: #f87171;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background: linear-gradient(135deg, #09112d 0%, #0d1f47 55%, #131f2f 100%);
+      padding: 18px;
+    }
+
+    h1 { margin: 0 0 12px; font-size: 1.78rem; }
+    h3 { margin: 20px 0 10px; }
+
+    label {
+      display: block;
+      color: var(--text);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    input[type='file'] {
+      margin-top: 4px;
+      color: var(--muted);
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      color: #102443;
+      background: linear-gradient(120deg, #4fc3f7, #67d7ea);
+      padding: 0.65rem 1.25rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-right: 8px;
+      transition: transform 120ms ease, box-shadow 120ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 22px rgba(48, 190, 255, 0.3);
+    }
+
+    button:active { transform: translateY(0); }
+
+    .panel {
+      background: rgba(13, 29, 52, 0.9);
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 14px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+    }
+
+    .status,
+    .project-panel,
+    .result-panel {
+      margin-top: 14px;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .project-panel h4,
+    .status h4 { margin-top: 0; }
+
+    .badge {
+      border-radius: 999px;
+      padding: 0.18rem 0.55rem;
+      font-size: 0.75rem;
+      color: #fff;
+      background: var(--accent);
+      margin-left: 6px;
+    }
+
+    p {
+      margin: 6px 0;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 220px;
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      background: #091223;
+      color: #dbe9ff;
+      padding: 10px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      align-items: center;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body ng-app="xschiqApp" ng-controller="EegCtrl as vm">
@@ -40,7 +150,7 @@
     <p><strong>Model errors:</strong> {{ vm.modelResult?.error || 'n/a' }}</p>
   </div>
 
-  <div class="status" style="margin-top: 16px; border: 1px solid #d0d0d0; padding: 12px; border-radius: 8px; background: #f7f8fa;">
+  <div class="project-panel">
     <h4>Project Overview</h4>
     <p><strong>Name:</strong> {{ vm.project.name }}</p>
     <p><strong>Version:</strong> {{ vm.project.version }}</p>
@@ -52,7 +162,7 @@
   <textarea readonly>{{ vm.dump || '' }}</textarea>
 
 <script>
-angular.module('xschiqApp', []
+angular.module('xschiqApp', [])
 .controller('EegCtrl', ['$scope', '$http', function($scope, $http) {
   const vm = this;
   vm.status = 'idle';
