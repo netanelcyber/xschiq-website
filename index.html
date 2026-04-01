@@ -112,9 +112,9 @@
     
     model = tf.sequential();
     model.add(tf.layers.lstm({units: 64, inputShape: [1, 4], returnSequences: false}));
-    model.add(tf.layers.dense({units: 1024, activation: 'relu'}));
+    model.add(tf.layers.dense({units: 124, activation: 'relu'}));
     model.add(tf.layers.dropout({rate: 0.2}));
-    model.add(tf.layers.dense({units: 512, activation: 'relu'}));
+    model.add(tf.layers.dense({units: 52, activation: 'relu'}));
     model.add(tf.layers.dense({units: 100, activation: 'softmax'})); // 100 Pathogen Classes
 
     model.compile({optimizer: 'adam', loss: 'categoricalCrossentropy'});
