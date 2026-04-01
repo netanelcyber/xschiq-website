@@ -1,20 +1,21 @@
 """
-Server-side EEG analysis service with a deep-learning inference path.
+Server-side EEG analysis and article generation service.
 
 Endpoints
 ---------
 - GET /health
 - POST /analyze
+- POST /generate-article
 
-`POST /analyze` accepts either:
+Accepted request formats
+------------------------
 - raw CSV in the request body (samples x channels)
-- JSON body: {"samples": [[...], [...], ...]}
-
-This service provides two layers of analysis:
-- classical signal statistics + relative bandpower
-- self-supervised deep representation learning via a 1D convolutional autoencoder
-
-The deep-learning path is intended for research/demo use and is not a medical device.
+- JSON body with ``samples`` plus optional text fields
+- multipart/form-data with:
+  - ``eeg``: CSV or JSON file
+  - ``report``: TXT / JSON / CSV / PDF diagnostic report
+  - ``previous_articles``: one or more prior article files
+  - ``title_hint`` / ``study_focus``: optional text fields
 """
 
 from __future__ import annotations
@@ -23,16 +24,25 @@ import csv
 import io
 import json
 import math
-from typing import Any, Dict, List, Tuple
+import re
+from collections import Counter
+from typing import Any, Dict, Iterable, List, Tuple
 
 import numpy as np
 import torch
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
-app = FastAPI(title="EEG Deep Analysis Service", version="0.2.0")
+app = FastAPI(title="EEG Deep Analysis Service", version="0.3.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 BANDS: Dict[str, Tuple[float, float]] = {
@@ -41,6 +51,19 @@ BANDS: Dict[str, Tuple[float, float]] = {
     "alpha": (8.0, 12.0),
     "beta": (12.0, 30.0),
     "gamma": (30.0, 80.0),
+}
+
+STOPWORDS = {
+    "the", "and", "for", "with", "that", "this", "from", "into", "were", "was", "are",
+    "our", "their", "using", "used", "over", "than", "after", "before", "within",
+    "through", "during", "between", "suggest", "suggests", "study", "analysis",
+    "patient", "patients", "signal", "signals", "results", "result", "section",
+    "clinical", "research", "data", "model", "deep", "learning", "eeg", "scan",
+    "theory", "background", "report", "article",
+    "של", "עם", "על", "זה", "זאת", "הוא", "היא", "הם", "הן", "גם", "עוד", "לא",
+    "כן", "דרך", "כדי", "אחד", "אחת", "שיש", "שהוא", "שהיא", "אלה", "אלו", "מתוך",
+    "לאחר", "לפני", "במהלך", "ניתוח", "מחקר", "קליני", "מחקרים", "מטופל", "מטופלים",
+    "תוצאה", "תוצאות", "מערכת", "המערכת", "מאמר", "מאמרים", "סריקה", "סריקות",
 }
 
 
@@ -85,12 +108,7 @@ def _parse_csv(file_bytes: bytes) -> np.ndarray:
     return np.asarray(rows, dtype=np.float64)
 
 
-def _parse_json(file_bytes: bytes) -> np.ndarray:
-    try:
-        payload = json.loads(file_bytes.decode("utf-8"))
-    except json.JSONDecodeError as exc:
-        raise HTTPException(status_code=400, detail="Invalid JSON payload.") from exc
-
+def _matrix_from_payload(payload: Any) -> np.ndarray:
     samples = payload.get("samples", payload) if isinstance(payload, dict) else payload
     matrix = np.asarray(samples, dtype=np.float64)
     if matrix.ndim != 2 or matrix.shape[0] == 0 or matrix.shape[1] == 0:
@@ -98,15 +116,226 @@ def _parse_json(file_bytes: bytes) -> np.ndarray:
     return matrix
 
 
-async def _load_matrix_from_request(request: Request) -> np.ndarray:
+def _parse_json_matrix(file_bytes: bytes) -> np.ndarray:
+    try:
+        payload = json.loads(file_bytes.decode("utf-8"))
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload.") from exc
+    return _matrix_from_payload(payload)
+
+
+def _extract_boundary(content_type: str) -> bytes:
+    match = re.search(r'boundary="?([^";]+)"?', content_type, flags=re.IGNORECASE)
+    if not match:
+        raise HTTPException(status_code=400, detail="Multipart request is missing a boundary.")
+    return match.group(1).encode("utf-8")
+
+
+def _parse_header_parameters(header_value: str) -> Dict[str, str]:
+    params: Dict[str, str] = {}
+    for part in header_value.split(";"):
+        if "=" not in part:
+            continue
+        key, value = part.split("=", 1)
+        params[key.strip().lower()] = value.strip().strip('"')
+    return params
+
+
+def _parse_multipart_parts(body: bytes, content_type: str) -> Dict[str, List[Dict[str, Any]]]:
+    boundary = b"--" + _extract_boundary(content_type)
+    parts: Dict[str, List[Dict[str, Any]]] = {}
+
+    for chunk in body.split(boundary):
+        chunk = chunk.strip(b"\r\n")
+        if not chunk or chunk == b"--":
+            continue
+        if b"\r\n\r\n" not in chunk:
+            continue
+
+        header_blob, content = chunk.split(b"\r\n\r\n", 1)
+        content = content.rstrip(b"\r\n")
+        header_lines = header_blob.decode("latin-1", errors="ignore").split("\r\n")
+        headers: Dict[str, str] = {}
+        for line in header_lines:
+            if ":" not in line:
+                continue
+            key, value = line.split(":", 1)
+            headers[key.strip().lower()] = value.strip()
+
+        disposition = headers.get("content-disposition", "")
+        disposition_params = _parse_header_parameters(disposition)
+        field_name = disposition_params.get("name")
+        if not field_name:
+            continue
+
+        part = {
+            "name": field_name,
+            "filename": disposition_params.get("filename", ""),
+            "content_type": headers.get("content-type", "application/octet-stream"),
+            "content": content,
+        }
+        parts.setdefault(field_name, []).append(part)
+
+    return parts
+
+
+def _decode_text_part(part: Dict[str, Any]) -> str:
+    content = part.get("content", b"")
+    if not isinstance(content, bytes):
+        return ""
+    return content.decode("utf-8", errors="ignore").strip()
+
+
+def _clean_text(text: str, *, max_chars: int = 18000) -> str:
+    text = text.replace("\x00", " ")
+    text = re.sub(r"[ \t\r\f\v]+", " ", text)
+    text = re.sub(r"\n{2,}", "\n", text)
+    text = text.strip()
+    return text[:max_chars]
+
+
+def _best_effort_pdf_text(file_bytes: bytes) -> str:
+    raw = file_bytes.decode("latin-1", errors="ignore")
+    candidates = re.findall(r"\(([^()]{4,240})\)", raw)
+    fragments: List[str] = []
+
+    for candidate in candidates:
+        candidate = candidate.replace("\\n", " ").replace("\\r", " ")
+        candidate = candidate.replace("\\(", "(").replace("\\)", ")")
+        cleaned = _clean_text(candidate, max_chars=240)
+        if len(cleaned) >= 4:
+            fragments.append(cleaned)
+
+    if not fragments:
+        ascii_runs = re.findall(r"[A-Za-z0-9\u0590-\u05FF ,.;:()/%-]{12,}", raw)
+        fragments = [_clean_text(item, max_chars=240) for item in ascii_runs if item.strip()]
+
+    return _clean_text(" ".join(fragments[:80]))
+
+
+def _extract_text_from_part(part: Dict[str, Any]) -> str:
+    filename = str(part.get("filename", "")).lower()
+    content_type = str(part.get("content_type", "")).lower()
+    raw = part.get("content", b"")
+    if not isinstance(raw, bytes):
+        return ""
+
+    if filename.endswith(".pdf") or "pdf" in content_type:
+        extracted = _best_effort_pdf_text(raw)
+        return extracted or "PDF uploaded. Text extraction was limited for this document."
+
+    if filename.endswith(".json") or "application/json" in content_type:
+        try:
+            payload = json.loads(raw.decode("utf-8"))
+            if isinstance(payload, (dict, list)):
+                return _clean_text(json.dumps(payload, ensure_ascii=False))
+        except json.JSONDecodeError:
+            pass
+
+    try:
+        return _clean_text(raw.decode("utf-8"))
+    except UnicodeDecodeError:
+        return _clean_text(raw.decode("latin-1", errors="ignore"))
+
+
+def _normalize_previous_articles(payload: Any) -> List[Dict[str, str]]:
+    normalized: List[Dict[str, str]] = []
+    if not payload:
+        return normalized
+
+    items = payload if isinstance(payload, list) else [payload]
+    for index, item in enumerate(items, start=1):
+        if isinstance(item, dict):
+            text = _clean_text(str(item.get("text", "")))
+            name = str(item.get("name", f"prior_article_{index}"))
+        else:
+            text = _clean_text(str(item))
+            name = f"prior_article_{index}"
+        if text:
+            normalized.append({"name": name, "text": text})
+
+    return normalized
+
+
+async def _load_request_inputs(request: Request) -> Dict[str, Any]:
     body = await request.body()
     if not body:
         raise HTTPException(status_code=400, detail="Request body is empty.")
 
     content_type = request.headers.get("content-type", "").lower()
-    if "application/json" in content_type:
-        return _parse_json(body)
-    return _parse_csv(body)
+    matrix: np.ndarray | None = None
+    report_text = ""
+    previous_articles: List[Dict[str, str]] = []
+    title_hint = ""
+    study_focus = ""
+
+    if "multipart/form-data" in content_type:
+        parts = _parse_multipart_parts(body, content_type)
+
+        eeg_part = (parts.get("eeg") or [None])[0]
+        if eeg_part:
+            filename = str(eeg_part.get("filename", "")).lower()
+            part_content_type = str(eeg_part.get("content_type", "")).lower()
+            if filename.endswith(".json") or "application/json" in part_content_type:
+                matrix = _parse_json_matrix(eeg_part["content"])
+            else:
+                matrix = _parse_csv(eeg_part["content"])
+
+        report_part = (parts.get("report") or [None])[0]
+        if report_part:
+            report_text = _extract_text_from_part(report_part)
+
+        article_parts = (
+            parts.get("previous_articles", [])
+            + parts.get("previous_article", [])
+            + parts.get("article", [])
+        )
+        for index, part in enumerate(article_parts, start=1):
+            text = _extract_text_from_part(part)
+            if text:
+                previous_articles.append(
+                    {
+                        "name": str(part.get("filename") or f"prior_article_{index}"),
+                        "text": text,
+                    }
+                )
+
+        title_part = (parts.get("title_hint") or [None])[0]
+        if title_part:
+            title_hint = _decode_text_part(title_part)
+
+        focus_part = (parts.get("study_focus") or [None])[0]
+        if focus_part:
+            study_focus = _decode_text_part(focus_part)
+
+    elif "application/json" in content_type:
+        try:
+            payload = json.loads(body.decode("utf-8"))
+        except json.JSONDecodeError as exc:
+            raise HTTPException(status_code=400, detail="Invalid JSON payload.") from exc
+
+        if isinstance(payload, (dict, list)) and (
+            (isinstance(payload, dict) and "samples" in payload) or isinstance(payload, list)
+        ):
+            matrix = _matrix_from_payload(payload)
+
+        if isinstance(payload, dict):
+            report_text = _clean_text(str(payload.get("report_text", payload.get("report", ""))))
+            previous_articles = _normalize_previous_articles(
+                payload.get("previous_articles", payload.get("articles", []))
+            )
+            title_hint = _clean_text(str(payload.get("title_hint", "")), max_chars=160)
+            study_focus = _clean_text(str(payload.get("study_focus", "")), max_chars=220)
+    else:
+        matrix = _parse_csv(body)
+
+    return {
+        "matrix": matrix,
+        "report_text": report_text,
+        "previous_articles": previous_articles,
+        "title_hint": title_hint,
+        "study_focus": study_focus,
+    }
 
 
 def _bandpower(signal: np.ndarray, fs: float) -> Dict[str, float]:
@@ -314,36 +543,148 @@ def analyze_scan(
     }
 
 
-@app.get("/health")
-async def health() -> JSONResponse:
-    return JSONResponse({"status": "ok", "service": "eeg-deep-analysis"})
+def _tokenize(text: str) -> List[str]:
+    return [
+        token.lower()
+        for token in re.findall(r"[A-Za-z\u0590-\u05FF][A-Za-z0-9_\-\u0590-\u05FF]{2,}", text.lower())
+        if token.lower() not in STOPWORDS
+    ]
 
 
-@app.post("/analyze")
-async def analyze(
-    request: Request,
-    fs: float = 256.0,
-    epochs: int = 6,
-    window_size: int = 512,
-    stride: int = 256,
-    max_windows: int = 128,
-) -> JSONResponse:
-    if fs <= 0 or not math.isfinite(fs):
-        raise HTTPException(status_code=400, detail="Sampling rate `fs` must be positive.")
+def _top_keywords(texts: Iterable[str], limit: int = 10) -> List[str]:
+    counts: Counter[str] = Counter()
+    for text in texts:
+        counts.update(_tokenize(text))
+    return [token for token, _ in counts.most_common(limit)]
 
-    matrix = await _load_matrix_from_request(request)
-    analysis = analyze_scan(
-        matrix,
-        fs,
-        epochs=epochs,
-        window_size=window_size,
-        stride=stride,
-        max_windows=max_windows,
+
+def _aggregate_band_profile(classical_analysis: Dict[str, Dict[str, Any]]) -> List[Tuple[str, float]]:
+    totals = {band: 0.0 for band in BANDS}
+    channel_count = 0
+
+    for channel in classical_analysis.values():
+        channel_count += 1
+        band_fractions = channel.get("band_power_fraction", {})
+        for band, value in band_fractions.items():
+            totals[band] += float(value)
+
+    if channel_count == 0:
+        return [(band, 0.0) for band in BANDS]
+
+    ranked = [(band, totals[band] / channel_count) for band in totals]
+    return sorted(ranked, key=lambda item: item[1], reverse=True)
+
+
+def _sentenceify(text: str) -> List[str]:
+    raw_sentences = re.split(r"(?<=[\.\!\?\n])\s+", text)
+    return [_clean_text(sentence, max_chars=320) for sentence in raw_sentences if _clean_text(sentence, max_chars=320)]
+
+
+def _rank_context_snippets(
+    report_text: str,
+    previous_articles: List[Dict[str, str]],
+    query_terms: List[str],
+    *,
+    limit: int = 5,
+) -> List[Dict[str, Any]]:
+    snippets: List[Tuple[float, str, str]] = []
+    query_set = set(query_terms)
+
+    sources: List[Tuple[str, str]] = []
+    if report_text:
+        sources.append(("diagnostic_report", report_text))
+    for article in previous_articles:
+        sources.append((article["name"], article["text"]))
+
+    for source_name, source_text in sources:
+        for sentence in _sentenceify(source_text):
+            tokens = set(_tokenize(sentence))
+            if not tokens:
+                continue
+            overlap = len(tokens & query_set)
+            density = min(len(tokens), 12) / 12.0
+            score = overlap * 1.6 + density
+            if source_name == "diagnostic_report":
+                score += 0.4
+            snippets.append((score, source_name, sentence))
+
+    snippets.sort(key=lambda item: item[0], reverse=True)
+    results: List[Dict[str, Any]] = []
+    seen = set()
+    for score, source_name, sentence in snippets:
+        key = (source_name, sentence)
+        if key in seen:
+            continue
+        seen.add(key)
+        results.append({"source": source_name, "score": round(float(score), 3), "excerpt": sentence})
+        if len(results) >= limit:
+            break
+    return results
+
+
+def _deep_profile(analysis: Dict[str, Any] | None) -> Dict[str, Any]:
+    if not analysis:
+        return {
+            "top_bands": [],
+            "top_channels": [],
+            "anomaly_fraction": None,
+            "severity_label": "text_context_only",
+            "analysis_mode": "text_context_only",
+            "windows_analyzed": 0,
+            "top_anomalous_windows": [],
+            "embedding_preview": [],
+        }
+
+    band_profile = _aggregate_band_profile(analysis["classical_analysis"])
+    deep = analysis["deep_learning_analysis"]
+    anomaly_fraction = float(deep["anomalous_window_fraction"])
+
+    if anomaly_fraction >= 0.35:
+        severity = "high_anomaly_load"
+    elif anomaly_fraction >= 0.15:
+        severity = "moderate_anomaly_load"
+    else:
+        severity = "low_anomaly_load"
+
+    top_channels = sorted(
+        deep["channel_importance"].items(),
+        key=lambda item: item[1],
+        reverse=True,
+    )[:3]
+
+    return {
+        "top_bands": [band for band, _ in band_profile[:2]],
+        "top_channels": [channel for channel, _ in top_channels],
+        "anomaly_fraction": anomaly_fraction,
+        "severity_label": severity,
+        "analysis_mode": deep["analysis_mode"],
+        "windows_analyzed": deep["windows_analyzed"],
+        "top_anomalous_windows": deep["top_anomalous_windows"][:3],
+        "embedding_preview": deep["scan_embedding_preview"][:6],
+    }
+
+
+def _build_article_markdown(
+    title: str,
+    sections: Dict[str, str],
+    snippets: List[Dict[str, Any]],
+    keywords: List[str],
+) -> str:
+    snippet_block = "\n".join(
+        f"- {item['source']}: {item['excerpt']}"
+        for item in snippets
+    ) or "- No previous article snippets were retrieved."
+
+    return "\n\n".join(
+        [
+            f"# {title}",
+            f"**Keywords:** {', '.join(keywords) if keywords else 'EEG, deep learning, diagnostic synthesis'}",
+            f"## Abstract\n{sections['abstract']}",
+            f"## Introduction\n{sections['introduction']}",
+            f"## Materials and Methods\n{sections['methods']}",
+            f"## Results\n{sections['results']}",
+            f"## Discussion\n{sections['discussion']}",
+            f"## Conclusion\n{sections['conclusion']}",
+            f"## Retrieved Context\n{snippet_block}",
+        ]
     )
-    return JSONResponse(analysis)
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=False)
